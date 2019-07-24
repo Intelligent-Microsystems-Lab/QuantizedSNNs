@@ -153,8 +153,8 @@ parameters = {
     'gi_max'      : gen_tau(mu = 5, var = 0*i, layers = layers, device = device),
     'tau_ge'      : gen_tau(mu = 1*1e-3, var = 0*i, layers = layers, device = device),
     'tau_gi'      : gen_tau(mu = 2*1e-3, var = 0*i, layers = layers, device = device),
-    'mu'          : torch.Tensor([-1, -.66, -.33, 0.05, .33, .66, 1]), #3 bit precision
-    'var'         : torch.Tensor([.001, .001, .001, .001, .001, .001, .001])
+    'mu'          : torch.Tensor([-1, -.66, -.33, 0.05, .33, .66, 1]).to(device), #3 bit precision
+    'var'         : torch.Tensor([.001, .001, .001, .001, .001, .001, .001]).to(device)
     }
 
 

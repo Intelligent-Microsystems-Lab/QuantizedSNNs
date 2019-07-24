@@ -16,7 +16,6 @@ def quantize(weights, mu, var, device):
 		dim = layer_w.shape
 		layer_w = layer_w.flatten()
 		m_temp = m.sample([layer_w.shape[0]])
-		import pdb; pdb.set_trace()
 		temp_diff = torch.abs(m_temp - layer_w[:,None])
 		_, ind_m = temp_diff.min(dim=1)
 		weights[i] = torch.gather(input = m_temp, dim = 1, index = ind_m.view(-1,1)).reshape(dim)
