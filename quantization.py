@@ -9,13 +9,13 @@ def normalize_distribution(mu, var):
 	return new_mu, new_v
 
 
-def quantize(weights, mu, var):
+def quantize(weights, mu, var, device):
 	m = torch.distributions.normal.Normal(mu, var)
 
 	for i,layer_w in enumerate(weights):
 		dim = layer_w.shape
 		layer_w = layer_w.flatten()
-		m_temp = m.sample([layer_w.shape[0]])
+		m_temp = m.sample([layer_w.shape[0]], device = device)
 		temp_diff = torch.abs(m_temp - layer_w[:,None])
 		_, ind_m = temp_diff.min(dim=1)
 		weights[i] = torch.gather(input = m_temp, dim = 1, index = ind_m.view(-1,1)).reshape(dim)
