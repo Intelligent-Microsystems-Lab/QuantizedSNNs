@@ -9,7 +9,7 @@ def normalize_distribution(mu, var):
 	return new_mu, new_v
 
 
-def quantize(weights, mu, var, device):
+def quantize(weights, mu, var):
 	m = torch.distributions.normal.Normal(mu, var)
 
 	for i,layer_w in enumerate(weights):
