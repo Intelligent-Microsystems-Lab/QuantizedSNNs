@@ -19,6 +19,7 @@ def quantize(weights, mu, var, device):
 		temp_diff = torch.abs(m_temp - layer_w[:,None])
 		_, ind_m = temp_diff.min(dim=1)
 		weights[i] = torch.gather(input = m_temp, dim = 1, index = ind_m.view(-1,1)).reshape(dim)
+		weights[i].requires_grad = True
 
 	return weights
 
