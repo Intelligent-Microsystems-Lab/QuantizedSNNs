@@ -17,6 +17,8 @@ from snn_training import train_classifier, get_weights, get_global, training_pre
 
 from visual import neuron_test
 
+from quantization import quantize
+
 import line_profiler
 
 
@@ -99,7 +101,7 @@ y_test  = torch.tensor(test_dataset.test_labels, device=device, dtype=dtype)
 # !!! import input should always be quadratic
 # parameters + architecture
 layers = {'input'            : 28*28,
-          'convolutional_1'  : 5*5,
+          #'convolutional_1'  : 5*5,
           'fully-connected_1': 900,
           'output'           : 12}
 #layers = [500, 300]
@@ -113,8 +115,8 @@ i = 1
 parameters = {
     # general 
     'nb_epochs'   : 15,
-    'neuron_type' : LIF_neuron,
-    'read_out'    : "no_spike_max",
+    'neuron_type' : ferro_neuron,
+    'read_out'    : "no_spike_integrate",
     'device'      : device,
     'dtype'       : torch.float,
     'spike_fn'    : SuperSpike.apply,
@@ -150,7 +152,9 @@ parameters = {
     'ge_max'      : gen_tau(mu = 8, var = 0*i, layers = layers, device = device),
     'gi_max'      : gen_tau(mu = 5, var = 0*i, layers = layers, device = device),
     'tau_ge'      : gen_tau(mu = 1*1e-3, var = 0*i, layers = layers, device = device),
-    'tau_gi'      : gen_tau(mu = 2*1e-3, var = 0*i, layers = layers, device = device)
+    'tau_gi'      : gen_tau(mu = 2*1e-3, var = 0*i, layers = layers, device = device),
+    'mu'          : torch.Tensor([-1, -.66, -.33, 0.05, .33, .66, 1]), #3 bit precision
+    'var'         : torch.Tensor([.001, .001, .001, .001, .001, .001, .001])
     }
 
 
@@ -158,6 +162,7 @@ while True:
     print("Weight Init")
     # weight initilalization
     weights = get_weights(layers, device=device, time_step=parameters['time_step'], tau_mem=parameters['tau_mem'][0], scale_mult = 35)
+    weights = quantize(weights = weights, mu = parameters['mu'], var = parameters['var'])
 
     loss_hist, train_acc, test_acc, result_w = train_classifier_dropconnect(x_data = x_train, y_data = y_train, x_test = x_test, y_test = y_test, nb_epochs = parameters['nb_epochs'], weights = weights, args_snn = parameters, layers = layers, figures = True, verbose=False, p_drop = parameters['p_drop'],  fig_title=ds_name + " "+ parameters['read_out']+" "+ parameters['neuron_type'].__name__ + ' std: '+str(i*1e-5))
     if test_acc[-1] > 0.12:

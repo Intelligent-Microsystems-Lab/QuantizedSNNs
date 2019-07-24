@@ -19,6 +19,7 @@ from visual import mnist_train_curve, learning_para, precise_figs
 
 from neurons import read_out_layer
 
+from quantization import quantize
 
 import line_profiler
 
@@ -97,6 +98,7 @@ def train_classifier_dropconnect(x_data, y_data, x_test, y_test, nb_epochs, weig
                 optimizer.zero_grad()
                 loss_val.backward()
                 optimizer.step()
+                weights = quantize(weights = weights, mu = args_snn['mu'], var = args_snn['var'])
             local_loss.append(float(loss_val.item()))
             if verbose:
                 _,am=torch.max(m,1)
