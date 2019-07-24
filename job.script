@@ -4,9 +4,9 @@
 #$ -m abe
 #$ -q gpu@ta-titanv-001.crc.nd.edu	# Specify queue (use ‘debug’ for development) // gpu@qa-2080ti-001.crc.nd.edu , qa-2080ti-002.crc.nd.edu , ta-titanv-001.crc.nd.edu, qa-titanx-001.crc.nd.edu, qa-1080ti-001.crc.nd.edu, da-1080-001.crc.nd.edu
 #$ -l gpu_card=1 
-#$ -N conv_1layer      # Specify job name
-#$ -o ./logs/output_conv_1layer.txt
-#$ -e ./logs/error_conv_1layer.txt
+#$ -N ferro_quant_fmnist      # Specify job name
+#$ -o ./logs/output_ferro_quant_fmnist.txt
+#$ -e ./logs/error_ferro_quant_fmnist.txt
 
 module load python       # Required modules
 setenv OMP_NUM_THREADS $NSLOTS
