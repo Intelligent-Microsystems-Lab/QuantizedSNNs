@@ -17,7 +17,7 @@ from snn_training import train_classifier, get_weights, get_global, training_pre
 
 from visual import neuron_test
 
-from quantization import quantize
+from quantization import quantize, normalize_distribution
 
 import line_profiler
 
@@ -107,6 +107,10 @@ layers = {'input'            : 28*28,
 #layers = [500, 300]
 #layers = [128*128, 800, 12]
 
+mu = torch.Tensor([.254, .589, .997, 1.3, 1.72, 2.24, 2.8, 3.36]).to(device)*10e-6
+var = torch.Tensor([5.8, 4.92, 5.91, 5.91, 7.57, 10.9, 12.1, 12.5]).to(device)*10e-8
+n_mu, n_var = normalize_distribution(mu, var)
+n_mu = n_mu*-1
 
 i = 1
 
@@ -154,8 +158,8 @@ parameters = {
     'gi_max'      : gen_tau(mu = 5, var = 0*i, layers = layers, device = device),
     'tau_ge'      : gen_tau(mu = 1*1e-3, var = 0*i, layers = layers, device = device),
     'tau_gi'      : gen_tau(mu = 2*1e-3, var = 0*i, layers = layers, device = device),
-    'mu'          : torch.Tensor([.254, .589, .997, 1.3, 1.72, 2.24, 2.8, 3.36]).to(device)*10e-6, #3 bit precision
-    'var'         : torch.Tensor([5.8, 4.92, 5.91, 5.91, 7.57, 10.9, 12.1, 12.5]).to(device)*10e-8
+    'mu'          : n_mu,
+    'var'         : n_var
     }
 
 
