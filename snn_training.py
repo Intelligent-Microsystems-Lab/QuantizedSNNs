@@ -93,6 +93,7 @@ def train_classifier_dropconnect(x_data, y_data, x_test, y_test, nb_epochs, weig
         for x_local, y_local in args_snn['data_gen'](X = x_data, y =  y_data, batch_size = args_snn['batch_size'], nb_steps = args_snn['nb_steps'], nb_units = layers['input'], shuffle = True, time_step = args_snn['time_step'], device = args_snn['device']):
 
             with torch.autograd.detect_anomaly():
+                weights = quantize(weights = weights)
                 m = run_snn_dropconnect(x_local.to_dense(), y_local, weights, layers, args_snn, p_drop, False)
                 log_p_y = log_softmax_fn(m)
                 loss_val = loss_fn(log_p_y, y_local)
@@ -101,7 +102,6 @@ def train_classifier_dropconnect(x_data, y_data, x_test, y_test, nb_epochs, weig
                 loss_val.backward()
                 optimizer.step()
                 #weights = quantize(weights = weights, mu = args_snn['mu'], var = args_snn['var'])
-                weights = quantize(weights = weights)
             local_loss.append(float(loss_val.item()))
             if verbose:
                 _,am=torch.max(m,1)
