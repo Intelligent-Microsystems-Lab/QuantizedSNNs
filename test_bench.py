@@ -162,10 +162,10 @@ parameters = {
 for i in range(4):
     print("Weight Init ("+str(i)+")")
     # weight initilalization
-    weights = get_weights(layers, device=device, time_step=parameters['time_step'], tau_mem=parameters['tau_mem'][0], scale_mult = 35)
+    weights = get_weights(layers, device=device, time_step=parameters['time_step'], tau_mem=parameters['tau_v'][0], scale_mult = 35)
     weights = quantize(weights = weights, mu = parameters['mu'], var = parameters['var'])
 
-    loss_hist, train_acc, test_acc, result_w = train_classifier_dropconnect(x_data = x_train, y_data = y_train, x_test = x_test, y_test = y_test, nb_epochs = parameters['nb_epochs'], weights = weights, args_snn = parameters, layers = layers, figures = True, verbose=False, p_drop = parameters['p_drop'],  fig_title=ds_name + " "+ parameters['read_out']+" "+ parameters['neuron_type'].__name__ + ' std: '+str(i*1e-5))
+    loss_hist, train_acc, test_acc, result_w = train_classifier_dropconnect(x_data = x_train, y_data = y_train, x_test = x_test, y_test = y_test, nb_epochs = parameters['nb_epochs'], weights = weights, args_snn = parameters, layers = layers, figures = True, verbose=True, p_drop = parameters['p_drop'],  fig_title=ds_name + " "+ parameters['read_out']+" "+ parameters['neuron_type'].__name__ + ' std: '+str(i*1e-5))
     if test_acc[-1] > 0.12:
         break
 

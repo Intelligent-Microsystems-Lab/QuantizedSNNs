@@ -8,7 +8,7 @@ import seaborn as sns
 
 import torch
 
-def mnist_train_curve(loss_hist, train_acc, test_acc, fig_title):
+def mnist_train_curve(loss_hist, train_acc, test_acc, fig_title, file_name):
     plt.clf()
     fig, ax1 = plt.subplots()
 
@@ -29,7 +29,7 @@ def mnist_train_curve(loss_hist, train_acc, test_acc, fig_title):
 
     fig.tight_layout()
 
-    plt.savefig("figures/training_mnist_LIF"+str('{date:%Y-%m-%d_%H-%M-%S}'.format( date=datetime.datetime.now() ))+".png")
+    plt.savefig(file_name)
 
 
 
