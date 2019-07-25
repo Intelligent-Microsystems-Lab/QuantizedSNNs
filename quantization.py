@@ -75,7 +75,7 @@ def quantize(weights, nb = 16, clip_through=False):
     '''
     non_sign_bits = nb-1
     m = pow(2,non_sign_bits)
-    for i, temp_w in enumerate(weights)
+    for i, temp_w in enumerate(weights):
         #W = tf.Print(W,[W],summarize=20)
         if clip_through:
             Wq = clip_through(round_through(temp_w*m),-m,m-1)/m
