@@ -103,7 +103,7 @@ y_test  = torch.tensor(test_dataset.test_labels, device=device, dtype=dtype)
 layers = {'input'            : 28*28,
           #'convolutional_1'  : 5*5,
           'fully-connected_1': 900,
-          'output'           : 12}
+          'output'           : 10}
 #layers = [500, 300]
 #layers = [128*128, 800, 12]
 
@@ -112,7 +112,7 @@ i = 1
 
 mu = torch.Tensor([.254, .589, .997, 1.3, 1.72, 2.24, 2.8, 3.36]).to(device)*10e-6
 var = torch.Tensor([5.8, 4.92, 5.91, 5.91, 7.57, 10.9, 12.1, 12.5]).to(device)*10e-8
-n_mu, n_var = normalize_distribution(mu, var, min_r = -.2, max_r = 1)
+n_mu, n_var = normalize_distribution(mu, var, min_r = -1, max_r = 1)
 
 # mult_std = [0] + [10**x for x in range(7)]
 # for i in mult_std:
@@ -130,7 +130,7 @@ parameters = {
     'p_drop'      : 0.2,
     'batch_size'  : 256,
     'nb_steps'    : 100, #
-    'lr'          : 5.58189e-03,
+    'lr'          : 5.58189e-02,
     'tau_vr'      : 4e-2,
 
     # LIF

@@ -109,8 +109,8 @@ layers = {'input'            : 128*128,
 
 mu = torch.Tensor([.254, .589, .997, 1.3, 1.72, 2.24, 2.8, 3.36]).to(device)*10e-6
 var = torch.Tensor([5.8, 4.92, 5.91, 5.91, 7.57, 10.9, 12.1, 12.5]).to(device)*10e-8
-n_mu, n_var = normalize_distribution(mu, var)
-n_mu = n_mu*-1
+n_mu, n_var = normalize_distribution(mu, var, min_r = -1, max_r = 1)
+
 
 i = 1
 
@@ -130,7 +130,7 @@ parameters = {
     'p_drop'      : 0.4,
     'batch_size'  : 32,
     'nb_steps'    : 300, #
-    'lr'          : 5.58189e-04,
+    'lr'          : 5.58189e-02,
     'tau_vr'      : 4e-2,
 
     # LIF
@@ -166,7 +166,8 @@ parameters = {
 for i in range(4):
     print("Weight Init ("+str(i)+")")
     # weight initilalization
-    weights = get_weights(layers, device=device, time_step=parameters['time_step'], tau_mem=parameters['tau_mem'][0], scale_mult = 35)
+    weights = get_weights(layers, device=device, time_step=parameters['time_step'], tau_mem=parameters['tau_mem'][0], scale_mult = 100)
+    weights = [x+0.5 for x in weights]
     weights = quantize(weights = weights, mu = parameters['mu'], var = parameters['var'])
 
     loss_hist, train_acc, test_acc, result_w = train_classifier_dropconnect(x_data = x_train, y_data = y_train, x_test = x_test, y_test = y_test, nb_epochs = parameters['nb_epochs'], weights = weights, args_snn = parameters, layers = layers, figures = True, verbose=False, p_drop = parameters['p_drop'],  fig_title=ds_name + " "+ parameters['read_out']+" "+ parameters['neuron_type'].__name__ + ' std: '+str(i*1e-5))
