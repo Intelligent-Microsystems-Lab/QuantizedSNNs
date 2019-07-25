@@ -4,9 +4,9 @@ import torch
 
 
 def normalize_distribution(mu, var, min_r=-1,max_r=1):
-	new_mu = (max_r-min_r)*(mu-mu.min())/(mu.max()-mu.min())+min_r
-	new_v = abs(new_mu)/(abs(mu)/var)
-	return new_mu, new_v
+    new_mu = (max_r-min_r)*(mu-mu.min())/(mu.max()-mu.min())+min_r
+    new_v = abs(new_mu)/(abs(mu)/var)
+    return new_mu, new_v
 
 
 
@@ -70,19 +70,19 @@ def quantize(weights, nb = 16, clip_through=False):
     '''The weights' binarization function, 
 
     # Reference:
-	- [QuantizedNet: Training Deep Neural Networks with Weights and Activations Constrained to +1 or -1, Courbariaux et al. 2016](http://arxiv.org/abs/1602.02830}
+    - [QuantizedNet: Training Deep Neural Networks with Weights and Activations Constrained to +1 or -1, Courbariaux et al. 2016](http://arxiv.org/abs/1602.02830}
 
-	'''
-	non_sign_bits = nb-1
-	m = pow(2,non_sign_bits)
-	for i, temp_w in enumerate(weights)
-		#W = tf.Print(W,[W],summarize=20)
-		if clip_through:
-		    Wq = clip_through(round_through(temp_w*m),-m,m-1)/m
-		else:
-		    Wq = torch.clamp(round_through(temp_w*m),-m,m-1)/m
-		#Wq = tf.Print(Wq,[Wq],summarize=20)
-		weights[i] = Wq
-	return weights
+    '''
+    non_sign_bits = nb-1
+    m = pow(2,non_sign_bits)
+    for i, temp_w in enumerate(weights)
+        #W = tf.Print(W,[W],summarize=20)
+        if clip_through:
+            Wq = clip_through(round_through(temp_w*m),-m,m-1)/m
+        else:
+            Wq = torch.clamp(round_through(temp_w*m),-m,m-1)/m
+        #Wq = tf.Print(Wq,[Wq],summarize=20)
+        weights[i] = Wq
+    return weights
 
 
