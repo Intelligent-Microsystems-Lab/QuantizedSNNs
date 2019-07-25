@@ -100,7 +100,7 @@ def train_classifier_dropconnect(x_data, y_data, x_test, y_test, nb_epochs, weig
                 optimizer.zero_grad()
                 loss_val.backward()
                 optimizer.step()
-                weights = quantize(weights = weights, mu = args_snn['mu'], var = args_snn['var'])
+                #weights = quantize(weights = weights, mu = args_snn['mu'], var = args_snn['var'])
             local_loss.append(float(loss_val.item()))
             if verbose:
                 _,am=torch.max(m,1)
