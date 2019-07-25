@@ -231,7 +231,7 @@ def ferro_neuron(inputs, weights, args, layer, layer_type, infer):
     v_rec   = torch.stack(v_rec, dim=1)
     spk_rec = torch.stack(spk_rec, dim=1)
 
-    #import pdb; pdb.set_trace()
+    import pdb; pdb.set_trace()
     return v_rec, spk_rec
 
 
@@ -288,5 +288,5 @@ def ferroLIF_neuron(inputs, weights, args, layer, layer_type, infer):
     v_rec   = torch.stack(v_rec, dim=1)
     spk_rec = torch.stack(spk_rec, dim=1)
 
-    #import pdb; pdb.set_trace()
+    import pdb; pdb.set_trace()
     return v_rec, spk_rec
