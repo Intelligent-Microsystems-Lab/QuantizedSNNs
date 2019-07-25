@@ -96,8 +96,8 @@ def train_classifier_dropconnect(x_data, y_data, x_test, y_test, nb_epochs, weig
                 m = run_snn_dropconnect(x_local.to_dense(), y_local, weights, layers, args_snn, p_drop, False)
                 log_p_y = log_softmax_fn(m)
                 loss_val = loss_fn(log_p_y, y_local)
-                weights = quantize(weights = weights)
-                
+                #weights = quantize(weights = weights)
+
                 optimizer.zero_grad()
                 loss_val.backward()
                 optimizer.step()
