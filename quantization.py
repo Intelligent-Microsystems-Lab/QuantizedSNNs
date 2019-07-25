@@ -10,19 +10,19 @@ def normalize_distribution(mu, var, min_r=-1,max_r=1):
 
 
 
-def quantize(weights, mu, var):
-	m = torch.distributions.normal.Normal(mu, var)
+# def quantize(weights, mu, var):
+# 	m = torch.distributions.normal.Normal(mu, var)
 
-	for i,layer_w in enumerate(weights):
-		dim = layer_w.shape
-		layer_w = layer_w.flatten()
-		m_temp = m.sample([layer_w.shape[0]])
-		temp_diff = torch.abs(m_temp - layer_w[:,None])
-		_, ind_m = temp_diff.min(dim=1)
-		weights[i] = torch.gather(input = m_temp, dim = 1, index = ind_m.view(-1,1)).reshape(dim)
-		weights[i].requires_grad = True
+# 	for i,layer_w in enumerate(weights):
+# 		dim = layer_w.shape
+# 		layer_w = layer_w.flatten()
+# 		m_temp = m.sample([layer_w.shape[0]])
+# 		temp_diff = torch.abs(m_temp - layer_w[:,None])
+# 		_, ind_m = temp_diff.min(dim=1)
+# 		weights[i] = torch.gather(input = m_temp, dim = 1, index = ind_m.view(-1,1)).reshape(dim)
+# 		weights[i].requires_grad = True
 
-	return weights
+# 	return weights
 
 
 #        (b-a)(x - min)
@@ -47,3 +47,42 @@ def quantize(weights, mu, var):
 
 #n_mu, n_var = normalize_distribution(mu, var)
 #w = quantize(weights, n_mu, n_var)
+
+
+def clip_through(x, min, max):
+    '''Element-wise rounding to the closest integer with full gradient propagation.
+    A trick from [Sergey Ioffe](http://stackoverflow.com/a/36480182)
+    '''
+    clipped = torch.clamp(x,min,max) #clamp
+    return x + torch.detach(clipped - x) #detach
+
+def round_through(x):
+    '''Element-wise rounding to the closest integer with full gradient propagation.
+    A trick from [Sergey Ioffe](http://stackoverflow.com/a/36480182)
+    '''
+    rounded = torch.round(x)
+    rounded_through = x + torch.detach(rounded - x)
+    return rounded_through
+
+
+def quantize(weights, nb = 16, clip_through=False):
+
+    '''The weights' binarization function, 
+
+    # Reference:
+	- [QuantizedNet: Training Deep Neural Networks with Weights and Activations Constrained to +1 or -1, Courbariaux et al. 2016](http://arxiv.org/abs/1602.02830}
+
+	'''
+	non_sign_bits = nb-1
+	m = pow(2,non_sign_bits)
+	for i, temp_w in enumerate(weights)
+		#W = tf.Print(W,[W],summarize=20)
+		if clip_through:
+		    Wq = clip_through(round_through(temp_w*m),-m,m-1)/m
+		else:
+		    Wq = torch.clamp(round_through(temp_w*m),-m,m-1)/m
+		#Wq = tf.Print(Wq,[Wq],summarize=20)
+		weights[i] = Wq
+	return weights
+
+

@@ -102,7 +102,7 @@ y_test  = torch.tensor(test_dataset.test_labels, device=device, dtype=dtype)
 # parameters + architecture
 layers = {'input'            : 28*28,
           #'convolutional_1'  : 5*5,
-          'fully-connected_1': 1100,
+          'fully-connected_1': 1500,
           'output'           : 10}
 #layers = [500, 300]
 #layers = [128*128, 800, 12]
