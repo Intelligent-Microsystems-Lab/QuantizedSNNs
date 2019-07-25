@@ -98,7 +98,7 @@ def train_classifier_dropconnect(x_data, y_data, x_test, y_test, nb_epochs, weig
                 loss_val = loss_fn(log_p_y, y_local)
 
                 optimizer.zero_grad()
-                loss_val.backward(retain_graph=True)
+                loss_val.backward()
                 optimizer.step()
                 #weights = quantize(weights = weights, mu = args_snn['mu'], var = args_snn['var'])
                 weights = quantize(weights = weights)
