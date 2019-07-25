@@ -3,8 +3,8 @@ import torch
 
 
 
-def normalize_distribution(mu, var):
-	new_mu = 2*(mu-mu.min())/(mu.max()-mu.min())-1
+def normalize_distribution(mu, var, min_r=-1,max_r=1):
+	new_mu = (max_r-min_r)*(mu-mu.min())/(mu.max()-mu.min())+min_r
 	new_v = abs(new_mu)/(abs(mu)/var)
 	return new_mu, new_v
 
