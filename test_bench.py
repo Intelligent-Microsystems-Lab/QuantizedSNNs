@@ -17,7 +17,7 @@ from snn_training import train_classifier, get_weights, get_global, training_pre
 
 from visual import neuron_test
 
-from quantization import quantize
+from quantization import quantize, normalize_distribution
 
 import line_profiler
 
@@ -110,6 +110,10 @@ layers = {'input'            : 28*28,
 
 i = 1
 
+mu = torch.Tensor([.254, .589, .997, 1.3, 1.72, 2.24, 2.8, 3.36]).to(device)*10e-6
+var = torch.Tensor([5.8, 4.92, 5.91, 5.91, 7.57, 10.9, 12.1, 12.5]).to(device)*10e-8
+n_mu, n_var = normalize_distribution(mu, var)
+
 # mult_std = [0] + [10**x for x in range(7)]
 # for i in mult_std:
 parameters = {
@@ -154,15 +158,15 @@ parameters = {
     'gi_max'      : gen_tau(mu = 5, var = 0*i, layers = layers, device = device),
     'tau_ge'      : gen_tau(mu = 1*1e-3, var = 0*i, layers = layers, device = device),
     'tau_gi'      : gen_tau(mu = 2*1e-3, var = 0*i, layers = layers, device = device),
-    'mu'          : torch.Tensor([.254, .589, .997, 1.3, 1.72, 2.24, 2.8, 3.36]).to(device)*10e-6, #3 bit precision
-    'var'         : torch.Tensor([5.8, 4.92, 5.91, 5.91, 7.57, 10.9, 12.1, 12.5]).to(device)*10e-8
+    'mu'          : n_mu,
+    'var'         : n_var
     }
 
 
 for i in range(4):
     print("Weight Init ("+str(i)+")")
     # weight initilalization
-    weights = get_weights(layers, device=device, time_step=parameters['time_step'], tau_mem=parameters['tau_v'][0], scale_mult = 35)
+    weights = get_weights(layers, device=device, time_step=parameters['time_step'], tau_mem=parameters['tau_v'][0], scale_mult = 10)
     weights = quantize(weights = weights, mu = parameters['mu'], var = parameters['var'])
 
     loss_hist, train_acc, test_acc, result_w = train_classifier_dropconnect(x_data = x_train, y_data = y_train, x_test = x_test, y_test = y_test, nb_epochs = parameters['nb_epochs'], weights = weights, args_snn = parameters, layers = layers, figures = True, verbose=True, p_drop = parameters['p_drop'],  fig_title=ds_name + " "+ parameters['read_out']+" "+ parameters['neuron_type'].__name__ + ' std: '+str(i*1e-5))
@@ -175,80 +179,3 @@ results = {'Parameters': parameters, 'loss': loss_hist, 'train':train_acc, 'test
 with open('results/results_'+ds_name + "_" +parameters['read_out']+"_" + parameters['neuron_type'].__name__ + 'std_'+str(i*1e-5)+ str('{date:%Y-%m-%d_%H-%M-%S}'.format( date=datetime.datetime.now() ))+'.pkl', 'wb') as f:
     pickle.dump(results, f)
 
-
-
-# #neuron_types = [LIF_neuron, adex_LIF_neuron, ferro_neuron]
-# results = []
-# mult_std = [0] + [10**x for x in range(9)]
-
-# for j in range(10):
-#     for i in mult_std:
-
-#         parameters = {
-#             # general 
-#             'neuron_type' : ferro_neuron,
-#             'read_out'    : read_out_layer,
-#             'device'      : device,
-#             'spike_fn'    : SuperSpike.apply,
-#             'time_step'   : 1e-3, #might need to be smaller
-#             'regularizer' : False,
-#             'batch_size'  : 128,
-#             'nb_steps'    : 200,
-#             'lr'          : 5.58189e-04,
-#             'tau_vr'      : 4e-2,
-
-#             # LIF
-#             'tau_syn'     : gen_tau(mu = 5e-3, var = 5e-5*i, layers = layers, device = device),
-#             'tau_mem'     : gen_tau(mu = 10e-4, var = 10e-6*i, layers = layers, device = device),
-           
-#             #adapt. exp.
-#             'tau_cur'     : gen_tau(mu = 2e-1, var = 5e-5*i, layers = layers, device = device),
-#             'sharpness'   : gen_tau(mu = 0.04, var = 5e-5*i, layers = layers, device = device),
-#             'a_cur'       : gen_tau(mu = 1e-40, var = 1e-42*i, layers = layers, device = device),
-#             'b_cur'       : gen_tau(mu = 0.001, var = 5e-6*i, layers = layers, device = device),
-#             'theta'       : gen_tau(mu = 0.95, var = 5e-5*i, layers = layers, device = device),
-            
-
-#             # ferro
-#             'v_rest_e'    : gen_tau(mu = -65 * 1e-3, var = 65 * 1e-5*i, layers = layers, device = device),
-#             'v_reset_e'   : gen_tau(mu = -65 * 1e-3, var = 65 * 1e-5*i, layers = layers, device = device),
-#             'v_thresh_e'  : gen_tau(mu = -52*1e-3, var = 52*1e-5*i, layers = layers, device = device),
-#             'refrac_e'    : gen_tau(mu = 5*1e-3, var = 5*1e-5*i, layers = layers, device = device),
-#             'tau_v'       : gen_tau(mu = 100 * 1e-3, var = 100 * 1e-5*i, layers = layers, device = device),
-#             'del_theta'   : gen_tau(mu = 0.1*1e-3, var = 0.1*1e-5*i, layers = layers, device = device),
-#             'ge_max'      : gen_tau(mu = 8, var = 1e-2*i, layers = layers, device = device),
-#             'gi_max'      : gen_tau(mu = 5, var = 1e-2*i, layers = layers, device = device),
-#             'tau_ge'      : gen_tau(mu = 1*1e-3, var = 1*1e-5*i, layers = layers, device = device),
-#             'tau_gi'      : gen_tau(mu = 2*1e-3, var = 2*1e-5*i, layers = layers, device = device)
-#             }
-
-
-
-#         # weight initilalization
-#         weights = get_weights(layers, device=device, time_step=parameters['time_step'], tau_mem=parameters['tau_mem'][0], scale_mult = 7)
-
-#         loss_hist, train_acc, test_acc, result_w = train_classifier(x_data = x_train, y_data = y_train, x_test = x_test, y_test = y_test, nb_epochs = 30, weights = weights, args_snn = parameters, layers = layers, figures = True, fig_title="1 Layer ferro std: "+str(i)+" trial: "+str(j) )
-#         results.append({'Parameters': parameters, 'loss': loss_hist, 'train':train_acc, 'test': test_acc, 'w': result_w})
-
-
-# with open('big_results_ferro.pkl', 'wb') as f:
-#     pickle.dump(results, f)
-
-
-# neuron test
-#neuron_test(parameters)
-
-# learning global parameters -> only tau
-# paras_best_global = ['lr']#, 'tau_mem', 'tau_syn', 'tau_vr']
-
-# for current_para in paras_best_global:
-#     # weight initilalization
-#     weights = get_weights(layers, device=device, time_step=parameters['time_step'], tau_mem=parameters['tau_mem'], scale_mult = 7)
-
-#     #find global optimum
-#     log_tau, losses, normal_loss  = get_global(x_data = x_train, y_data = y_train, var_name = current_para, init_value = 1e-15, final_value=10., beta = 0.9, weights = weights, args_snn = parameters, figures = True, fig_title=current_para + " LIF")
-
-#     #find global optimum precise learning
-#     #log_tau, losses, normal_loss  = get_global_precise(x_train = x_train, y_train = y_train, var_name = current_para, init_value = 1e-15, final_value = 10., beta = 0.95, nb_epochs = 500, weights = weights, args_snn = parameters, figures = True, fig_title = "2D multi LIF")
-#     parameters[current_para] = (10**(log_tau[min(enumerate(losses[5:-5]), key=itemgetter(1))[0]]))
-#     print("Best "+current_para+": %.5e"%parameters[current_para])
