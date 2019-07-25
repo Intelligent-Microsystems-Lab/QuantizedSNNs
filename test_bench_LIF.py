@@ -9,7 +9,7 @@ import torch
 import torch.nn as nn
 import torchvision
 
-from neurons import LIF_neuron, adex_LIF_neuron, ferro_neuron
+from neurons import LIF_neuron, adex_LIF_neuron, ferro_neuron, ferroLIF_neuron
 
 from superspike import SuperSpike, sparse_data_generator, sparse_data_generator_DVS
 
@@ -71,38 +71,38 @@ else:
 
 
 # Fashion MNIST
-# ds_name = "FMNIST"
-# train_dataset = torchvision.datasets.FashionMNIST('../data/FashonMNIST', train=True, transform=None, target_transform=None, download=True)
-# test_dataset = torchvision.datasets.FashionMNIST('../data/FashonMNIST', train=False, transform=None, target_transform=None, download=True)
-# x_train = torch.tensor(train_dataset.train_data, device=device, dtype=dtype)
-# x_train = x_train.reshape(x_train.shape[0],-1)/255
-# x_test  = torch.tensor(test_dataset.test_data, device=device, dtype=dtype)
-# x_test  = x_test.reshape(x_test.shape[0],-1)/255
-# y_train = torch.tensor(train_dataset.train_labels, device=device, dtype=dtype)
-# y_test  = torch.tensor(test_dataset.test_labels, device=device, dtype=dtype)
+ds_name = "FMNIST"
+train_dataset = torchvision.datasets.FashionMNIST('../data/FashonMNIST', train=True, transform=None, target_transform=None, download=True)
+test_dataset = torchvision.datasets.FashionMNIST('../data/FashonMNIST', train=False, transform=None, target_transform=None, download=True)
+x_train = torch.tensor(train_dataset.train_data, device=device, dtype=dtype)
+x_train = x_train.reshape(x_train.shape[0],-1)/255
+x_test  = torch.tensor(test_dataset.test_data, device=device, dtype=dtype)
+x_test  = x_test.reshape(x_test.shape[0],-1)/255
+y_train = torch.tensor(train_dataset.train_labels, device=device, dtype=dtype)
+y_test  = torch.tensor(test_dataset.test_labels, device=device, dtype=dtype)
 
 
 # DVS
-ds_name = "DVS"
-test_dataset = pd.read_pickle('../DVS/test_complete.pkl')
-y_test = torch.tensor(test_dataset['label'], device=device, dtype=dtype)
-train_dataset = pd.read_pickle('../DVS/train_complete.pkl')
-y_train = torch.tensor(train_dataset['label'], device=device, dtype=dtype)
-with open('../DVS_prep/full_data_train.pkl', 'rb') as f:
-   train_data = pickle.load(f)
-with open('../DVS_prep/full_data_test.pkl', 'rb') as f:
-    test_data = pickle.load(f)
-x_test = pd.DataFrame({'batch':test_data[0],'ts':test_data[1],'unit':test_data[2]})
-x_test = x_test.drop_duplicates()
-x_train = pd.DataFrame({'batch':train_data[0],'ts':train_data[1],'unit':train_data[2]})
-x_train = x_train.drop_duplicates()
+# ds_name = "DVS"
+# test_dataset = pd.read_pickle('../DVS/test_complete.pkl')
+# y_test = torch.tensor(test_dataset['label'], device=device, dtype=dtype)
+# train_dataset = pd.read_pickle('../DVS/train_complete.pkl')
+# y_train = torch.tensor(train_dataset['label'], device=device, dtype=dtype)
+# with open('../DVS_prep/full_data_train.pkl', 'rb') as f:
+#    train_data = pickle.load(f)
+# with open('../DVS_prep/full_data_test.pkl', 'rb') as f:
+#     test_data = pickle.load(f)
+# x_test = pd.DataFrame({'batch':test_data[0],'ts':test_data[1],'unit':test_data[2]})
+# x_test = x_test.drop_duplicates()
+# x_train = pd.DataFrame({'batch':train_data[0],'ts':train_data[1],'unit':train_data[2]})
+# x_train = x_train.drop_duplicates()
 
 
 # !!! import input should always be quadratic
 # parameters + architecture
-layers = {'input'            : 128*128,
+layers = {'input'            : 28*28,
           #'convolutional_1'  : 5*5,
-          'fully-connected_1': 7000,
+          'fully-connected_1': 900,
           'output'           : 12}
 #layers = [500, 300]
 #layers = [128*128, 800, 12]
@@ -116,16 +116,16 @@ parameters = {
     # general 
     'ds_name'     : ds_name,
     'nb_epochs'   : 30,
-    'neuron_type' : ferro_neuron,
+    'neuron_type' : ferroLIF_neuron,
     'read_out'    : "no_spike_integrate",
     'device'      : device,
     'dtype'       : torch.float,
     'spike_fn'    : SuperSpike.apply,
-    'data_gen'    : sparse_data_generator_DVS,
+    'data_gen'    : sparse_data_generator,
     'time_step'   : 1e-3, #might need to be smaller
-    'p_drop'      : 0.4,
-    'batch_size'  : 32,
-    'nb_steps'    : 300, #
+    'p_drop'      : 0.2,
+    'batch_size'  : 256,
+    'nb_steps'    : 100, #
     'lr'          : 5.58189e-04,
     'tau_vr'      : 4e-2,
 

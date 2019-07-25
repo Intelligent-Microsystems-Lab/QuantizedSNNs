@@ -9,7 +9,7 @@ import torch
 import torch.nn as nn
 import torchvision
 
-from neurons import LIF_neuron, adex_LIF_neuron, ferro_neuron
+from neurons import LIF_neuron, adex_LIF_neuron, ferro_neuron, ferroLIF_neuron
 
 from superspike import SuperSpike, sparse_data_generator, sparse_data_generator_DVS
 
@@ -116,7 +116,7 @@ parameters = {
     # general 
     'ds_name'     : ds_name,
     'nb_epochs'   : 30,
-    'neuron_type' : ferro_neuron,
+    'neuron_type' : ferroLIF_neuron,
     'read_out'    : "no_spike_integrate",
     'device'      : device,
     'dtype'       : torch.float,
@@ -125,7 +125,7 @@ parameters = {
     'time_step'   : 1e-3, #might need to be smaller
     'p_drop'      : 0.4,
     'batch_size'  : 32,
-    'nb_steps'    : 300, #
+    'nb_steps'    : 200, #
     'lr'          : 5.58189e-04,
     'tau_vr'      : 4e-2,
 

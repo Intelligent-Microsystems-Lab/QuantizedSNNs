@@ -234,3 +234,58 @@ def ferro_neuron(inputs, weights, args, layer, layer_type, infer):
     return v_rec, spk_rec
 
 
+def ferroLIF_neuron(inputs, weights, args, layer, layer_type, infer):
+    v_rest_e = args['v_rest_e'][layer]
+    v_reset_e = args['v_reset_e'][layer]
+    v_thresh_e = args['v_thresh_e'][layer]
+    refrac_e = args['refrac_e'][layer]
+    tau_v = args['tau_v'][layer]
+    del_theta = args['del_theta'][layer]
+    ge_max = args['ge_max'][layer]
+    gi_max = args['gi_max'][layer]
+    tau_ge = args['tau_ge'][layer]
+    tau_gi = args['tau_gi'][layer]
+    device  = args['device']
+    spike_fn = args['spike_fn']
+    time_step  = args['time_step']
+    dx_dt_param = args['dx_dt_param'][layer]
+    dtype = torch.float
+    batch_size = inputs.shape[0]
+    nb_steps = inputs.shape[1]
+
+
+    h1 = input_compute(inputs, weights, layer_type, args['p_drop'], device, infer)
+    nb_hidden = h1.shape[2]
+    g_e = torch.zeros((batch_size,nb_hidden), device=device, dtype=dtype)
+    theta = torch.zeros((batch_size,nb_hidden), device=device, dtype=dtype)
+    I_syn_E = torch.zeros((batch_size,nb_hidden), device=device, dtype=dtype)
+    v = torch.ones((batch_size,nb_hidden), device=device, dtype=dtype) * v_rest_e
+    dx_dt = torch.zeros((batch_size,nb_hidden), device=device, dtype=dtype)
+    alpha = torch.ones((batch_size,nb_hidden), device=device, dtype=dtype)
+    v_rest_e = torch.ones((batch_size,nb_hidden), device=device, dtype=dtype) * v_rest_e
+    del_theta = torch.ones((batch_size,nb_hidden), device=device, dtype=dtype) * del_theta
+
+    v_rec       = [v]
+    spk_rec     = [g_e]
+    
+    for t in range(nb_steps-1):
+        dge_dt = -g_e/tau_ge
+        g_e, I_syn_E = g_e + time_step*dge_dt + h1[:,t], (- g_e*v)*1e-9
+        dv_dt = (v_rest_e - v)/tau_v + (I_syn_E/1e-9)/(1*tau_v)
+        v = v + time_step*dv_dt
+
+        out = spike_fn(v - (v_thresh_e+theta))
+        c = (out==1.0)
+        v[c] = v_rest_e[c]
+        theta[c] += del_theta[c]
+        alpha[c] = 1
+
+        v_rec.append(v)
+        spk_rec.append(out)
+        
+
+    v_rec   = torch.stack(v_rec, dim=1)
+    spk_rec = torch.stack(spk_rec, dim=1)
+
+
+    return v_rec, spk_rec

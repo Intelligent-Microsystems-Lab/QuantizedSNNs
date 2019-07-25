@@ -114,7 +114,8 @@ i = 1
 # for i in mult_std:
 parameters = {
     # general 
-    'nb_epochs'   : 15,
+    'ds_name'     : ds_name,
+    'nb_epochs'   : 30,
     'neuron_type' : ferro_neuron,
     'read_out'    : "no_spike_integrate",
     'device'      : device,
@@ -122,9 +123,9 @@ parameters = {
     'spike_fn'    : SuperSpike.apply,
     'data_gen'    : sparse_data_generator,
     'time_step'   : 1e-3, #might need to be smaller
-    'p_drop'      : 0.3,
+    'p_drop'      : 0.2,
     'batch_size'  : 256,
-    'nb_steps'    : 200, #
+    'nb_steps'    : 100, #
     'lr'          : 5.58189e-04,
     'tau_vr'      : 4e-2,
 
@@ -143,18 +144,18 @@ parameters = {
 
     # ferro
     'v_rest_e'    : gen_tau(mu = -65 * 1e-3, var = 0*i, layers = layers, device = device),
-    'dx_dt_param' : gen_tau(mu = 200e-3, var = 1e-2*i, layers = layers, device = device),
+    'dx_dt_param' : gen_tau(mu = 200e-3, var = 5e-5*i, layers = layers, device = device),
     'v_reset_e'   : gen_tau(mu = -65 * 1e-3, var = 0*i, layers = layers, device = device),
-    'v_thresh_e'  : gen_tau(mu = -52*1e-3, var = 26e-4*i, layers = layers, device = device),
+    'v_thresh_e'  : gen_tau(mu = -52*1e-3, var = 26e-5*i, layers = layers, device = device),
     'refrac_e'    : gen_tau(mu = 5*1e-3, var = 0*i, layers = layers, device = device),
-    'tau_v'       : gen_tau(mu = 100 * 1e-3, var = 5e-3*i, layers = layers, device = device),
+    'tau_v'       : gen_tau(mu = 100 * 1e-3, var = 5e-4*i, layers = layers, device = device),
     'del_theta'   : gen_tau(mu = 0.1*1e-3, var = 0*i, layers = layers, device = device),
     'ge_max'      : gen_tau(mu = 8, var = 0*i, layers = layers, device = device),
     'gi_max'      : gen_tau(mu = 5, var = 0*i, layers = layers, device = device),
     'tau_ge'      : gen_tau(mu = 1*1e-3, var = 0*i, layers = layers, device = device),
     'tau_gi'      : gen_tau(mu = 2*1e-3, var = 0*i, layers = layers, device = device),
-    'mu'          : torch.Tensor([-1, -.66, -.33, 0.05, .33, .66, 1]).to(device), #3 bit precision
-    'var'         : torch.Tensor([.001, .001, .001, .001, .001, .001, .001]).to(device)
+    'mu'          : torch.Tensor([.254, .589, .997, 1.3, 1.72, 2.24, 2.8, 3.36]).to(device)*10e-6, #3 bit precision
+    'var'         : torch.Tensor([5.8, 4.92, 5.91, 5.91, 7.57, 10.9, 12.1, 12.5]).to(device)*10e-8
     }
 
 

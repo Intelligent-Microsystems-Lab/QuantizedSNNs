@@ -4,9 +4,10 @@ import torch
 
 
 def normalize_distribution(mu, var):
-	new_mu = mu/mu.max()
-	new_v = new_mu/(mu/var)
+	new_mu = 2*(mu-mu.min())/(mu.max()-mu.min())-1
+	new_v = abs(new_mu)/(abs(mu)/var)
 	return new_mu, new_v
+
 
 
 def quantize(weights, mu, var):
@@ -24,13 +25,19 @@ def quantize(weights, mu, var):
 	return weights
 
 
+#        (b-a)(x - min)
+# f(x) = --------------  + a
+#           max - min
 
+# mu1 = torch.Tensor([.1022, .368, .822, 1.36, 1.95, 2.55, 2.92, 3.36])*10e-6
 
+# diff1 = mu1[1:] - mu1[:-1]
+# diff2 = mu2[1:] - mu2[:-1]
 
+# mu = torch.Tensor([.254, .589, .997, 1.3, 1.72, 2.24, 2.8, 3.36]).to(device)*10e-6
+# var = torch.Tensor([5.8, 4.92, 5.91, 5.91, 7.57, 10.9, 12.1, 12.5]).to(device)*10e-8
 
-
-
-
+# new_mu, new_v = normalize_distribution(mu, var)
 
 # test routine
 #weights = [torch.Tensor([-.8, .7, 5, -.002]), torch.Tensor([-.8, .7, 5, -.002])]

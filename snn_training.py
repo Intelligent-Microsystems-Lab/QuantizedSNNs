@@ -111,6 +111,12 @@ def train_classifier_dropconnect(x_data, y_data, x_test, y_test, nb_epochs, weig
         mean_loss = np.mean(local_loss)
         print("Epoch %i: loss=%.5e, train=%.5e, test=%.5e"%(e+1,mean_loss,train_acc[-1],test_acc[-1]))
         loss_hist.append(mean_loss)
+        if figures:
+            mnist_train_curve(loss_hist, train_acc, test_acc, fig_title)
+            results = {'Parameters': args_snn, 'loss': loss_hist, 'train':train_acc, 'test': test_acc, 'w': weights}
+
+            with open('results/results_'+args_snn['ds_name'] + "_" +args_snn['read_out']+"_" + args_snn['neuron_type'].__name__ + 'std_'+str(i*1e-5)+ str('{date:%Y-%m-%d_%H-%M-%S}'.format( date=datetime.datetime.now() ))+'.pkl', 'wb') as f:
+                pickle.dump(results, f)
 
     if figures:
         mnist_train_curve(loss_hist, train_acc, test_acc, fig_title)
