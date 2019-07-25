@@ -102,7 +102,7 @@ x_train = x_train.drop_duplicates()
 # parameters + architecture
 layers = {'input'            : 128*128,
           #'convolutional_1'  : 5*5,
-          'fully-connected_1': 7000,
+          'fully-connected_1': 8000,
           'output'           : 12}
 #layers = [500, 300]
 #layers = [128*128, 800, 12]
@@ -130,7 +130,7 @@ parameters = {
     'p_drop'      : 0.4,
     'batch_size'  : 32,
     'nb_steps'    : 300, #
-    'lr'          : 5.58189e-02,
+    'lr'          : 5.58189e-03,
     'tau_vr'      : 4e-3,
 
     # LIF
