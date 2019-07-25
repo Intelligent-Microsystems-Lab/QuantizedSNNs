@@ -41,8 +41,8 @@ def get_weights(layers, device, time_step, tau_mem, scale_mult):
                 w1 = torch.empty((list(layers.values())[i],1), dtype=dtype, device=device, requires_grad=True)
             else:
                 w1 = torch.empty((list(layers.values())[i-1], list(layers.values())[i]), dtype=dtype, device=device, requires_grad=True)
-            torch.nn.init.orthogonal_(w1, gain=weight_scale/np.sqrt(list(layers.values())[i]))
-            #torch.nn.init.orthogonal_(w1, gain=weight_scale)
+            #torch.nn.init.orthogonal_(w1, gain=weight_scale/np.sqrt(list(layers.values())[i]))
+            torch.nn.init.orthogonal_(w1, gain=weight_scale)
             weights.append(w1)
 
     return weights
