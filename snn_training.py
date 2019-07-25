@@ -102,6 +102,8 @@ def train_classifier_dropconnect(x_data, y_data, x_test, y_test, nb_epochs, weig
                 optimizer.step()
                 #weights = quantize(weights = weights, mu = args_snn['mu'], var = args_snn['var'])
             local_loss.append(float(loss_val.item()))
+            if e%3 == 0:
+                weights = quantize(weights = weights, mu = args_snn['mu'], var = args_snn['var'])
             if verbose:
                 _,am=torch.max(m,1)
                 print("Loss: "+str(loss_val)+" Predicted: "+str(am)+" Labels: "+str(y_local))

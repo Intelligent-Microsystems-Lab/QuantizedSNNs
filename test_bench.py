@@ -131,7 +131,7 @@ parameters = {
     'batch_size'  : 256,
     'nb_steps'    : 100, #
     'lr'          : 5.58189e-02,
-    'tau_vr'      : 4e-2,
+    'tau_vr'      : 4e-3,
 
     # LIF
     'fire_thresh' : gen_tau(mu = 1, var = 1e-3*i, layers = layers, device = device),
