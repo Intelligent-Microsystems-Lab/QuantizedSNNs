@@ -159,8 +159,8 @@ parameters = {
     }
 
 
-while True:
-    print("Weight Init")
+for i in range(4):
+    print("Weight Init ("+str(i)+")")
     # weight initilalization
     weights = get_weights(layers, device=device, time_step=parameters['time_step'], tau_mem=parameters['tau_mem'][0], scale_mult = 35)
     weights = quantize(weights = weights, mu = parameters['mu'], var = parameters['var'])
