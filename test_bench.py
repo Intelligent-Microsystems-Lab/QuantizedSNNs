@@ -167,8 +167,8 @@ for i in range(4):
     print("Weight Init ("+str(i)+")")
     # weight initilalization
     weights = get_weights(layers, device=device, time_step=parameters['time_step'], tau_mem=parameters['tau_v'][0], scale_mult = 100)
-    weights = [x+0.5 for x in weights]
-    weights = quantize(weights = weights)
+    #weights = [x+0.5 for x in weights]
+    #weights = quantize(weights = weights)
     #weights = [x+0.5 for x in weights]
     #weights = quantize(weights = weights, mu = parameters['mu'], var = parameters['var'])
 

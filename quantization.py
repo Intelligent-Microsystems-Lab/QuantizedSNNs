@@ -83,7 +83,7 @@ def quantize(weights, nb = 16, clip_through=False):
             Wq = torch.clamp(round_through(temp_w*m),-m,m-1)/m
         #Wq = tf.Print(Wq,[Wq],summarize=20)
         weights[i] = Wq
-        weights[i].requires_grad = True
+        #weights[i].requires_grad = True
     return weights
 
 
