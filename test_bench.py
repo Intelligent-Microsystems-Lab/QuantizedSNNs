@@ -130,13 +130,13 @@ parameters = {
     'p_drop'      : 0.2,
     'batch_size'  : 256,
     'nb_steps'    : 100, #
-    'lr'          : 5.58189e-02,
+    'lr'          : 5.58189e-03,
     'tau_vr'      : 4e-3,
 
     # LIF
-    'fire_thresh' : gen_tau(mu = 1, var = 1e-3*i, layers = layers, device = device),
-    'tau_syn'     : gen_tau(mu = 5e-3, var = 5e-5*i, layers = layers, device = device),
-    'tau_mem'     : gen_tau(mu = 10e-4, var = 10e-6*i, layers = layers, device = device),
+    'fire_thresh' : gen_tau(mu = 1, var = i*1e-3*i, layers = layers, device = device),
+    'tau_syn'     : gen_tau(mu = 5e-3, var = i*5e-5*i, layers = layers, device = device),
+    'tau_mem'     : gen_tau(mu = 10e-4, var = i*10e-6*i, layers = layers, device = device),
    
     #adapt. exp.
     'tau_cur'     : gen_tau(mu = 2e-1, var = 5e-5*i, layers = layers, device = device),

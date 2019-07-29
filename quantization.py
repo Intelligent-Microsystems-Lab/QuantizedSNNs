@@ -1,30 +1,26 @@
 import numpy as np
 import torch
 
-
-
 def normalize_distribution(mu, var, min_r=-1,max_r=1):
     new_mu = (max_r-min_r)*(mu-mu.min())/(mu.max()-mu.min())+min_r
     new_v = abs(new_mu)/(abs(mu)/var)
     return new_mu, new_v
+
 
 def clip_through(x, min, max):
     '''Element-wise rounding to the closest integer with full gradient propagation.
     A trick from [Sergey Ioffe](http://stackoverflow.com/a/36480182)
     '''
     clipped = torch.clamp(x,min,max) #clamp
-    with torch.no_grad():
-        res = x + (clipped - x) #torch.detach
-    return res
+    return x + (clipped - x)
+
 
 def round_through(x):
     '''Element-wise rounding to the closest integer with full gradient propagation.
     A trick from [Sergey Ioffe](http://stackoverflow.com/a/36480182)
     '''
     rounded = torch.round(x)
-    with torch.no_grad():
-        rounded_through = x + (rounded - x) #torch.detach
-    return rounded_through
+    return x + (rounded - x)
 
 
 def quantize(weights, nb = 16, clip_through=False):
@@ -37,16 +33,13 @@ def quantize(weights, nb = 16, clip_through=False):
     '''
     non_sign_bits = nb-1
     m = pow(2,non_sign_bits)
-    for i, temp_w in enumerate(weights):
-        #W = tf.Print(W,[W],summarize=20)
-        if clip_through:
-            Wq = clip_through(round_through(temp_w*m),-m,m-1)/m
-        else:
-            Wq = torch.clamp(round_through(temp_w*m),-m,m-1)/m
-        #Wq = tf.Print(Wq,[Wq],summarize=20)
-        weights[i] = Wq
-        #weights[i].requires_grad = True
-    return weights
+    #W = tf.Print(W,[W],summarize=20)
+    if clip_through:
+        Wq = clip_through(round_through(weights*m),-m,m-1)/m
+    else:
+        Wq = torch.clamp(round_through(weights*m),-m,m-1)/m
+    #Wq = tf.Print(Wq,[Wq],summarize=20)
+    return Wq
 
 
 
