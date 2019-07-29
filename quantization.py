@@ -42,9 +42,6 @@ def quantize(weights, nb = 16, clip_through=False):
     #Wq = tf.Print(Wq,[Wq],summarize=20)
     return Wq
 
-
-torch.clamp()
-
 # def quantize(weights, mu, var):
 #   m = torch.distributions.normal.Normal(mu, var)
 
