@@ -3,6 +3,8 @@ import torch.nn as nn
 import torchvision
 import torchvision.transforms as transforms
 
+import matplotlib.pyplot as plt
+
 from quantization import quantize
 
 
@@ -69,7 +71,9 @@ loss_fn = nn.NLLLoss()
 optimizer = torch.optim.Adam(net.parameters(), lr=5.58189e-03)
 
 
-for epoch in range(2):  # loop over the dataset multiple times
+train_acc = []
+test_acc  = []
+for epoch in range(30):  # loop over the dataset multiple times
     running_loss = 0.0
     for i, data in enumerate(trainloader, 0):
         # get the inputs; data is a list of [inputs, labels]
@@ -91,8 +95,20 @@ for epoch in range(2):  # loop over the dataset multiple times
         #with torch.no_grad():
         #    net.fc1.weight.data = quantize(net.fc1.weight.data, nb=4)
         #    net.fc2.weight.data = quantize(net.fc2.weight.data, nb=4)
-    print("Epoch %d, Train %.4f, Test %.4f" % (epoch, get_accuracy(trainloader, net), get_accuracy(testloader, net)))
+    train_acc.append(get_accuracy(trainloader, net))
+    test_acc.append(get_accuracy(testloader, net))
+    print("Epoch %d, Train %.4f, Test %.4f" % (epoch, train_acc[-1], test_acc[-1]))
 
 
+plt.clf()
+plt.ylabel('Accuracy')
+plt.plot(train_acc, label="Training Accuracy", color="black")
+plt.plot(test_acc, label="Test Accuracy", color="blue")
+plt.legend()
+plt.title("Quantized ")
+
+plt.tight_layout()
+
+plt.savefig("figures/learning.png")
 
 
