@@ -20,7 +20,8 @@ def round_through(x):
     A trick from [Sergey Ioffe](http://stackoverflow.com/a/36480182)
     '''
     rounded = torch.round(x)
-    return x + (rounded - x)
+    rounded_through = x + (rounded - x)
+    return rounded_through
 
 
 def quantize(weights, nb = 16, clip_through=False):
@@ -42,7 +43,7 @@ def quantize(weights, nb = 16, clip_through=False):
     return Wq
 
 
-
+torch.clamp()
 
 # def quantize(weights, mu, var):
 #   m = torch.distributions.normal.Normal(mu, var)

@@ -41,7 +41,11 @@ class Net(nn.Module):
 
     def forward(self, x):
         x = x.view(-1, 28*28)
+        with torch.no_grad():
+            self.fc1.weight.data = quantize(self.fc1.weight.data, nb=8)
         x = torch.nn.functional.relu(self.fc1(x))
+        with torch.no_grad():
+            self.fc2.weight.data = quantize(self.fc2.weight.data, nb=8)
         x = torch.nn.functional.relu(self.fc2(x))
         return x
 
@@ -65,7 +69,7 @@ loss_fn = nn.NLLLoss()
 optimizer = torch.optim.Adam(net.parameters(), lr=5.58189e-03)
 
 
-for epoch in range(15):  # loop over the dataset multiple times
+for epoch in range(2):  # loop over the dataset multiple times
     running_loss = 0.0
     for i, data in enumerate(trainloader, 0):
         # get the inputs; data is a list of [inputs, labels]
@@ -84,9 +88,9 @@ for epoch in range(15):  # loop over the dataset multiple times
         # print statistics
         running_loss = loss.item()
 
-        with torch.no_grad():
-            for param in net.parameters():
-                param = quantize(param)
+        #with torch.no_grad():
+        #    net.fc1.weight.data = quantize(net.fc1.weight.data, nb=4)
+        #    net.fc2.weight.data = quantize(net.fc2.weight.data, nb=4)
     print("Epoch %d, Train %.4f, Test %.4f" % (epoch, get_accuracy(trainloader, net), get_accuracy(testloader, net)))
 
 
