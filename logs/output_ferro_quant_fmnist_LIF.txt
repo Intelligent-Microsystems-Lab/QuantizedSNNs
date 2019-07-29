@@ -1,0 +1,52 @@
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:53: UserWarning: train_data has been renamed data
+  warnings.warn("train_data has been renamed data")
+test_bench_LIF.py:77: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  x_train = torch.tensor(train_dataset.train_data, device=device, dtype=dtype)
+/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:58: UserWarning: test_data has been renamed data
+  warnings.warn("test_data has been renamed data")
+test_bench_LIF.py:79: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  x_test  = torch.tensor(test_dataset.test_data, device=device, dtype=dtype)
+/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:43: UserWarning: train_labels has been renamed targets
+  warnings.warn("train_labels has been renamed targets")
+test_bench_LIF.py:81: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  y_train = torch.tensor(train_dataset.train_labels, device=device, dtype=dtype)
+/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:48: UserWarning: test_labels has been renamed targets
+  warnings.warn("test_labels has been renamed targets")
+test_bench_LIF.py:82: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  y_test  = torch.tensor(test_dataset.test_labels, device=device, dtype=dtype)
+/afs/crc.nd.edu/user/c/cschaef6/QuantizedSNN/visual.py:13: RuntimeWarning: More than 20 figures have been opened. Figures created through the pyplot interface (`matplotlib.pyplot.figure`) are retained until explicitly closed and may consume too much memory. (To control this warning, see the rcParam `figure.max_open_warning`).
+  fig, ax1 = plt.subplots()
+Weight Init (0)
+Training: go
+Epoch 1: loss=1.11952e+00, train=7.66376e-01, test=7.58514e-01
+Epoch 2: loss=6.80610e-01, train=7.63906e-01, test=7.55308e-01
+Epoch 3: loss=6.86537e-01, train=7.62286e-01, test=7.54808e-01
+Epoch 4: loss=6.92339e-01, train=7.63588e-01, test=7.53706e-01
+Epoch 5: loss=6.89582e-01, train=7.61836e-01, test=7.51603e-01
+Epoch 6: loss=6.98003e-01, train=7.62570e-01, test=7.57612e-01
+Epoch 7: loss=6.94661e-01, train=7.60717e-01, test=7.48097e-01
+Epoch 8: loss=7.04579e-01, train=7.61134e-01, test=7.50701e-01
+Epoch 9: loss=7.03117e-01, train=7.59415e-01, test=7.46194e-01
+Epoch 10: loss=7.03814e-01, train=7.59081e-01, test=7.48297e-01
+Epoch 11: loss=7.04840e-01, train=7.58814e-01, test=7.50801e-01
+Epoch 12: loss=6.99764e-01, train=7.59565e-01, test=7.50701e-01
+Epoch 13: loss=7.09411e-01, train=7.58864e-01, test=7.49900e-01
+Epoch 14: loss=7.05835e-01, train=7.54824e-01, test=7.48998e-01
+Epoch 15: loss=7.12497e-01, train=7.54240e-01, test=7.44892e-01
+Epoch 16: loss=7.18461e-01, train=7.55909e-01, test=7.48598e-01
+Epoch 17: loss=7.24651e-01, train=7.56010e-01, test=7.45893e-01
+Epoch 18: loss=7.18499e-01, train=7.58681e-01, test=7.47897e-01
+Epoch 19: loss=7.12936e-01, train=7.57512e-01, test=7.52103e-01
+Epoch 20: loss=7.15355e-01, train=7.56460e-01, test=7.48598e-01
+Epoch 21: loss=7.13632e-01, train=7.55793e-01, test=7.50200e-01
+Epoch 22: loss=7.22001e-01, train=7.57278e-01, test=7.46795e-01
+Epoch 23: loss=7.18641e-01, train=7.55225e-01, test=7.45893e-01
+Epoch 24: loss=7.24996e-01, train=7.55058e-01, test=7.49800e-01
+Epoch 25: loss=7.21455e-01, train=7.52988e-01, test=7.43890e-01
+Epoch 26: loss=7.28296e-01, train=7.54874e-01, test=7.44692e-01
+Epoch 27: loss=7.22640e-01, train=7.55192e-01, test=7.45693e-01
+Epoch 28: loss=7.28807e-01, train=7.55492e-01, test=7.45893e-01
+Epoch 29: loss=7.24585e-01, train=7.56944e-01, test=7.44692e-01
+Epoch 30: loss=7.24050e-01, train=7.55409e-01, test=7.45994e-01
