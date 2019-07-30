@@ -102,7 +102,7 @@ y_test  = torch.tensor(test_dataset.test_labels, device=device, dtype=dtype)
 # parameters + architecture
 layers = {'input'            : 28*28,
           #'convolutional_1'  : 5*5,
-          'fully-connected_1': 1500,
+          'fully-connected_1': 1100,
           'output'           : 10}
 #layers = [500, 300]
 #layers = [128*128, 800, 12]
@@ -120,7 +120,7 @@ parameters = {
     # general 
     'ds_name'     : ds_name,
     'nb_epochs'   : 30,
-    'neuron_type' : ferro_neuron,
+    'neuron_type' : adex_LIF_neuron,
     'read_out'    : "no_spike_integrate",
     'device'      : device,
     'dtype'       : torch.float,
@@ -132,6 +132,7 @@ parameters = {
     'nb_steps'    : 100, #
     'lr'          : 5.58189e-03,
     'tau_vr'      : 4e-3,
+    'quant_nb'    : 8,
 
     # LIF
     'fire_thresh' : gen_tau(mu = 1, var = i*1e-3*i, layers = layers, device = device),

@@ -55,14 +55,20 @@ def run_snn_dropconnect(inputs, y, weights, layers, args, p_drop, infer):
     for i, width in enumerate(layers):
         if i == 0:
             continue
-        if i == 1:
+        elif i == 1:
+            with torch.no_grad():
+                weights[-1] = quantize(weights[-1], nb=args['quant_nb'])
             _, spk_temp = args['neuron_type'](inputs=inputs, weights=weights[i-1], args = args, layer=i-1, layer_type = width, infer=infer)
         elif i < len(layers)-1:
+            with torch.no_grad():
+                weights[-1] = quantize(weights[-1], nb=args['quant_nb'])
             _, spk_temp = args['neuron_type'](inputs=spk_temp, weights=weights[i-1], args = args, layer=i-1, layer_type = width, infer=infer)
         else:
             continue
 
     # Readout layer
+    with torch.no_grad():
+        weights[-1] = quantize(weights[-1], nb=args['quant_nb'])
     m = read_out_layer(inputs = spk_temp, weights = weights[-1], args = args, infer = infer)
     return m
 
@@ -95,7 +101,7 @@ def train_classifier_dropconnect(x_data, y_data, x_test, y_test, nb_epochs, weig
             with torch.autograd.detect_anomaly():
                 optimizer.zero_grad()
 
-                weights = quantize(weights = weights)
+                #weights = quantize(weights = weights)
                 m = run_snn_dropconnect(x_local.to_dense(), y_local, weights, layers, args_snn, p_drop, False)
                 log_p_y = log_softmax_fn(m)
                 loss_val = loss_fn(log_p_y, y_local)
@@ -108,7 +114,7 @@ def train_classifier_dropconnect(x_data, y_data, x_test, y_test, nb_epochs, weig
                 _,am=torch.max(m,1)
                 print("Loss: "+str(loss_val)+" Predicted: "+str(am)+" Labels: "+str(y_local))
         #weights = quantize(weights = weights, mu = args_snn['mu'], var = args_snn['var'])
-        weights = quantize(weights = weights)
+        #weights = quantize(weights = weights)
         train_acc.append(compute_classification_accuracy_dropconnect(x_data, y_data, weights, args_snn, layers))
         test_acc.append(compute_classification_accuracy_dropconnect(x_test, y_test, weights,args_snn, layers))
 
