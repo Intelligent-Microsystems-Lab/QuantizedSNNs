@@ -132,7 +132,7 @@ parameters = {
     'data_gen'    : sparse_data_generator_DVS,
     'time_step'   : 1e-3, #might need to be smaller
     'p_drop'      : 0.2,
-    'batch_size'  : 256,
+    'batch_size'  : 32,
     'nb_steps'    : 100, #
     'lr'          : 5.58189e-03,
     'tau_vr'      : 4e-3,
