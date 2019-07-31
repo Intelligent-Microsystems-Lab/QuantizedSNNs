@@ -71,39 +71,43 @@ else:
 
 
 # Fashion MNIST
-ds_name = "FMNIST"
-train_dataset = torchvision.datasets.FashionMNIST('../data/FashonMNIST', train=True, transform=None, target_transform=None, download=True)
-test_dataset = torchvision.datasets.FashionMNIST('../data/FashonMNIST', train=False, transform=None, target_transform=None, download=True)
-x_train = torch.tensor(train_dataset.train_data, device=device, dtype=dtype)
-x_train = x_train.reshape(x_train.shape[0],-1)/255
-x_test  = torch.tensor(test_dataset.test_data, device=device, dtype=dtype)
-x_test  = x_test.reshape(x_test.shape[0],-1)/255
-y_train = torch.tensor(train_dataset.train_labels, device=device, dtype=dtype)
-y_test  = torch.tensor(test_dataset.test_labels, device=device, dtype=dtype)
+# ds_name = "FMNIST"
+# train_dataset = torchvision.datasets.FashionMNIST('../data/FashonMNIST', train=True, transform=None, target_transform=None, download=True)
+# test_dataset = torchvision.datasets.FashionMNIST('../data/FashonMNIST', train=False, transform=None, target_transform=None, download=True)
+# x_train = torch.tensor(train_dataset.train_data, device=device, dtype=dtype)
+# x_train = x_train.reshape(x_train.shape[0],-1)/255
+# x_test  = torch.tensor(test_dataset.test_data, device=device, dtype=dtype)
+# x_test  = x_test.reshape(x_test.shape[0],-1)/255
+# y_train = torch.tensor(train_dataset.train_labels, device=device, dtype=dtype)
+# y_test  = torch.tensor(test_dataset.test_labels, device=device, dtype=dtype)
 
 
 # DVS
-# ds_name = "DVS"
-# test_dataset = pd.read_pickle('../DVS/test_complete.pkl')
-# y_test = torch.tensor(test_dataset['label'], device=device, dtype=dtype)
-# train_dataset = pd.read_pickle('../DVS/train_complete.pkl')
-# y_train = torch.tensor(train_dataset['label'], device=device, dtype=dtype)
-# with open('../DVS_prep/full_data_train.pkl', 'rb') as f:
-#    train_data = pickle.load(f)
-# with open('../DVS_prep/full_data_test.pkl', 'rb') as f:
-#     test_data = pickle.load(f)
-# x_test = pd.DataFrame({'batch':test_data[0],'ts':test_data[1],'unit':test_data[2]})
-# x_test = x_test.drop_duplicates()
-# x_train = pd.DataFrame({'batch':train_data[0],'ts':train_data[1],'unit':train_data[2]})
-# x_train = x_train.drop_duplicates()
+ds_name = "DVS"
+test_dataset = pd.read_pickle('../DVS/test_complete.pkl')
+y_test = torch.tensor(test_dataset['label'], device=device, dtype=dtype)
+train_dataset = pd.read_pickle('../DVS/train_complete.pkl')
+y_train = torch.tensor(train_dataset['label'], device=device, dtype=dtype)
+with open('../DVS_prep/full_data_train.pkl', 'rb') as f:
+   train_data = pickle.load(f)
+with open('../DVS_prep/full_data_test.pkl', 'rb') as f:
+    test_data = pickle.load(f)
+x_test = pd.DataFrame({'batch':test_data[0],'ts':test_data[1],'unit':test_data[2]})
+x_test = x_test.drop_duplicates()
+x_train = pd.DataFrame({'batch':train_data[0],'ts':train_data[1],'unit':train_data[2]})
+x_train = x_train.drop_duplicates()
 
 
 # !!! import input should always be quadratic
 # parameters + architecture
-layers = {'input'            : 28*28,
+layers = {#'input'            : 28*28,
           #'convolutional_1'  : 5*5,
-          'fully-connected_1': 1100,
-          'output'           : 10}
+          #'fully-connected_1': 1100,
+          #'output'           : 10}
+          'input'            : 128*128,
+          #'convolutional_1'  : 5*5,
+          'fully-connected_1': 8000,
+          'output'           : 12}
 #layers = [500, 300]
 #layers = [128*128, 800, 12]
 
@@ -125,7 +129,7 @@ parameters = {
     'device'      : device,
     'dtype'       : torch.float,
     'spike_fn'    : SuperSpike.apply,
-    'data_gen'    : sparse_data_generator,
+    'data_gen'    : sparse_data_generator_DVS,
     'time_step'   : 1e-3, #might need to be smaller
     'p_drop'      : 0.2,
     'batch_size'  : 256,
