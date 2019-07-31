@@ -1,0 +1,27 @@
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:53: UserWarning: train_data has been renamed data
+  warnings.warn("train_data has been renamed data")
+test_bench.py:77: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  x_train = torch.tensor(train_dataset.train_data, device=device, dtype=dtype)
+/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:58: UserWarning: test_data has been renamed data
+  warnings.warn("test_data has been renamed data")
+test_bench.py:79: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  x_test  = torch.tensor(test_dataset.test_data, device=device, dtype=dtype)
+/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:43: UserWarning: train_labels has been renamed targets
+  warnings.warn("train_labels has been renamed targets")
+test_bench.py:81: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  y_train = torch.tensor(train_dataset.train_labels, device=device, dtype=dtype)
+/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:48: UserWarning: test_labels has been renamed targets
+  warnings.warn("test_labels has been renamed targets")
+test_bench.py:82: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  y_test  = torch.tensor(test_dataset.test_labels, device=device, dtype=dtype)
+Weight Init (0)
+Training: go
+Epoch 1: loss=9.33502e+01, train=2.50451e-01, test=2.50901e-01
+Traceback (most recent call last):
+  File "test_bench.py", line 176, in <module>
+    loss_hist, train_acc, test_acc, result_w = train_classifier_dropconnect(x_data = x_train, y_data = y_train, x_test = x_test, y_test = y_test, nb_epochs = parameters['nb_epochs'], weights = weights, args_snn = parameters, layers = layers, figures = True, verbose=False, p_drop = parameters['p_drop'],  fig_title=ds_name + " "+ parameters['read_out']+" "+ parameters['neuron_type'].__name__ + ' std: '+str(i*1e-5))
+  File "/afs/crc.nd.edu/user/c/cschaef6/QuantizedSNN/snn_training.py", line 128, in train_classifier_dropconnect
+    with open('results/results_'+args_snn['ds_name'] + "_" +args_snn['read_out']+"_" + args_snn['neuron_type'].__name__ + str('{date:%Y-%m-%d_%H-%M-%S}'.format( date=datetime.datetime.now() ))+'.pkl', 'wb') as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'results/results_FMNIST_no_spike_integrate_adex_LIF_neuron2019-07-30_12-28-11.pkl'
