@@ -120,7 +120,7 @@ parameters = {
     # general 
     'ds_name'     : ds_name,
     'nb_epochs'   : 30,
-    'neuron_type' : adex_LIF_neuron,
+    'neuron_type' : ferro_neuron,
     'read_out'    : "no_spike_integrate",
     'device'      : device,
     'dtype'       : torch.float,
