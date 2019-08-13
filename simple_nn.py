@@ -19,20 +19,20 @@ transform = transforms.Compose(
 
 
 # MNIST
-train_dataset = torchvision.datasets.MNIST('../data/MNIST', train=True, transform=transform, download=True)
-trainloader = torch.utils.data.DataLoader(train_dataset, batch_size=512,
-                                          shuffle=True, num_workers=2)
-test_dataset = torchvision.datasets.MNIST('../data/MNIST', train=False, transform=transform, download=True)
-testloader = torch.utils.data.DataLoader(test_dataset, batch_size=512,
-                                          shuffle=True, num_workers=2)
-
-# CIFAR10
-# train_dataset = torchvision.datasets.CIFAR10('../data/CIFAR10', train=True, transform=transform, download=True)
+# train_dataset = torchvision.datasets.MNIST('../data/MNIST', train=True, transform=transform, download=True)
 # trainloader = torch.utils.data.DataLoader(train_dataset, batch_size=512,
 #                                           shuffle=True, num_workers=2)
-# test_dataset = torchvision.datasets.CIFAR10('../data/CIFAR10', train=False, transform=transform, download=True)
+# test_dataset = torchvision.datasets.MNIST('../data/MNIST', train=False, transform=transform, download=True)
 # testloader = torch.utils.data.DataLoader(test_dataset, batch_size=512,
 #                                           shuffle=True, num_workers=2)
+
+# CIFAR10
+train_dataset = torchvision.datasets.CIFAR10('../data/CIFAR10', train=True, transform=transform, download=True)
+trainloader = torch.utils.data.DataLoader(train_dataset, batch_size=32,
+                                          shuffle=True, num_workers=1)
+test_dataset = torchvision.datasets.CIFAR10('../data/CIFAR10', train=False, transform=transform, download=True)
+testloader = torch.utils.data.DataLoader(test_dataset, batch_size=32,
+                                          shuffle=True, num_workers=1)
 
 
 # FMNIST
@@ -51,13 +51,14 @@ class Net(nn.Module):
 
         self.quant_nb = quant_nb
 
-        self.fc1 = nn.Linear(28*28, 800)
+        self.fc1 = nn.Linear(3*32*32, 800)
         torch.nn.init.orthogonal_(self.fc1.weight)
-        self.fc2 = nn.Linear(800, 10)
+        self.fc2 = nn.Linear(800, 1, 10)
         torch.nn.init.orthogonal_(self.fc2.weight)
 
     def forward(self, x):
-        x = x.view(-1, 28*28)
+        #import pdb; pdb.set_trace()
+        x = x.view(-1, 3*32*32)
         with torch.no_grad():
             self.fc1.weight.data = quantize(self.fc1.weight.data, nb=self.quant_nb)
             x = quantize(x, nb=self.quant_nb)
@@ -86,7 +87,7 @@ def train_nn(net, epochs):
 
     m = nn.LogSoftmax(dim=1)
     loss_fn = nn.NLLLoss()
-    optimizer = torch.optim.Adam(net.parameters(), lr=5.58189e-03)
+    optimizer = torch.optim.Adam(net.parameters(), lr=.1)
 
 
     train_acc = []
@@ -96,6 +97,8 @@ def train_nn(net, epochs):
         for i, data in enumerate(trainloader, 0):
             # get the inputs; data is a list of [inputs, labels]
             inputs, labels = data[0].to(device), data[1].to(device)
+
+            #import pdb; pdb.set_trace()
 
             # zero the parameter gradients
             optimizer.zero_grad()
@@ -122,24 +125,24 @@ train_acc, test_acc = train_nn(net, 500)
 
 
 
-record_train = []
-record_test = []
-for nbits in range(16):
-    print(nbits)
-    record_train.append([])
-    record_test.append([])
-    for j in range(5):
-        net = Net(quant_nb = nbits).to(device)
-        train_acc, test_acc = train_nn(net, 500)
+# record_train = []
+# record_test = []
+# for nbits in range(16):
+#     print(nbits)
+#     record_train.append([])
+#     record_test.append([])
+#     for j in range(5):
+#         net = Net(quant_nb = nbits).to(device)
+#         train_acc, test_acc = train_nn(net, 500)
 
-        record_test[-1].append(test_acc)
-        record_train[-1].append(train_acc)
+#         record_test[-1].append(test_acc)
+#         record_train[-1].append(train_acc)
 
 
-results = {'train':record_train, 'test': record_test}
+# results = {'train':record_train, 'test': record_test}
 
-with open('results_big_run.pkl', 'wb') as f:
-    pickle.dump(results, f)
+# with open('results_big_run.pkl', 'wb') as f:
+#     pickle.dump(results, f)
 
 #with open('results_big_run.pkl', 'rb') as f:
 #    results = pickle.load(f)
