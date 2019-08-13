@@ -54,7 +54,7 @@ class Net(nn.Module):
 
         self.fc1 = nn.Linear(3*32*32, 800)
         torch.nn.init.orthogonal_(self.fc1.weight)
-        self.fc2 = nn.Linear(800, 1, 10)
+        self.fc2 = nn.Linear(800, 10)
         torch.nn.init.orthogonal_(self.fc2.weight)
 
     def forward(self, x):
