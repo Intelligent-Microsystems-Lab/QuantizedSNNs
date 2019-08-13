@@ -15,7 +15,8 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 transform = transforms.Compose(
-    [transforms.ToTensor()])
+    [transforms.ToTensor(),
+     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
 
 # MNIST
@@ -86,8 +87,11 @@ def get_accuracy(loader, net):
 def train_nn(net, epochs):
 
     m = nn.LogSoftmax(dim=1)
-    loss_fn = nn.NLLLoss()
+    #loss_fn = nn.NLLLoss()
     optimizer = torch.optim.Adam(net.parameters(), lr=.1)
+
+    loss_fn = nn.CrossEntropyLoss()
+    #optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
 
     train_acc = []
@@ -99,6 +103,11 @@ def train_nn(net, epochs):
             inputs, labels = data[0].to(device), data[1].to(device)
 
             #import pdb; pdb.set_trace()
+
+            if (sum(labels >= 0) == 32) and (sum(labels < 10) == 32):
+                print("okay")
+            else:
+                import pdb; pdb.set_trace()
 
             # zero the parameter gradients
             optimizer.zero_grad()
@@ -184,29 +193,29 @@ train_acc, test_acc = train_nn(net, 500)
 # plt.savefig("figures/learning10nb.png")
 
 
-test_rec = []
-y = []
-yerr = []
-for i in results['test']:
-    temp = []
-    for j in i:
-        temp.append(max(j))
-    y.append(np.mean(temp))
-    yerr.append(np.std(temp))
+# test_rec = []
+# y = []
+# yerr = []
+# for i in results['test']:
+#     temp = []
+#     for j in i:
+#         temp.append(max(j))
+#     y.append(np.mean(temp))
+#     yerr.append(np.std(temp))
 
-x = np.arange(len(y))
+# x = np.arange(len(y))
 
-plt.clf()
-plt.ylabel('Accuracy')
-plt.xlabel('NBits')
+# plt.clf()
+# plt.ylabel('Accuracy')
+# plt.xlabel('NBits')
 
-plt.errorbar(x, y , yerr=yerr, label='test')
+# plt.errorbar(x, y , yerr=yerr, label='test')
 
-#plt.legend(loc = 'best')
-plt.title("Effect of Quantization")
+# #plt.legend(loc = 'best')
+# plt.title("Effect of Quantization")
 
-plt.tight_layout()
-plt.savefig("big_errorbar_500.png")
+# plt.tight_layout()
+# plt.savefig("big_errorbar_500.png")
 
 
 
