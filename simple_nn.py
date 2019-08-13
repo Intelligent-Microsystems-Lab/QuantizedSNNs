@@ -19,20 +19,20 @@ transform = transforms.Compose(
 
 
 # MNIST
-# train_dataset = torchvision.datasets.MNIST('../data/MNIST', train=True, transform=transform, download=True)
-# trainloader = torch.utils.data.DataLoader(train_dataset, batch_size=512,
-#                                           shuffle=True, num_workers=2)
-# test_dataset = torchvision.datasets.MNIST('../data/MNIST', train=False, transform=transform, download=True)
-# testloader = torch.utils.data.DataLoader(test_dataset, batch_size=512,
-#                                           shuffle=True, num_workers=2)
-
-# CIFAR10
-train_dataset = torchvision.datasets.CIFAR10('../data/CIFAR10', train=True, transform=transform, download=True)
+train_dataset = torchvision.datasets.MNIST('../data/MNIST', train=True, transform=transform, download=True)
 trainloader = torch.utils.data.DataLoader(train_dataset, batch_size=512,
                                           shuffle=True, num_workers=2)
-test_dataset = torchvision.datasets.CIFAR10('../data/CIFAR10', train=False, transform=transform, download=True)
+test_dataset = torchvision.datasets.MNIST('../data/MNIST', train=False, transform=transform, download=True)
 testloader = torch.utils.data.DataLoader(test_dataset, batch_size=512,
                                           shuffle=True, num_workers=2)
+
+# CIFAR10
+# train_dataset = torchvision.datasets.CIFAR10('../data/CIFAR10', train=True, transform=transform, download=True)
+# trainloader = torch.utils.data.DataLoader(train_dataset, batch_size=512,
+#                                           shuffle=True, num_workers=2)
+# test_dataset = torchvision.datasets.CIFAR10('../data/CIFAR10', train=False, transform=transform, download=True)
+# testloader = torch.utils.data.DataLoader(test_dataset, batch_size=512,
+#                                           shuffle=True, num_workers=2)
 
 
 # FMNIST
@@ -51,7 +51,7 @@ class Net(nn.Module):
 
         self.quant_nb = quant_nb
 
-        self.fc1 = nn.Linear(32*32, 800)
+        self.fc1 = nn.Linear(28*28, 800)
         torch.nn.init.orthogonal_(self.fc1.weight)
         self.fc2 = nn.Linear(800, 10)
         torch.nn.init.orthogonal_(self.fc2.weight)
