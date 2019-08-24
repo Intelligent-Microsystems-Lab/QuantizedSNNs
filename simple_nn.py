@@ -20,20 +20,20 @@ transform = transforms.Compose(
 
 
 # MNIST
-# train_dataset = torchvision.datasets.MNIST('../data/MNIST', train=True, transform=transform, download=True)
-# trainloader = torch.utils.data.DataLoader(train_dataset, batch_size=512,
-#                                           shuffle=True, num_workers=2)
-# test_dataset = torchvision.datasets.MNIST('../data/MNIST', train=False, transform=transform, download=True)
-# testloader = torch.utils.data.DataLoader(test_dataset, batch_size=512,
-#                                           shuffle=True, num_workers=2)
+train_dataset = torchvision.datasets.MNIST('../data/MNIST', train=True, transform=transform, download=True)
+trainloader = torch.utils.data.DataLoader(train_dataset, batch_size=512,
+                                          shuffle=True, num_workers=2)
+test_dataset = torchvision.datasets.MNIST('../data/MNIST', train=False, transform=transform, download=True)
+testloader = torch.utils.data.DataLoader(test_dataset, batch_size=512,
+                                          shuffle=True, num_workers=2)
 
 # CIFAR10
-train_dataset = torchvision.datasets.CIFAR10('../data/CIFAR10', train=True, transform=transform, download=True)
-trainloader = torch.utils.data.DataLoader(train_dataset, batch_size=32,
-                                          shuffle=True, num_workers=1)
-test_dataset = torchvision.datasets.CIFAR10('../data/CIFAR10', train=False, transform=transform, download=True)
-testloader = torch.utils.data.DataLoader(test_dataset, batch_size=32,
-                                          shuffle=True, num_workers=1)
+# train_dataset = torchvision.datasets.CIFAR10('../data/CIFAR10', train=True, transform=transform, download=True)
+# trainloader = torch.utils.data.DataLoader(train_dataset, batch_size=512,
+#                                           shuffle=True, num_workers=1)
+# test_dataset = torchvision.datasets.CIFAR10('../data/CIFAR10', train=False, transform=transform, download=True)
+# testloader = torch.utils.data.DataLoader(test_dataset, batch_size=512,
+#                                           shuffle=True, num_workers=1)
 
 
 # FMNIST
@@ -52,22 +52,44 @@ class Net(nn.Module):
 
         self.quant_nb = quant_nb
 
-        self.fc1 = nn.Linear(3*32*32, 800)
+        self.conv2d_1 = nn.Conv2d(3, 64 ,3)
+        torch.nn.init.orthogonal_(self.conv2d_1.weight)
+        self.conv2d_2 = nn.Conv2d(3, 64 ,3)
+        torch.nn.init.orthogonal_(self.conv2d_2.weight)
+        self.conv2d_3 = nn.Conv2d(3, 64 ,3)
+        torch.nn.init.orthogonal_(self.conv2d_3.weight)
+
+        self.fc1 = nn.Linear(, 10)
         torch.nn.init.orthogonal_(self.fc1.weight)
-        self.fc2 = nn.Linear(800, 10)
-        torch.nn.init.orthogonal_(self.fc2.weight)
+        # self.fc2 = nn.Linear(800, 10)
+        # torch.nn.init.orthogonal_(self.fc2.weight)
 
     def forward(self, x):
         #import pdb; pdb.set_trace()
-        x = x.view(-1, 3*32*32)
+        
+        # x = x.view(-1, 3*32*32)
+        with torch.no_grad():
+            self.conv2d_1.weight.data = quantize(self.conv2d_1.weight.data, nb=self.quant_nb)
+            x = quantize(x, nb=self.quant_nb)
+        x = torch.nn.functional.relu(self.conv2d_1(x))
+
+        with torch.no_grad():
+            self.conv2d_2.weight.data = quantize(self.conv2d_2.weight.data, nb=self.quant_nb)
+            x = quantize(x, nb=self.quant_nb)
+        x = torch.nn.functional.relu(self.conv2d_2(x))
+
+        with torch.no_grad():
+            self.conv2d_3.weight.data = quantize(self.conv2d_3.weight.data, nb=self.quant_nb)
+            x = quantize(x, nb=self.quant_nb)
+        x = torch.nn.functional.relu(self.conv2d_3(x))
+
+        x = torch.flatten(x)
+
+
         with torch.no_grad():
             self.fc1.weight.data = quantize(self.fc1.weight.data, nb=self.quant_nb)
             x = quantize(x, nb=self.quant_nb)
         x = torch.nn.functional.relu(self.fc1(x))
-        with torch.no_grad():
-            self.fc2.weight.data = quantize(self.fc2.weight.data, nb=self.quant_nb)
-            x = quantize(x, nb=self.quant_nb)
-        x = torch.nn.functional.relu(self.fc2(x))
         return x
 
 def get_accuracy(loader, net):
@@ -87,10 +109,10 @@ def get_accuracy(loader, net):
 def train_nn(net, epochs):
 
     m = nn.LogSoftmax(dim=1)
-    #loss_fn = nn.NLLLoss()
+    loss_fn = nn.NLLLoss()
     optimizer = torch.optim.Adam(net.parameters(), lr=.1)
 
-    loss_fn = nn.CrossEntropyLoss()
+    #loss_fn = nn.CrossEntropyLoss()
     #optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
 
@@ -101,13 +123,6 @@ def train_nn(net, epochs):
         for i, data in enumerate(trainloader, 0):
             # get the inputs; data is a list of [inputs, labels]
             inputs, labels = data[0].to(device), data[1].to(device)
-
-            #import pdb; pdb.set_trace()
-
-            if (sum(labels >= 0) == 32) and (sum(labels < 10) == 32):
-                print("okay")
-            else:
-                import pdb; pdb.set_trace()
 
             # zero the parameter gradients
             optimizer.zero_grad()
@@ -128,7 +143,7 @@ def train_nn(net, epochs):
 
     return train_acc, test_acc
 
-net = Net(quant_nb = 8).to(device)
+net = Net(quant_nb = 32).to(device)
 train_acc, test_acc = train_nn(net, 500)
 
 
