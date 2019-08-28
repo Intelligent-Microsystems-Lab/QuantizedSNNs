@@ -16,15 +16,15 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 transform = transforms.Compose(
     [transforms.ToTensor(),
-     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+     transforms.Normalize((0.5,), (0.5,))])
 
 
 # MNIST
 train_dataset = torchvision.datasets.MNIST('../data/MNIST', train=True, transform=transform, download=True)
-trainloader = torch.utils.data.DataLoader(train_dataset, batch_size=512,
+trainloader = torch.utils.data.DataLoader(train_dataset, batch_size=64,
                                           shuffle=True, num_workers=2)
 test_dataset = torchvision.datasets.MNIST('../data/MNIST', train=False, transform=transform, download=True)
-testloader = torch.utils.data.DataLoader(test_dataset, batch_size=512,
+testloader = torch.utils.data.DataLoader(test_dataset, batch_size=64,
                                           shuffle=True, num_workers=2)
 
 # CIFAR10
@@ -35,6 +35,9 @@ testloader = torch.utils.data.DataLoader(test_dataset, batch_size=512,
 # testloader = torch.utils.data.DataLoader(test_dataset, batch_size=512,
 #                                           shuffle=True, num_workers=1)
 
+#transform = transforms.Compose(
+#    [transforms.ToTensor(),
+#     transforms.Normalize((0.5, 0.5, .5), (0.5, .5, .5))])
 
 # FMNIST
 # train_dataset = torchvision.datasets.FashionMNIST('../data/FMNIST', train=True, transform=transform, download=True)
@@ -52,43 +55,52 @@ class Net(nn.Module):
 
         self.quant_nb = quant_nb
 
-        self.conv2d_1 = nn.Conv2d(3, 64 ,3)
-        torch.nn.init.orthogonal_(self.conv2d_1.weight)
-        self.conv2d_2 = nn.Conv2d(3, 64 ,3)
-        torch.nn.init.orthogonal_(self.conv2d_2.weight)
-        self.conv2d_3 = nn.Conv2d(3, 64 ,3)
-        torch.nn.init.orthogonal_(self.conv2d_3.weight)
+        self.conv2d_1 = nn.Conv2d(in_channels = 1, out_channels = 64, kernel_size = 3, padding = 1)
+        torch.nn.init.orthogonal_(self.conv2d_1.weight, gain= 63/quant_nb)
+        self.conv2d_2 = nn.Conv2d(in_channels = 64, out_channels = 64,kernel_size = 3, padding = 1)
+        torch.nn.init.orthogonal_(self.conv2d_2.weight, gain= 63/quant_nb)
+        self.conv2d_3 = nn.Conv2d(in_channels = 64, out_channels = 64, kernel_size = 3, padding = 1)
+        torch.nn.init.orthogonal_(self.conv2d_3.weight, gain= 63/quant_nb)
 
-        self.fc1 = nn.Linear(, 10)
-        torch.nn.init.orthogonal_(self.fc1.weight)
+        self.fc1 = nn.Linear(in_features = 28*28*64, out_features = 10)
+        torch.nn.init.orthogonal_(self.fc1.weight, gain= 63/quant_nb)
+
+        with torch.no_grad():
+           self.conv2d_1.weight.data = quantize(self.conv2d_1.weight.data, nb=self.quant_nb)
+           self.conv2d_2.weight.data = quantize(self.conv2d_2.weight.data, nb=self.quant_nb)
+           self.conv2d_3.weight.data = quantize(self.conv2d_3.weight.data, nb=self.quant_nb)
+           self.fc1.weight.data = quantize(self.fc1.weight.data, nb=self.quant_nb)
+
+        #import pdb; pdb.set_trace()
+        #print("Sum of weights: "+str(torch.sum(self.conv2d_1.weight)+ torch.sum(self.conv2d_2.weight)+torch.sum(self.conv2d_3.weight)+torch.sum(self.fc1.weight)))
+        #import pdb; pdb.set_trace()
         # self.fc2 = nn.Linear(800, 10)
         # torch.nn.init.orthogonal_(self.fc2.weight)
 
     def forward(self, x):
-        #import pdb; pdb.set_trace()
         
-        # x = x.view(-1, 3*32*32)
+        x = x.view(-1, 1, 28, 28)
         with torch.no_grad():
-            self.conv2d_1.weight.data = quantize(self.conv2d_1.weight.data, nb=self.quant_nb)
-            x = quantize(x, nb=self.quant_nb)
+           self.conv2d_1.weight.data = quantize(self.conv2d_1.weight.data, nb=self.quant_nb)
+           #x = quantize(x, nb=self.quant_nb)
         x = torch.nn.functional.relu(self.conv2d_1(x))
 
         with torch.no_grad():
-            self.conv2d_2.weight.data = quantize(self.conv2d_2.weight.data, nb=self.quant_nb)
-            x = quantize(x, nb=self.quant_nb)
+           self.conv2d_2.weight.data = quantize(self.conv2d_2.weight.data, nb=self.quant_nb)
+           x = quantize(x, nb=self.quant_nb)
         x = torch.nn.functional.relu(self.conv2d_2(x))
 
         with torch.no_grad():
-            self.conv2d_3.weight.data = quantize(self.conv2d_3.weight.data, nb=self.quant_nb)
-            x = quantize(x, nb=self.quant_nb)
+           self.conv2d_3.weight.data = quantize(self.conv2d_3.weight.data, nb=self.quant_nb)
+           x = quantize(x, nb=self.quant_nb)
         x = torch.nn.functional.relu(self.conv2d_3(x))
 
-        x = torch.flatten(x)
-
+        #x = torch.flatten(x)
+        x = x.view(-1, 64*28*28)
 
         with torch.no_grad():
-            self.fc1.weight.data = quantize(self.fc1.weight.data, nb=self.quant_nb)
-            x = quantize(x, nb=self.quant_nb)
+           self.fc1.weight.data = quantize(self.fc1.weight.data, nb=self.quant_nb)
+           x = quantize(x, nb=self.quant_nb)
         x = torch.nn.functional.relu(self.fc1(x))
         return x
 
@@ -108,11 +120,11 @@ def get_accuracy(loader, net):
 
 def train_nn(net, epochs):
 
-    m = nn.LogSoftmax(dim=1)
-    loss_fn = nn.NLLLoss()
-    optimizer = torch.optim.Adam(net.parameters(), lr=.1)
+    #m = nn.LogSoftmax(dim=1)
+    #loss_fn = nn.NLLLoss()
+    optimizer = torch.optim.Adam(net.parameters(), lr=0.01, betas= (0.9,0.999), eps=1e-08)
 
-    #loss_fn = nn.CrossEntropyLoss()
+    loss_fn = nn.CrossEntropyLoss()
     #optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
 
@@ -129,7 +141,8 @@ def train_nn(net, epochs):
 
             # forward + backward + optimize
             outputs = net(inputs)
-            loss = loss_fn(m(outputs), labels)
+            #loss = loss_fn(m(outputs), labels)
+            loss =  loss_fn(outputs, labels)
 
             loss.backward()
             optimizer.step()
@@ -143,8 +156,14 @@ def train_nn(net, epochs):
 
     return train_acc, test_acc
 
-net = Net(quant_nb = 32).to(device)
-train_acc, test_acc = train_nn(net, 500)
+
+
+net = Net(quant_nb = 4).to(device)
+
+from torchsummary import summary
+summary(net, (1, 28, 28))
+
+train_acc, test_acc = train_nn(net, 100)
 
 
 
