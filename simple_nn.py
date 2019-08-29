@@ -56,20 +56,24 @@ class Net(nn.Module):
         self.quant_nb = quant_nb
 
         self.conv2d_1 = nn.Conv2d(in_channels = 1, out_channels = 64, kernel_size = 3, padding = 1)
-        torch.nn.init.orthogonal_(self.conv2d_1.weight, gain= 63/quant_nb)
+        #torch.nn.init.orthogonal_(self.conv2d_1.weight, gain= 64/quant_nb)
+        torch.nn.init.uniform_(self.conv2d_1.weight, -1, 1)
         self.conv2d_2 = nn.Conv2d(in_channels = 64, out_channels = 64,kernel_size = 3, padding = 1)
-        torch.nn.init.orthogonal_(self.conv2d_2.weight, gain= 63/quant_nb)
+        torch.nn.init.uniform_(self.conv2d_2.weight, -1, 1)
+        #torch.nn.init.orthogonal_(self.conv2d_2.weight, gain= 64/quant_nb)
         self.conv2d_3 = nn.Conv2d(in_channels = 64, out_channels = 64, kernel_size = 3, padding = 1)
-        torch.nn.init.orthogonal_(self.conv2d_3.weight, gain= 63/quant_nb)
+        torch.nn.init.uniform_(self.conv2d_3.weight, -1, 1)
+        #torch.nn.init.orthogonal_(self.conv2d_3.weight, gain= 64/quant_nb)
 
         self.fc1 = nn.Linear(in_features = 28*28*64, out_features = 10)
-        torch.nn.init.orthogonal_(self.fc1.weight, gain= 63/quant_nb)
+        torch.nn.init.uniform_(self.fc1.weight, -1, 1)
+        #torch.nn.init.orthogonal_(self.fc1.weight, gain= 64/quant_nb)
 
-        with torch.no_grad():
-           self.conv2d_1.weight.data = quantize(self.conv2d_1.weight.data, nb=self.quant_nb)
-           self.conv2d_2.weight.data = quantize(self.conv2d_2.weight.data, nb=self.quant_nb)
-           self.conv2d_3.weight.data = quantize(self.conv2d_3.weight.data, nb=self.quant_nb)
-           self.fc1.weight.data = quantize(self.fc1.weight.data, nb=self.quant_nb)
+        # with torch.no_grad():
+        #    self.conv2d_1.weight.data = quantize(self.conv2d_1.weight.data, nb=self.quant_nb)
+        #    self.conv2d_2.weight.data = quantize(self.conv2d_2.weight.data, nb=self.quant_nb)
+        #    self.conv2d_3.weight.data = quantize(self.conv2d_3.weight.data, nb=self.quant_nb)
+        #    self.fc1.weight.data = quantize(self.fc1.weight.data, nb=self.quant_nb)
 
         #import pdb; pdb.set_trace()
         #print("Sum of weights: "+str(torch.sum(self.conv2d_1.weight)+ torch.sum(self.conv2d_2.weight)+torch.sum(self.conv2d_3.weight)+torch.sum(self.fc1.weight)))
@@ -124,7 +128,8 @@ def train_nn(net, epochs):
     #loss_fn = nn.NLLLoss()
     optimizer = torch.optim.Adam(net.parameters(), lr=0.01, betas= (0.9,0.999), eps=1e-08)
 
-    loss_fn = nn.CrossEntropyLoss()
+    #loss_fn = nn.CrossEntropyLoss()
+    loss_fn = nn.MultiLabelMarginLoss()
     #optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
 
