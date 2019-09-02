@@ -14,9 +14,12 @@ from quantization import quantize
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
+#transform = transforms.Compose(
+#    [transforms.ToTensor(),
+#     transforms.Normalize((0.5,), (0.5,))])
+
 transform = transforms.Compose(
-    [transforms.ToTensor(),
-     transforms.Normalize((0.5,), (0.5,))])
+    [transforms.ToTensor()])
 
 
 # MNIST
@@ -48,6 +51,12 @@ testloader = torch.utils.data.DataLoader(test_dataset, batch_size=64,
 #                                           shuffle=True, num_workers=2)
 
 
+# rewrite that in pytorch
+def squared_hinge(y_pred, labels):
+    y_true = torch.zeros_like(y_pred)
+    y_true.scatter_(1, labels.view(-1, 1), 1)
+
+    return torch.mean((torch.max(1. - y_true * y_pred, torch.Tensor([0]).to(device)))**2)
 
 class Net(nn.Module):
     def __init__(self, quant_nb=16):
@@ -56,18 +65,18 @@ class Net(nn.Module):
         self.quant_nb = quant_nb
 
         self.conv2d_1 = nn.Conv2d(in_channels = 1, out_channels = 64, kernel_size = 3, padding = 1)
-        #torch.nn.init.orthogonal_(self.conv2d_1.weight, gain= 64/quant_nb)
+        #torch.nn.init.orthogonal_(self.conv2d_1.weight)#, gain= 64/quant_nb)
         torch.nn.init.uniform_(self.conv2d_1.weight, -1, 1)
         self.conv2d_2 = nn.Conv2d(in_channels = 64, out_channels = 64,kernel_size = 3, padding = 1)
         torch.nn.init.uniform_(self.conv2d_2.weight, -1, 1)
-        #torch.nn.init.orthogonal_(self.conv2d_2.weight, gain= 64/quant_nb)
+        #torch.nn.init.orthogonal_(self.conv2d_2.weight)#, gain= 64/quant_nb)
         self.conv2d_3 = nn.Conv2d(in_channels = 64, out_channels = 64, kernel_size = 3, padding = 1)
         torch.nn.init.uniform_(self.conv2d_3.weight, -1, 1)
-        #torch.nn.init.orthogonal_(self.conv2d_3.weight, gain= 64/quant_nb)
+        #torch.nn.init.orthogonal_(self.conv2d_3.weight)#, gain= 64/quant_nb)
 
         self.fc1 = nn.Linear(in_features = 28*28*64, out_features = 10)
         torch.nn.init.uniform_(self.fc1.weight, -1, 1)
-        #torch.nn.init.orthogonal_(self.fc1.weight, gain= 64/quant_nb)
+        #torch.nn.init.orthogonal_(self.fc1.weight)#, gain= 64/quant_nb)
 
         # with torch.no_grad():
         #    self.conv2d_1.weight.data = quantize(self.conv2d_1.weight.data, nb=self.quant_nb)
@@ -84,27 +93,27 @@ class Net(nn.Module):
     def forward(self, x):
         
         x = x.view(-1, 1, 28, 28)
-        with torch.no_grad():
-           self.conv2d_1.weight.data = quantize(self.conv2d_1.weight.data, nb=self.quant_nb)
+        #with torch.no_grad():
+        #   self.conv2d_1.weight.data = quantize(self.conv2d_1.weight.data, nb=self.quant_nb)
            #x = quantize(x, nb=self.quant_nb)
         x = torch.nn.functional.relu(self.conv2d_1(x))
 
-        with torch.no_grad():
-           self.conv2d_2.weight.data = quantize(self.conv2d_2.weight.data, nb=self.quant_nb)
-           x = quantize(x, nb=self.quant_nb)
+        #with torch.no_grad():
+        #   self.conv2d_2.weight.data = quantize(self.conv2d_2.weight.data, nb=self.quant_nb)
+        #   x = quantize(x, nb=self.quant_nb)
         x = torch.nn.functional.relu(self.conv2d_2(x))
 
-        with torch.no_grad():
-           self.conv2d_3.weight.data = quantize(self.conv2d_3.weight.data, nb=self.quant_nb)
-           x = quantize(x, nb=self.quant_nb)
+        #with torch.no_grad():
+        #   self.conv2d_3.weight.data = quantize(self.conv2d_3.weight.data, nb=self.quant_nb)
+        #   x = quantize(x, nb=self.quant_nb)
         x = torch.nn.functional.relu(self.conv2d_3(x))
 
         #x = torch.flatten(x)
         x = x.view(-1, 64*28*28)
 
-        with torch.no_grad():
-           self.fc1.weight.data = quantize(self.fc1.weight.data, nb=self.quant_nb)
-           x = quantize(x, nb=self.quant_nb)
+        #with torch.no_grad():
+        #   self.fc1.weight.data = quantize(self.fc1.weight.data, nb=self.quant_nb)
+        #   x = quantize(x, nb=self.quant_nb)
         x = torch.nn.functional.relu(self.fc1(x))
         return x
 
@@ -124,36 +133,59 @@ def get_accuracy(loader, net):
 
 def train_nn(net, epochs):
 
-    #m = nn.LogSoftmax(dim=1)
-    #loss_fn = nn.NLLLoss()
-    optimizer = torch.optim.Adam(net.parameters(), lr=0.01, betas= (0.9,0.999), eps=1e-08)
-
+    m = nn.LogSoftmax(dim=1)
     #loss_fn = nn.CrossEntropyLoss()
-    loss_fn = nn.MultiLabelMarginLoss()
+    #loss_fn = squared_hinge()
+    optimizer = torch.optim.Adam(net.parameters(), lr=0.001)#, betas= (0.9,0.999), eps=1e-08)
+
+    #optimizer = torch.optim.SGD(net.parameters(), lr=0.001)#, momentum=0.9)
+    #loss_fn = nn.CrossEntropyLoss()
+    #loss_fn = multiClassHingeLoss()
+    loss_fn = nn.NLLLoss()
     #optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
 
     train_acc = []
     test_acc  = []
     for epoch in range(epochs):  # loop over the dataset multiple times
-        running_loss = 0.0
+        correct = 0
+        counter = 0 
         for i, data in enumerate(trainloader, 0):
             # get the inputs; data is a list of [inputs, labels]
             inputs, labels = data[0].to(device), data[1].to(device)
 
-            # zero the parameter gradients
-            optimizer.zero_grad()
+            with torch.autograd.detect_anomaly():
+                # zero the parameter gradients
+                optimizer.zero_grad()
 
-            # forward + backward + optimize
-            outputs = net(inputs)
-            #loss = loss_fn(m(outputs), labels)
-            loss =  loss_fn(outputs, labels)
+                # forward + backward + optimize
+                outputs = net(inputs)
 
-            loss.backward()
-            optimizer.step()
+                #import pdb; pdb.set_trace()
+                loss = loss_fn(m(outputs), labels)
+                #loss = loss_fn(outputs, labels)
+                #loss = squared_hinge(outputs, labels)
+
+
+                loss.backward()
+
+                #print(net.conv2d_1.weight.grad)
+                #print(torch.sum(net.conv2d_2.weight.grad))
+                #print(torch.sum(net.conv2d_3.weight.grad))
+                print(torch.sum(net.fc1.weight.grad))
+                print(loss)
+                optimizer.step()
+
+            #import pdb; pdb.set_trace()
 
             # print statistics
-            running_loss = loss.item()
+            # running_loss = loss.item()
+
+            _, predicted = torch.max(outputs.data, 1)
+            correct += (predicted == labels).sum().item()
+            counter += 64
+            print("%d/60000 Loss: %.4f Acc: %.4f" % (i*64, loss.item(), correct/counter), end='\r')
+        print("")
 
         train_acc.append(get_accuracy(trainloader, net))
         test_acc.append(get_accuracy(testloader, net))
@@ -163,7 +195,7 @@ def train_nn(net, epochs):
 
 
 
-net = Net(quant_nb = 4).to(device)
+net = Net(quant_nb = 32).to(device)
 
 from torchsummary import summary
 summary(net, (1, 28, 28))
