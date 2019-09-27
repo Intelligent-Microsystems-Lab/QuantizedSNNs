@@ -10,10 +10,10 @@ import matplotlib.pyplot as plt
 
 
 # global quantization variables
-global_wb = 2
-global_ab = 8
-global_gb = 8
-global_eb = 8
+global_wb = 2 
+global_ab = 4
+global_gb = 4
+global_eb = 4
 
 global_beta = 1.5
 global_lr = 1
@@ -34,10 +34,15 @@ def compute_init_L(fan_in, beta, step_i):
 def step_d(bits): 
     return 2**(1-bits)
 
+# def shift(x):
+#     if x == 0:
+#         return 1
+#     return 2**round_through(torch.log2(x))
+
 def shift(x):
     if x == 0:
         return 1
-    return 2**round_through(torch.log2(x))
+    return 2**torch.round(torch.log2(x))
 
 def clip(x, bits):
     if bits == 1:
@@ -48,11 +53,17 @@ def clip(x, bits):
     minv = -1 + delta
     return torch.clamp(x, float(minv), float(maxv))
 
+# def quant(x, bits):
+#     if bits == 1: # BNN
+#         return torch.sign(x)
+#     else:
+#         return round_through(x/step_d(bits)) * step_d(bits)
+
 def quant(x, bits):
     if bits == 1: # BNN
         return torch.sign(x)
     else:
-        return round_through(x/step_d(bits)) * step_d(bits)
+        return torch.round(x/step_d(bits)) * step_d(bits)
 
 def round_through(x):
     '''Element-wise rounding to the closest integer with full gradient propagation.
@@ -65,8 +76,17 @@ def round_through(x):
     return rounded_through
 
 #combining clip and quant for convenience
-def qc(x, bits):
+def cq(x, bits):
     return clip(quant(x, bits) , bits)
+
+def qc(x, bits):
+    return quant(clip(x, bits) , bits)
+
+def qc_w(x, bits):
+    y = quant(clip(x, bits) , bits)
+    with torch.no_grad():
+        diff = (y - x)
+    return x + diff
 
 def to_cat(inp_tensor, num_class, device):
     out_tensor = torch.zeros([inp_tensor.shape[0], num_class], device=device)
@@ -78,9 +98,47 @@ def SSE(y_true, y_pred):
     #import pdb; pdb.set_trace()
     return 0.5 * torch.sum((y_true - y_pred)**2)
 
+def SSE_q(y_true, y_pred):
+    #import pdb; pdb.set_trace()
+    grad_output = 0.5 * torch.sum((y_true - y_pred)**2)
+    alpha = shift(torch.max(torch.abs(grad_output)))
+    return qc(grad_output/alpha, global_eb)
+
 def SSM(y_true, y_pred):
     #import pdb; pdb.set_trace()
     return 0.5 * torch.mean((y_true - y_pred)**2)
+
+class clee_ReLU(torch.autograd.Function):
+    """
+    We can implement our own custom autograd Functions by subclassing
+    torch.autograd.Function and implementing the forward and backward passes
+    which operate on Tensors.
+    """
+
+    @staticmethod
+    def forward(ctx, input):
+        """
+        In the forward pass we receive a Tensor containing the input and return
+        a Tensor containing the output. ctx is a context object that can be used
+        to stash information for backward computation. You can cache arbitrary
+        objects for use in the backward pass using the ctx.save_for_backward method.
+        """
+        ctx.save_for_backward(input)
+        return input.clamp(min=0)
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        """
+        In the backward pass we receive a Tensor containing the gradient of the loss
+        with respect to the output, and we need to compute the gradient of the loss
+        with respect to the input.
+        """
+        input, = ctx.saved_tensors
+        grad_input = grad_output.clone()
+        grad_input[input < 0] = 0
+        return grad_input
+
+
 
 # Inherit from Function
 class clee_LinearFunction(torch.autograd.Function):
@@ -115,6 +173,7 @@ class clee_LinearFunction(torch.autograd.Function):
         if ctx.needs_input_grad[0]:
             #grad_input = grad_output.mm(weight)
             grad_input = qc(grad_output/alpha, global_eb).mm(weight)
+            #print("Error Prop: "+ str(torch.sum(grad_input)))
         if ctx.needs_input_grad[1]:
             shift_gw = global_lr * qc(grad_output/alpha, global_eb).t().mm(input) 
 
@@ -127,6 +186,8 @@ class clee_LinearFunction(torch.autograd.Function):
             
         if bias is not None and ctx.needs_input_grad[2]:
             grad_bias = grad_output.sum(0).squeeze(0)
+
+        #print("Gradient Weighs: "+ str(torch.sum(grad_weight)))
 
         return grad_input, grad_weight, grad_bias
 
@@ -184,10 +245,18 @@ def init_layer_weights(weights_layer, fan_in):
     torch.nn.init.uniform_(weights_layer, a = -L, b = L)
     weights_layer = torch.nn.Parameter(qc(weights_layer, global_gb).to(device), requires_grad = True)
 
-def quant_act(x, fan_in):
-    L = compute_init_L(fan_in = fan_in, beta = global_beta, step_i = step_d(global_ab))
-    alpha = torch.max(torch.tensor([shift(L/(global_beta*step_d(global_ab))), 1]))
-    return qc(x/alpha, global_ab)
+def quant_act(x, fan_in, alpha=False):
+    if not alpha:
+        L = compute_init_L(fan_in = fan_in, beta = global_beta, step_i = step_d(global_ab))
+        alpha = torch.max(torch.tensor([shift(L/(global_beta*step_d(global_ab))), 1]))
+    #x = x/alpha
+    x = clip(x, global_ab)
+    with torch.no_grad():
+        y = quant(x, global_ab)
+        diff = y - x
+    return x + diff
+
+# fan in: http://deeplearning.net/tutorial/lenet.html
 
 class Net(nn.Module):
     def __init__(self, device):
@@ -208,11 +277,12 @@ class Net(nn.Module):
         self.conv3.fan_in = self.conv3.in_channels * self.conv3.kernel_size[0] * self.conv3.kernel_size[1]
         init_layer_weights(self.conv3.weight, self.conv3.fan_in)
 
-        self.fc1 = nn.Linear(784, 100, bias=False)
+        # 784 36864
+        self.fc1 = nn.Linear(784, 1000, bias=False)
         self.fc1.fan_in = self.fc1.in_features
         init_layer_weights(self.fc1.weight, self.fc1.fan_in)
 
-        self.fc2 = nn.Linear(100, 50, bias=False)
+        self.fc2 = nn.Linear(1000, 10, bias=False)
         self.fc2.fan_in = self.fc2.in_features
         init_layer_weights(self.fc2.weight, self.fc2.fan_in)
 
@@ -235,12 +305,12 @@ class Net(nn.Module):
         #self.fc3.weight.data.clamp_(min = -1 + float(delta), max = +1 - float(delta))
 
         # quantize inputs with alpha = 1
-        x = qc(x, global_ab)
+        x = quant_act(x, -100, alpha = 1)
 
         # conv1 layer
         #x = clee_conv2d.apply(x, qc(self.conv1.weight, global_wb))
         #x = quant_act(x, self.conv1.fan_in)
-        #x = F.relu(x) # ReLu
+        #x = F.relu(x) # ReLu 
 
         # conv2 layer
         #x = clee_conv2d.apply(x, qc(self.conv2.weight, global_wb))
@@ -257,19 +327,22 @@ class Net(nn.Module):
         x = x.view(batch_size, -1)
 
         # fully connected layer #1
-        x = clee_LinearFunction.apply(x, qc(self.fc1.weight, global_wb))
+        x = clee_LinearFunction.apply(x, qc_w(self.fc1.weight, global_wb)/16)
         x = quant_act(x, self.fc1.fan_in)
         x = F.relu(x) # Relu
 
         # fully connected layer #2
-        x = clee_LinearFunction.apply(x, qc(self.fc2.weight, global_wb))
+        x = clee_LinearFunction.apply(x, qc_w(self.fc2.weight, global_wb)/16)
         x = quant_act(x, self.fc2.fan_in)
         x = F.relu(x) # Relu
 
+        #print("Sum Weights1:" + str(torch.sum(self.fc1.weight.data)))
+        #print("Sum Weights2:" + str(torch.sum(self.fc2.weight.data)))
+
         # fully connected layer #3
-        x = clee_LinearFunction.apply(x, qc(self.fc3.weight, global_wb))
-        x = quant_act(x, self.fc3.fan_in)
-        x = F.relu(x) # Relu
+        #x = clee_LinearFunction.apply(x, qc(self.fc3.weight, global_wb))
+        #x = quant_act(x, self.fc3.fan_in)
+        #x = F.relu(x) # Relu
         
         return x
 
@@ -333,12 +406,12 @@ train_loader = torch.utils.data.DataLoader(
                    transform=transforms.Compose([
                        transforms.ToTensor()
                    ])),
-    batch_size=256, shuffle=True, num_workers = 2)
+    batch_size=64, shuffle=True, num_workers = 2)
 test_loader = torch.utils.data.DataLoader(
     datasets.MNIST('../data', train=False, transform=transforms.Compose([
                        transforms.ToTensor()
                    ])),
-    batch_size=256, shuffle=True, num_workers = 2)
+    batch_size=64, shuffle=True, num_workers = 2)
 
 # inp_dim = 3072
 # train_loader = torch.utils.data.DataLoader(
@@ -360,6 +433,7 @@ optimizer = optim.SGD(model.parameters(), lr=1, momentum=0, dampening=0, weight_
 
 
 # print model summary
+#import numpy as np
 #from torchsummary import summary
 #summary(model, (1, 28, 28)) 
 
