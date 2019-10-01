@@ -10,10 +10,10 @@ import matplotlib.pyplot as plt
 
 
 # global quantization variables
-global_wb = 2 
-global_ab = 4
-global_gb = 4
-global_eb = 4
+global_wb = 2
+global_ab = 8
+global_gb = 8
+global_eb = 8
 
 global_beta = 1.5
 global_lr = 1
@@ -28,8 +28,9 @@ def angel_between(vec1, vec2):
     return torch.acos(torch.clamp(x, min=-1, max=1))
 
 
-def compute_init_L(fan_in, beta, step_i):
-    return torch.max(torch.tensor([torch.sqrt(torch.tensor([6/fan_in])), beta*step_i]))
+#def compute_init_L(fan_in, beta, step_i, factor):
+#    # no max.... for some reason
+#    return torch.sqrt(torch.tensor([3*factor/fan_in]))
 
 def step_d(bits): 
     return 2**(1-bits)
@@ -65,28 +66,28 @@ def quant(x, bits):
     else:
         return torch.round(x/step_d(bits)) * step_d(bits)
 
-def round_through(x):
-    '''Element-wise rounding to the closest integer with full gradient propagation.
-    A trick from [Sergey Ioffe](http://stackoverflow.com/a/36480182)
-    '''
-    rounded = torch.round(x)
-    with torch.no_grad():
-        temp = (rounded - x)
-    rounded_through = x + temp
-    return rounded_through
+# def round_through(x):
+#     '''Element-wise rounding to the closest integer with full gradient propagation.
+#     A trick from [Sergey Ioffe](http://stackoverflow.com/a/36480182)
+#     '''
+#     rounded = torch.round(x)
+#     with torch.no_grad():
+#         temp = (rounded - x)
+#     rounded_through = x + temp
+#     return rounded_through
 
 #combining clip and quant for convenience
-def cq(x, bits):
-    return clip(quant(x, bits) , bits)
+# def cq(x, bits):
+#     return clip(quant(x, bits) , bits)
 
 def qc(x, bits):
     return quant(clip(x, bits) , bits)
 
-def qc_w(x, bits):
+def qc_w(x, bits, scale = 1):
     y = quant(clip(x, bits) , bits)
     with torch.no_grad():
         diff = (y - x)
-    return x + diff
+    return (x + diff)/scale
 
 def to_cat(inp_tensor, num_class, device):
     out_tensor = torch.zeros([inp_tensor.shape[0], num_class], device=device)
@@ -98,15 +99,15 @@ def SSE(y_true, y_pred):
     #import pdb; pdb.set_trace()
     return 0.5 * torch.sum((y_true - y_pred)**2)
 
-def SSE_q(y_true, y_pred):
-    #import pdb; pdb.set_trace()
-    grad_output = 0.5 * torch.sum((y_true - y_pred)**2)
-    alpha = shift(torch.max(torch.abs(grad_output)))
-    return qc(grad_output/alpha, global_eb)
+# def SSE_q(y_true, y_pred):
+#     #import pdb; pdb.set_trace()
+#     grad_output = 0.5 * torch.sum((y_true - y_pred)**2)
+#     alpha = shift(torch.max(torch.abs(grad_output)))
+#     return qc(grad_output/alpha, global_eb)
 
-def SSM(y_true, y_pred):
-    #import pdb; pdb.set_trace()
-    return 0.5 * torch.mean((y_true - y_pred)**2)
+# def SSM(y_true, y_pred):
+#     #import pdb; pdb.set_trace()
+#     return 0.5 * torch.mean((y_true - y_pred)**2)
 
 class clee_ReLU(torch.autograd.Function):
     """
@@ -165,17 +166,17 @@ class clee_LinearFunction(torch.autograd.Function):
         input, weight, bias = ctx.saved_tensors
         grad_input = grad_weight = grad_bias = None
         alpha = shift(torch.max(torch.abs(grad_output)))
+        quant_error = qc(grad_output/alpha, global_eb)
 
         # These needs_input_grad checks are optional and there only to
         # improve efficiency. If you want to make your code simpler, you can
         # skip them. Returning gradients for inputs that don't require it is
         # not an error.
         if ctx.needs_input_grad[0]:
-            #grad_input = grad_output.mm(weight)
-            grad_input = qc(grad_output/alpha, global_eb).mm(weight)
-            #print("Error Prop: "+ str(torch.sum(grad_input)))
+            # propagate quantized error
+            grad_input = quant_error.mm(weight)
         if ctx.needs_input_grad[1]:
-            shift_gw = global_lr * qc(grad_output/alpha, global_eb).t().mm(input) 
+            shift_gw = global_lr * quant_error.t().mm(input) 
 
             alpha = shift(torch.max(torch.abs(shift_gw)))
             grad_weight = shift_gw/alpha
@@ -222,7 +223,7 @@ class clee_conv2d(torch.autograd.Function):
         # skip them. Returning gradients for inputs that don't require it is
         # not an error.
         if ctx.needs_input_grad[0]:
-            #grad_input = torch.nn.grad.conv2d_input(input.shape, weight, grad_output)
+            # propagate quantized error
             grad_input = torch.nn.grad.conv2d_input(input.shape, weight, quant_error)
         if ctx.needs_input_grad[1]:
             shift_gw = global_lr * torch.nn.grad.conv2d_weight(input, weight.shape, quant_error)
@@ -240,23 +241,37 @@ class clee_conv2d(torch.autograd.Function):
         return grad_input, grad_weight, grad_bias
 
 
-def init_layer_weights(weights_layer, fan_in):
-    L = compute_init_L(fan_in = inp_dim, beta = global_beta, step_i = step_d(global_wb))
-    torch.nn.init.uniform_(weights_layer, a = -L, b = L)
+def init_layer_weights(weights_layer, fan_in, factor=1):
+    limit = torch.sqrt(torch.tensor([3*factor/fan_in])) #I think thats very arbitrary... but from the wage code
+    Wm = global_beta/step_d(torch.tensor([float(global_wb)]))
+    scale = 2 ** torch.round(torch.log2( Wm/limit ))
+    scale = scale if scale > 1 else 1.0
+    limit = Wm if Wm > limit else limit
+    torch.nn.init.uniform_(weights_layer, a = -float(limit), b = float(limit))
     weights_layer = torch.nn.Parameter(qc(weights_layer, global_gb).to(device), requires_grad = True)
+    return scale
 
-def quant_act(x, fan_in, alpha=False):
-    if not alpha:
-        L = compute_init_L(fan_in = fan_in, beta = global_beta, step_i = step_d(global_ab))
-        alpha = torch.max(torch.tensor([shift(L/(global_beta*step_d(global_ab))), 1]))
-    #x = x/alpha
-    x = clip(x, global_ab)
-    with torch.no_grad():
-        y = quant(x, global_ab)
-        diff = y - x
-    return x + diff
+def quant_act(x):
+   x = clip(x, global_ab)
+   with torch.no_grad():
+       y = quant(x, global_ab)
+       diff = y - x
+   return x + diff
 
 # fan in: http://deeplearning.net/tutorial/lenet.html
+
+#def scale_qw(limit):
+    
+# bitsW = Quantize.bitsW
+#       scale = 1.0
+#       if bitsW < 32:
+#         beta = 1.5
+#         Wm = beta / Quantize.S(bitsW)
+#         scale = 2 ** round(math.log(Wm / limit, 2.0))
+#         scale = scale if scale > 1 else 1.0
+#         limit = Wm if Wm > limit else limit
+#       Option.W_scale.append(scale)
+
 
 class Net(nn.Module):
     def __init__(self, device):
@@ -265,84 +280,68 @@ class Net(nn.Module):
 
         self.device = device
 
-        self.conv1 = nn.Conv2d(1, 64, 5, stride=1, padding=0, dilation=1, groups=1)
+        self.mpool1 = nn.MaxPool2d(2, stride=2)
+        self.padder1 = nn.ZeroPad2d(2)
+
+        self.conv1 = nn.Conv2d(1, 32, 5, stride=1, padding=0, dilation=1, groups=1)
         self.conv1.fan_in = self.conv1.in_channels * self.conv1.kernel_size[0] * self.conv1.kernel_size[1]
-        init_layer_weights(self.conv1.weight, self.conv1.fan_in)
+        self.conv1.scale = init_layer_weights(self.conv1.weight, self.conv1.fan_in).to(device)
 
-        self.conv2 = nn.Conv2d(64, 64, 5, stride=1, padding=0, dilation=1, groups=1)
+        self.conv2 = nn.Conv2d(32, 64, 5, stride=1, padding=0, dilation=1, groups=1)
         self.conv2.fan_in = self.conv2.in_channels * self.conv2.kernel_size[0] * self.conv2.kernel_size[1]
-        init_layer_weights(self.conv2.weight, self.conv2.fan_in)
+        self.conv2.scale = init_layer_weights(self.conv2.weight, self.conv2.fan_in).to(device)
 
-        self.conv3 = nn.Conv2d(64, 64, 5, stride=1, padding=0, dilation=1, groups=1)
-        self.conv3.fan_in = self.conv3.in_channels * self.conv3.kernel_size[0] * self.conv3.kernel_size[1]
-        init_layer_weights(self.conv3.weight, self.conv3.fan_in)
-
-        # 784 36864
-        self.fc1 = nn.Linear(784, 1000, bias=False)
+        # 784 36864 ... 16384
+        self.fc1 = nn.Linear(3136, 512, bias=False)
         self.fc1.fan_in = self.fc1.in_features
-        init_layer_weights(self.fc1.weight, self.fc1.fan_in)
+        self.fc1.scale = init_layer_weights(self.fc1.weight, self.fc1.in_features).to(device)
 
-        self.fc2 = nn.Linear(1000, 10, bias=False)
+        self.fc2 = nn.Linear(512, 10, bias=False)
         self.fc2.fan_in = self.fc2.in_features
-        init_layer_weights(self.fc2.weight, self.fc2.fan_in)
-
-        self.fc3 = nn.Linear(50, 10, bias=False)
-        self.fc3.fan_in = self.fc3.in_features
-        init_layer_weights(self.fc3.weight, self.fc2.fan_in)
+        self.fc2.scale = init_layer_weights(self.fc2.weight, self.fc2.in_features).to(device)
 
 
     def forward(self, x):
-        # Average pooling is avoided because mean operations will increase precision demand.
         batch_size = x.shape[0]
 
         # clip weights without destroying autograd -> last step from the grad update
         delta = step_d(global_gb)
         self.conv1.weight.data.clamp_(min = -1 + float(delta), max = +1 - float(delta))
         self.conv2.weight.data.clamp_(min = -1 + float(delta), max = +1 - float(delta))
-        self.conv3.weight.data.clamp_(min = -1 + float(delta), max = +1 - float(delta))
         self.fc1.weight.data.clamp_(min = -1 + float(delta), max = +1 - float(delta))
         self.fc2.weight.data.clamp_(min = -1 + float(delta), max = +1 - float(delta))
-        #self.fc3.weight.data.clamp_(min = -1 + float(delta), max = +1 - float(delta))
 
         # quantize inputs with alpha = 1
-        x = quant_act(x, -100, alpha = 1)
+        x = quant_act(x)
 
         # conv1 layer
-        #x = clee_conv2d.apply(x, qc(self.conv1.weight, global_wb))
-        #x = quant_act(x, self.conv1.fan_in)
-        #x = F.relu(x) # ReLu 
+        x = self.padder1(x)
+        x = clee_conv2d.apply(x, qc_w(self.conv1.weight, global_wb, 2))
+        x = self.mpool1(x) # pooling
+        x = F.relu(x) # ReLu
+        x = quant_act(x) 
 
         # conv2 layer
-        #x = clee_conv2d.apply(x, qc(self.conv2.weight, global_wb))
-        #x = quant_act(x, inp_dim)
-        #x = F.relu(x) # ReLu
-
-        # conv3 layer
-        #x = clee_conv2d.apply(x, qc(self.conv3.weight, global_wb))
-        #x = quant_act(x, inp_dim)
-        #x = F.relu(x) # ReLu
-
+        x = self.padder1(x)
+        x = clee_conv2d.apply(x, qc_w(self.conv2.weight, global_wb, 16))
+        x = self.mpool1(x) # pooling
+        x = F.relu(x) # ReLu
+        x = quant_act(x)
         
         # reshape for fc
         x = x.view(batch_size, -1)
 
         # fully connected layer #1
-        x = clee_LinearFunction.apply(x, qc_w(self.fc1.weight, global_wb)/16)
-        x = quant_act(x, self.fc1.fan_in)
+        x = clee_LinearFunction.apply(x, qc_w(self.fc1.weight, global_wb, 32))
         x = F.relu(x) # Relu
+        x = quant_act(x)
+
 
         # fully connected layer #2
-        x = clee_LinearFunction.apply(x, qc_w(self.fc2.weight, global_wb)/16)
-        x = quant_act(x, self.fc2.fan_in)
+        x = clee_LinearFunction.apply(x, qc_w(self.fc2.weight, global_wb, 8))
         x = F.relu(x) # Relu
-
-        #print("Sum Weights1:" + str(torch.sum(self.fc1.weight.data)))
-        #print("Sum Weights2:" + str(torch.sum(self.fc2.weight.data)))
-
-        # fully connected layer #3
-        #x = clee_LinearFunction.apply(x, qc(self.fc3.weight, global_wb))
-        #x = quant_act(x, self.fc3.fan_in)
-        #x = F.relu(x) # Relu
+        x = quant_act(x)
+        
         
         return x
 
@@ -440,7 +439,7 @@ optimizer = optim.SGD(model.parameters(), lr=1, momentum=0, dampening=0, weight_
 
 # train
 teacc, teloss, taacc, taloss = [], [], [], []  
-for epoch in range(1, 50):
+for epoch in range(1, 100):
     acc, lossv = train(model, device, train_loader, optimizer, epoch)
     taacc.append(acc)
     taloss.append(lossv)
