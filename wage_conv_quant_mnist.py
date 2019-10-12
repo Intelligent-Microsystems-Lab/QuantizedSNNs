@@ -166,7 +166,7 @@ for i in w_b_list:
 
         # train
         teacc, teloss, taacc, taloss = [], [], [], []  
-        for epoch in range(3):
+        for epoch in range(100):
             acc, lossv = train(model, device, train_loader, optimizer, epoch)
             taacc.append(acc)
             taloss.append(lossv)

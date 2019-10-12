@@ -192,7 +192,7 @@ for i in w_b_list:
 
         # train
         teacc, teloss, taacc, taloss = [], [], [], []  
-        for epoch in range(3):
+        for epoch in range(300):
             # learning rate scheduler
             if (epoch == 200) or (epoch == 250):
                global_lr /= 8
