@@ -11,4 +11,4 @@
 module load python       # Required modules
 setenv OMP_NUM_THREADS $NSLOTS
 
-python wage_conv_cifar.py
+python wage_conv_quant_cifar.py
