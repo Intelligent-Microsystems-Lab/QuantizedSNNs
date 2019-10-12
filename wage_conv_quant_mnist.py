@@ -11,7 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import quantization
-from quantization import clee_conv2d, clee_LinearFunction, quant_act, init_layer_weights, SSE, to_cat
+from quantization import clee_conv2d, clee_LinearFunction, quant_act, init_layer_weights, SSE, to_cat, clip
 
 quantization.global_wb = 2
 quantization.global_ab = 8
