@@ -179,7 +179,7 @@ w_b_list = [2, 4, 6, 8]
 a_list = [8, 10, 12]
 
 for i in w_b_list:
-    for j in in a_list
+    for j in in a_list:
         quantization.global_wb = i
         quantization.global_ab = j
         quantization.global_gb = 8
