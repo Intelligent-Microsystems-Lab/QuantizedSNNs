@@ -47,10 +47,10 @@ class Net(nn.Module):
     def forward(self, x):
         # clip weights
         with torch.no_grad():
-            self.conv1.weight.data = clip(self.conv1.weight.data, global_wb)
-            self.conv2.weight.data = clip(self.conv2.weight.data, global_wb)
-            self.fc1.weight.data = clip(self.fc1.weight.data, global_wb)
-            self.fc2.weight.data = clip(self.fc2.weight.data, global_wb)
+            self.conv1.weight.data = clip(self.conv1.weight.data, quantization.global_wb)
+            self.conv2.weight.data = clip(self.conv2.weight.data, quantization.global_wb)
+            self.fc1.weight.data = clip(self.fc1.weight.data, quantization.global_wb)
+            self.fc2.weight.data = clip(self.fc2.weight.data, quantization.global_wb)
 
         # normalizing data between -1 and 1
         x = x * 255
