@@ -195,7 +195,7 @@ for i in w_b_list:
         for epoch in range(300):
             # learning rate scheduler
             if (epoch == 200) or (epoch == 250):
-               global_lr /= 8
+               quantization.global_lr /= 8
             acc, lossv = train(model, device, train_loader, optimizer, epoch)
             taacc.append(acc)
             taloss.append(lossv)
