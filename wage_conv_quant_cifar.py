@@ -175,56 +175,54 @@ test_loader = torch.utils.data.DataLoader(
                    ])),
     batch_size=128, shuffle=False, num_workers = 2)
 
-w_b_list = [2, 4, 6, 8]
-a_list = [8, 10, 12]
+#w_b_list = [2, 4, 6, 8]
+#a_list = [8, 10, 12]
 
-for i in w_b_list:
-    for j in a_list:
-        quantization.global_wb = i
-        quantization.global_ab = j
-        quantization.global_gb = 8
-        quantization.global_eb = 8
-        quantization.global_rb = 16
+quantization.global_wb = 2
+quantization.global_ab = 8
+quantization.global_gb = 8
+quantization.global_eb = 8
+quantization.global_rb = 16
 
-        # setting up the model
-        model = Net(device).to(device)
-        optimizer = optim.SGD(model.parameters(), lr=1, momentum=0, dampening=0, weight_decay=0, nesterov=False)
+# setting up the model
+model = Net(device).to(device)
+optimizer = optim.SGD(model.parameters(), lr=1, momentum=0, dampening=0, weight_decay=0, nesterov=False)
 
-        # train
-        teacc, teloss, taacc, taloss = [], [], [], []  
-        for epoch in range(300):
-            # learning rate scheduler
-            if (epoch == 200) or (epoch == 250):
-               quantization.global_lr /= 8
-            acc, lossv = train(model, device, train_loader, optimizer, epoch)
-            taacc.append(acc)
-            taloss.append(lossv)
-            acc, lossv = test(model, device, test_loader)
-            teacc.append(acc)
-            teloss.append(lossv)
+# train
+teacc, teloss, taacc, taloss = [], [], [], []  
+for epoch in range(300):
+    # learning rate scheduler
+    if (epoch == 200) or (epoch == 250):
+       quantization.global_lr /= 8
+    acc, lossv = train(model, device, train_loader, optimizer, epoch)
+    taacc.append(acc)
+    taloss.append(lossv)
+    acc, lossv = test(model, device, test_loader)
+    teacc.append(acc)
+    teloss.append(lossv)
 
 
-        # graph results
-        bit_string = str(quantization.global_wb) + str(quantization.global_ab) + str(quantization.global_gb) + str(quantization.global_eb)
+# graph results
+bit_string = str(quantization.global_wb) + str(quantization.global_ab) + str(quantization.global_gb) + str(quantization.global_eb)
 
-        plt.clf()
-        plt.ylabel('Accuracy')
-        plt.xlabel('Epochs')
-        plt.plot(taacc , label="Training Accuracy", color="black")
-        plt.plot(teacc , label="Test Accuracy", color="blue")
-        plt.legend(loc = 'best')
-        plt.title("Accuarcy Pytorch WAGE Acc CIFAR10 ("+bit_string+")")
+plt.clf()
+plt.ylabel('Accuracy')
+plt.xlabel('Epochs')
+plt.plot(taacc , label="Training Accuracy", color="black")
+plt.plot(teacc , label="Test Accuracy", color="blue")
+plt.legend(loc = 'best')
+plt.title("Accuarcy Pytorch WAGE Acc CIFAR10 ("+bit_string+")")
 
-        plt.tight_layout()
-        plt.savefig("figures/torch_wage_acc_cifar10_"+bit_string+".png")
+plt.tight_layout()
+plt.savefig("figures/torch_wage_acc_cifar10_"+bit_string+".png")
 
-        plt.clf()
-        plt.ylabel('Loss')
-        plt.xlabel('Epochs')
-        plt.plot(taloss , label="Training Loss", color="black")
-        plt.plot(teloss , label="Test Loss", color="blue")
-        plt.legend(loc = 'best')
-        plt.title("Loss Pytorch WAGE Loss CIFAR10 ("+bit_string+")")
+plt.clf()
+plt.ylabel('Loss')
+plt.xlabel('Epochs')
+plt.plot(taloss , label="Training Loss", color="black")
+plt.plot(teloss , label="Test Loss", color="blue")
+plt.legend(loc = 'best')
+plt.title("Loss Pytorch WAGE Loss CIFAR10 ("+bit_string+")")
 
-        plt.tight_layout()
-        plt.savefig("figures/torch_wage_loss_cifar10_"+bit_string+".png")
+plt.tight_layout()
+plt.savefig("figures/torch_wage_loss_cifar10_"+bit_string+".png")
