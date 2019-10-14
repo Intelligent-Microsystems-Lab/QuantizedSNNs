@@ -13,10 +13,19 @@ import matplotlib.pyplot as plt
 import quantization
 from quantization import clee_conv2d, clee_LinearFunction, quant_act, init_layer_weights, SSE, to_cat, clip
 
-quantization.global_wb = 2
-quantization.global_ab = 8
-quantization.global_gb = 8
-quantization.global_eb = 8
+ap = argparse.ArgumentParser()
+ap.add_argument("-ab", "--ab", type = int, help = "activation bits")
+ap.add_argument("-wb", "--wb", type = int, help = "weight bits")
+ap.add_argument("-eb", "--eb", type = int, help="weight bits")
+ap.add_argument("-gb", "--gb", type = int, help="gradient bits")
+#ap.add_argument("-rb", "--random", type = int, help="random bits")
+args = vars(ap.parse_args())
+
+
+quantization.global_wb = args['wb']
+quantization.global_ab = args['ab']
+quantization.global_gb = args['gb']
+quantization.global_eb = args['eb']
 quantization.global_rb = 16
 
 quantization.global_beta = 1.5
@@ -148,55 +157,44 @@ test_loader = torch.utils.data.DataLoader(
 
 
 
-w_b_list = [2, 4, 6, 8]
-a_list = [8, 10, 12]
 
-for i in w_b_list:
-    for j in a_list:
-        quantization.global_wb = i
-        quantization.global_ab = j
-        quantization.global_gb = 8
-        quantization.global_eb = 8
-        quantization.global_rb = 16
+# setting up the model
+model = Net(device).to(device)
+optimizer = optim.SGD(model.parameters(), lr=1, momentum=0, dampening=0, weight_decay=0, nesterov=False)
 
+# train
+teacc, teloss, taacc, taloss = [], [], [], []  
+for epoch in range(100):
+    acc, lossv = train(model, device, train_loader, optimizer, epoch)
+    taacc.append(acc)
+    taloss.append(lossv)
+    acc, lossv = test(model, device, test_loader)
+    teacc.append(acc)
+    teloss.append(lossv)
 
-        # setting up the model
-        model = Net(device).to(device)
-        optimizer = optim.SGD(model.parameters(), lr=1, momentum=0, dampening=0, weight_decay=0, nesterov=False)
+# graph results
+bit_string = str(quantization.global_wb) + str(quantization.global_ab) + str(quantization.global_gb) + str(quantization.global_eb)
 
-        # train
-        teacc, teloss, taacc, taloss = [], [], [], []  
-        for epoch in range(100):
-            acc, lossv = train(model, device, train_loader, optimizer, epoch)
-            taacc.append(acc)
-            taloss.append(lossv)
-            acc, lossv = test(model, device, test_loader)
-            teacc.append(acc)
-            teloss.append(lossv)
+plt.clf()
+plt.ylabel('Accuracy')
+plt.xlabel('Epochs')
+plt.plot(taacc , label="Training Accuracy", color="black")
+plt.plot(teacc , label="Test Accuracy", color="blue")
+plt.legend(loc = 'best')
+plt.title("Accuarcy Pytorch WAGE Acc MNIST ("+bit_string+")")
 
-        # graph results
-        bit_string = str(quantization.global_wb) + str(quantization.global_ab) + str(quantization.global_gb) + str(quantization.global_eb)
-
-        plt.clf()
-        plt.ylabel('Accuracy')
-        plt.xlabel('Epochs')
-        plt.plot(taacc , label="Training Accuracy", color="black")
-        plt.plot(teacc , label="Test Accuracy", color="blue")
-        plt.legend(loc = 'best')
-        plt.title("Accuarcy Pytorch WAGE Acc MNIST ("+bit_string+")")
-
-        plt.tight_layout()
-        plt.savefig("figures/torch_wage_acc_mnist_"+bit_string+".png")
+plt.tight_layout()
+plt.savefig("figures/torch_wage_acc_mnist_"+bit_string+".png")
 
 
-        plt.clf()
-        plt.ylabel('Loss')
-        plt.xlabel('Epochs')
-        plt.plot(taloss , label="Training Loss", color="black")
-        plt.plot(teloss , label="Test Loss", color="blue")
-        plt.legend(loc = 'best')
-        plt.title("Loss Pytorch WAGE Loss MNIST ("+bit_string+")")
+plt.clf()
+plt.ylabel('Loss')
+plt.xlabel('Epochs')
+plt.plot(taloss , label="Training Loss", color="black")
+plt.plot(teloss , label="Test Loss", color="blue")
+plt.legend(loc = 'best')
+plt.title("Loss Pytorch WAGE Loss MNIST ("+bit_string+")")
 
-        plt.tight_layout()
-        plt.savefig("figures/torch_wage_loss_mnist_"+bit_string+".png")
+plt.tight_layout()
+plt.savefig("figures/torch_wage_loss_mnist_"+bit_string+".png")
 

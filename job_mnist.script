@@ -11,4 +11,4 @@
 module load python       # Required modules
 setenv OMP_NUM_THREADS $NSLOTS
 
-python wage_conv_quant_mnist.py
+python wage_conv_quant_mnist.py -wb 2 -ab 8 -eb 8 -gb 8
