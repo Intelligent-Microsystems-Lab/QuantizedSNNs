@@ -1,0 +1,46 @@
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+Files already downloaded and verified
+/afs/crc.nd.edu/user/c/cschaef6/QuantizedSNN/quantization.py:182: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  ctx.save_for_backward(input, weight, w_quant, bias, torch.tensor([pool]), relu_mask, clip_info, pool_indices, torch.tensor(size_pool))
+/afs/crc.nd.edu/user/c/cschaef6/QuantizedSNN/quantization.py:100: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  out_tensor[torch.arange(inp_tensor.shape[0]).to(device), torch.tensor(inp_tensor, dtype = int, device=device)] = 1
+Train Epoch: 0 [0%]	Loss: 78.888732 	Accuarcy: 10.156250 Train Epoch: 0 [0%]	Loss: 7036.887311 	Accuarcy: 9.765625 Traceback (most recent call last):
+  File "wage_conv_quant_cifar.py", line 197, in <module>
+    acc, lossv = train(model, device, train_loader, optimizer, epoch)
+  File "wage_conv_quant_cifar.py", line 126, in train
+    loss.backward()
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torch/tensor.py", line 118, in backward
+    torch.autograd.backward(self, gradient, retain_graph, create_graph)
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torch/autograd/__init__.py", line 93, in backward
+    allow_unreachable=True)  # allow_unreachable flag
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torch/autograd/function.py", line 77, in apply
+    return self._forward_cls.backward(self, *args)
+  File "/afs/crc.nd.edu/user/c/cschaef6/QuantizedSNN/quantization.py", line 203, in backward
+    grad_weight = quant_grad(torch.nn.grad.conv2d_weight(input, weight.shape, quant_error)).float()
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torch/nn/grad.py", line 204, in conv2d_weight
+    stride, in_channels * min_batch)
+RuntimeError: CUDA out of memory. Tried to allocate 1.12 GiB (GPU 0; 10.92 GiB total capacity; 8.58 GiB already allocated; 567.50 MiB free; 1.16 GiB cached)
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+Files already downloaded and verified
+/afs/crc.nd.edu/user/c/cschaef6/QuantizedSNN/quantization.py:182: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  ctx.save_for_backward(input, weight, w_quant, bias, torch.tensor([pool]), relu_mask, clip_info, pool_indices, torch.tensor(size_pool))
+/afs/crc.nd.edu/user/c/cschaef6/QuantizedSNN/quantization.py:100: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  out_tensor[torch.arange(inp_tensor.shape[0]).to(device), torch.tensor(inp_tensor, dtype = int, device=device)] = 1
+Train Epoch: 0 [0%]	Loss: 78.888732 	Accuarcy: 10.156250 Train Epoch: 0 [0%]	Loss: 7036.887311 	Accuarcy: 9.765625 Traceback (most recent call last):
+  File "wage_conv_quant_cifar.py", line 199, in <module>
+    acc, lossv = train(model, device, train_loader, optimizer, epoch)
+  File "wage_conv_quant_cifar.py", line 137, in train
+    loss.backward()
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torch/tensor.py", line 118, in backward
+    torch.autograd.backward(self, gradient, retain_graph, create_graph)
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torch/autograd/__init__.py", line 93, in backward
+    allow_unreachable=True)  # allow_unreachable flag
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torch/autograd/function.py", line 77, in apply
+    return self._forward_cls.backward(self, *args)
+  File "/afs/crc.nd.edu/user/c/cschaef6/QuantizedSNN/quantization.py", line 203, in backward
+    grad_weight = quant_grad(torch.nn.grad.conv2d_weight(input, weight.shape, quant_error)).float()
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torch/nn/grad.py", line 204, in conv2d_weight
+    stride, in_channels * min_batch)
+RuntimeError: CUDA out of memory. Tried to allocate 1.12 GiB (GPU 0; 10.92 GiB total capacity; 8.58 GiB already allocated; 567.50 MiB free; 1.16 GiB cached)

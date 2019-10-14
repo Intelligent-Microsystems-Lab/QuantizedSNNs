@@ -77,3 +77,9 @@ Epoch 27: loss=7.79201e-01, train=6.09842e-01, test=6.04646e-01
 Epoch 28: loss=7.64543e-01, train=6.09792e-01, test=6.05160e-01
 Epoch 29: loss=7.56941e-01, train=6.11745e-01, test=6.00226e-01
 Epoch 30: loss=7.49391e-01, train=6.08841e-01, test=6.08655e-01
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+python: can't open file 'wage_conv_cifar.py': [Errno 2] No such file or directory
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+python: can't open file 'wage_conv_cifar.py': [Errno 2] No such file or directory

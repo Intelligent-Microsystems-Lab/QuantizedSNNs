@@ -6,14 +6,25 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 import numpy as np
 import matplotlib.pyplot as plt
+import argparse
 
 import quantization
 from quantization import clee_conv2d, clee_LinearFunction, quant_act, init_layer_weights, SSE, to_cat, clip
 
-quantization.global_wb = 2
-quantization.global_ab = 8
-quantization.global_gb = 8
-quantization.global_eb = 8
+
+ap = argparse.ArgumentParser()
+ap.add_argument("-ab", "--ab", type = int, help = "activation bits")
+ap.add_argument("-wb", "--wb", type = int, help = "weight bits")
+ap.add_argument("-eb", "--eb", type = int, help="weight bits")
+ap.add_argument("-gb", "--gb", type = int, help="gradient bits")
+#ap.add_argument("-rb", "--random", type = int, help="random bits")
+args = vars(ap.parse_args())
+
+
+quantization.global_wb = args['wb']
+quantization.global_ab = args['ab']
+quantization.global_gb = args['gb']
+quantization.global_eb = args['eb']
 quantization.global_rb = 16
 
 quantization.global_beta = 1.5
@@ -174,15 +185,6 @@ test_loader = torch.utils.data.DataLoader(
                         transforms.ToTensor()
                    ])),
     batch_size=128, shuffle=False, num_workers = 2)
-
-#w_b_list = [2, 4, 6, 8]
-#a_list = [8, 10, 12]
-
-quantization.global_wb = 2
-quantization.global_ab = 8
-quantization.global_gb = 8
-quantization.global_eb = 8
-quantization.global_rb = 16
 
 # setting up the model
 model = Net(device).to(device)
