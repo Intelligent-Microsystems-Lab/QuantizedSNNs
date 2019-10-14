@@ -1,0 +1,9 @@
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+Files already downloaded and verified
+Traceback (most recent call last):
+  File "wage_conv_quant_cifar.py", line 190, in <module>
+    model = Net(device).to(device)
+  File "wage_conv_quant_cifar.py", line 42, in __init__
+    self.conv1.scale = init_layer_weights(self.conv1.weight, self.conv1.kernel_size[0] * self.conv1.kernel_size[1] * self.conv1.in_channels).to(device)
+RuntimeError: CUDA error: out of memory
