@@ -96,6 +96,7 @@ def train_classifier_dropconnect(x_data, y_data, x_test, y_test, nb_epochs, weig
         local_loss = []
         batch_idx = 0
         batch_total = len(x_data) / args_snn['batch_size']
+        correct = 0
         for x_local, y_local in args_snn['data_gen'](X = x_data, y =  y_data, batch_size = args_snn['batch_size'], nb_steps = args_snn['nb_steps'], nb_units = layers['input'], shuffle = True, time_step = args_snn['time_step'], device = args_snn['device']):
             batch_idx += 1
             #with torch.autograd.detect_anomaly():
@@ -109,7 +110,7 @@ def train_classifier_dropconnect(x_data, y_data, x_test, y_test, nb_epochs, weig
             optimizer.step()
 
             import pdb; pdb.set_trace()
-            target_cat_hinge = to_cat(y_local, 10, device)
+            target_cat_hinge = to_cat(y_local, 10, args_snn['device'])
             pred = m.argmax(dim=1, keepdim=True)
             correct += pred.eq(target.view_as(pred)).sum().item()
             loss_guess += loss_val.item()
