@@ -77,8 +77,10 @@ def compute_classification_accuracy_dropconnect(x_data, y_data, weights, args_sn
     correct_guess = 0
     full_len = 0
     loss_accum = 0
+    batch_idx = 0
 
     for x_local, y_local in args_snn['data_gen'](X = x_data, y =  y_data, batch_size = args_snn['batch_size'], nb_steps = args_snn['nb_steps'], nb_units = layers['input'], shuffle = True, time_step = args_snn['time_step'], device = args_snn['device']):
+        batch_idx += 1
         full_len += len(y_local)
 
         m = run_snn_dropconnect(x_local.to_dense(), y_local, weights, layers, args_snn, args_snn['p_drop'], True)
@@ -92,7 +94,7 @@ def compute_classification_accuracy_dropconnect(x_data, y_data, weights, args_sn
         #accs.append(tmp)
         pred = m.argmax(dim=1, keepdim=True)
         correct_guess += pred.eq(y_local.view_as(pred)).sum().item()
-    return correct_guess, loss_accum, full_len
+    return correct_guess, loss_accum/batch_idx, full_len
 
 #@profile
 def train_classifier_dropconnect(x_data, y_data, x_test, y_test, nb_epochs, weights, args_snn, layers, figures, verbose, p_drop, fig_title="Training Curves"):
@@ -106,7 +108,6 @@ def train_classifier_dropconnect(x_data, y_data, x_test, y_test, nb_epochs, weig
     
     loss_test = []
     loss_train = []
-    loss_guess = 0
     print("Training: go")
     for e in range(nb_epochs):
         local_loss = []
@@ -114,6 +115,7 @@ def train_classifier_dropconnect(x_data, y_data, x_test, y_test, nb_epochs, weig
         batch_total = len(x_data) / args_snn['batch_size']
         correct_guess = 0
         count = 0
+        loss_guess = 0
         for x_local, y_local in args_snn['data_gen'](X = x_data, y =  y_data, batch_size = args_snn['batch_size'], nb_steps = args_snn['nb_steps'], nb_units = layers['input'], shuffle = True, time_step = args_snn['time_step'], device = args_snn['device']):
 
             batch_idx += 1
@@ -143,7 +145,7 @@ def train_classifier_dropconnect(x_data, y_data, x_test, y_test, nb_epochs, weig
         #mean_loss = np.mean(local_loss)
         print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(loss_temp/test_len, correct_test, test_len, 100. * correct_test / test_len))
         #print("Epoch %i: loss=%.5e, train=%.5e, test=%.5e"%(e+1,mean_loss,train_acc[-1],test_acc[-1]))
-        loss_test.append(loss_temp / test_len)
+        loss_test.append(loss_temp)
         test_acc.append(correct_test / test_len)
 
         if test_acc[-1] < 0.12:
