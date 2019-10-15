@@ -94,6 +94,7 @@ def compute_classification_accuracy_dropconnect(x_data, y_data, weights, args_sn
         #accs.append(tmp)
         pred = m.argmax(dim=1, keepdim=True)
         correct_guess += pred.eq(y_local.view_as(pred)).sum().item()
+        import pdb; pdb.set_trace()
     return correct_guess, loss_accum/(batch_idx+1), full_len
 
 #@profile
