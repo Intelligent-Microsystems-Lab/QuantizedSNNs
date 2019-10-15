@@ -16,7 +16,6 @@ from snn_loss import van_rossum
 from superspike import SuperSpike, current2firing_time, sparse_data_generator 
 from visual import mnist_train_curve, learning_para, precise_figs
 from neurons import read_out_layer
-from quantization import to_cat
 
 import line_profiler
 
@@ -73,15 +72,31 @@ def run_snn_dropconnect(inputs, y, weights, layers, args, p_drop, infer):
 def compute_classification_accuracy_dropconnect(x_data, y_data, weights, args_snn, layers):
     """ Computes classification accuracy on supplied data in batches. """
     accs = []
+    log_softmax_fn = nn.LogSoftmax(dim=1)
+    loss_fn = nn.NLLLoss()
+    correct_guess = 0
+    full_len = 0
+    loss_accum = 0
+
     for x_local, y_local in args_snn['data_gen'](X = x_data, y =  y_data, batch_size = args_snn['batch_size'], nb_steps = args_snn['nb_steps'], nb_units = layers['input'], shuffle = True, time_step = args_snn['time_step'], device = args_snn['device']):
+        full_len += len(y_local)
+
         m = run_snn_dropconnect(x_local.to_dense(), y_local, weights, layers, args_snn, args_snn['p_drop'], True)
-        _,am=torch.max(m,1)
-        tmp = np.mean((y_local==am).detach().cpu().numpy()) # compare to labels
-        accs.append(tmp)
-    return np.mean(accs)
+
+        log_p_y = log_softmax_fn(m)
+        loss_val = loss_fn(log_p_y, y_local)
+        loss_accum += loss_val.item()
+
+        #_,am=torch.max(m,1)
+        #tmp = np.mean((y_local==am).detach().cpu().numpy()) # compare to labels
+        #accs.append(tmp)
+        pred = m.argmax(dim=1, keepdim=True)
+        correct_guess += pred.eq(y_local.view_as(pred)).sum().item()
+    return correct_guess, loss_accum, full_len
 
 #@profile
 def train_classifier_dropconnect(x_data, y_data, x_test, y_test, nb_epochs, weights, args_snn, layers, figures, verbose, p_drop, fig_title="Training Curves"):
+    
     optimizer = torch.optim.Adam(weights, lr=args_snn['lr'])
     log_softmax_fn = nn.LogSoftmax(dim=1)
     loss_fn = nn.NLLLoss()
@@ -89,44 +104,50 @@ def train_classifier_dropconnect(x_data, y_data, x_test, y_test, nb_epochs, weig
     train_acc = []
     test_acc = []
     
-    loss_hist = []
+    loss_test = []
+    loss_train = []
     loss_guess = 0
     print("Training: go")
     for e in range(nb_epochs):
         local_loss = []
         batch_idx = 0
         batch_total = len(x_data) / args_snn['batch_size']
-        correct = 0
+        correct_guess = 0
+        count = 0
         for x_local, y_local in args_snn['data_gen'](X = x_data, y =  y_data, batch_size = args_snn['batch_size'], nb_steps = args_snn['nb_steps'], nb_units = layers['input'], shuffle = True, time_step = args_snn['time_step'], device = args_snn['device']):
+
             batch_idx += 1
+            count += len(y_local)
+
             #with torch.autograd.detect_anomaly():
             optimizer.zero_grad()
-
             m = run_snn_dropconnect(x_local.to_dense(), y_local, weights, layers, args_snn, p_drop, False)
             log_p_y = log_softmax_fn(m)
             loss_val = loss_fn(log_p_y, y_local)
 
+            #update
             loss_val.backward()
             optimizer.step()
 
-            import pdb; pdb.set_trace()
-            target_cat_hinge = to_cat(y_local, 10, args_snn['device'])
             pred = m.argmax(dim=1, keepdim=True)
-            correct += pred.eq(target.view_as(pred)).sum().item()
+            correct_guess += pred.eq(y_local.view_as(pred)).sum().item()
             loss_guess += loss_val.item()
             if verbose:
                 _,am=torch.max(m,1)
                 print('\rTrain Epoch: {} [{:.0f}%]\tLoss: {:.6f} \tAccuarcy: {:.6f} \r'.format(e, 100. * batch_idx / batch_total, loss_guess/(batch_idx+1), 100* correct_guess/count ), end="")
         #train_acc.append(compute_classification_accuracy_dropconnect(x_data, y_data, weights, args_snn, layers))
-        test_acc.append(compute_classification_accuracy_dropconnect(x_test, y_test, weights,args_snn, layers))
+        train_acc.append(correct_guess / count)
+        loss_train.append(loss_guess/(batch_idx+1))
+        correct_test, loss_test, test_len = compute_classification_accuracy_dropconnect(x_test, y_test, weights,args_snn, layers)
 
-        mean_loss = np.mean(local_loss)
-        print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(test_loss, correct, len(test_loader.dataset), 100. * correct / len(test_loader.dataset)))
+        #mean_loss = np.mean(local_loss)
+        print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(loss_test/test_len, correct_test, test_len, 100. * correct_test / test_len))
         #print("Epoch %i: loss=%.5e, train=%.5e, test=%.5e"%(e+1,mean_loss,train_acc[-1],test_acc[-1]))
-        loss_hist.append(mean_loss)
+        loss_test.append(loss_test / test_len)
+        test_acc.append(correct_test / test_len)
 
         if test_acc[-1] < 0.12:
-            return loss_hist, train_acc, test_acc, weights
+            return loss_test, loss_train, train_acc, test_acc, weights
 
     if figures:
         mnist_train_curve(loss_hist, train_acc, test_acc, fig_title, 'figures/results_'+args_snn['ds_name'] + "_" +args_snn['read_out']+"_" + args_snn['neuron_type'].__name__ + str('{date:%Y-%m-%d_%H-%M-%S}'.format( date=datetime.datetime.now() ))+'.png')
@@ -136,7 +157,7 @@ def train_classifier_dropconnect(x_data, y_data, x_test, y_test, nb_epochs, weig
             pickle.dump(results, f)
         
 
-    return loss_hist, train_acc, test_acc, weights
+    return loss_test, loss_train, train_acc, test_acc, weights
 
 #@profile
 def gen_tau(mu=1e-3, var=1e-4, layers = [28*28, 500, 10], device = torch.device("cpu")):
