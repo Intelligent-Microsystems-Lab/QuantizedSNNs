@@ -117,8 +117,8 @@ parameters = {
     'data_gen'    : sparse_data_generator,
     'time_step'   : 1e-3, #might need to be smaller
     'p_drop'      : 0.3,
-    'batch_size'  : 64,
-    'nb_steps'    : 100, #
+    'batch_size'  : 128,
+    'nb_steps'    : 50, #
     'lr'          : 5.58189e-04,
     'tau_vr'      : 4e-3,
 
@@ -154,7 +154,7 @@ parameters = {
 weights = get_weights(layers, device=device, time_step=parameters['time_step'], tau_mem=parameters['tau_v'][0], scale_mult = 7)
 
 
-loss_test, loss_train, train_acc, test_acc, weights = train_classifier_dropconnect(x_data = x_train, y_data = y_train, x_test = x_test, y_test = y_test, nb_epochs = parameters['nb_epochs'], weights = weights, args_snn = parameters, layers = layers, figures = True, verbose=False, p_drop = parameters['p_drop'],  fig_title=ds_name + " "+ parameters['read_out']+" "+ parameters['neuron_type'].__name__)
+loss_test, loss_train, train_acc, test_acc, weights = train_classifier_dropconnect(x_data = x_train, y_data = y_train, x_test = x_test, y_test = y_test, nb_epochs = parameters['nb_epochs'], weights = weights, args_snn = parameters, layers = layers, figures = True, verbose=True, p_drop = parameters['p_drop'],  fig_title=ds_name + " "+ parameters['read_out']+" "+ parameters['neuron_type'].__name__)
 
 
 #results = {'Parameters': parameters, 'loss': loss_hist, 'train':train_acc, 'test': test_acc, 'w': result_w}

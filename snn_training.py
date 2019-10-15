@@ -138,12 +138,12 @@ def train_classifier_dropconnect(x_data, y_data, x_test, y_test, nb_epochs, weig
         #train_acc.append(compute_classification_accuracy_dropconnect(x_data, y_data, weights, args_snn, layers))
         train_acc.append(correct_guess / count)
         loss_train.append(loss_guess/(batch_idx+1))
-        correct_test, loss_test, test_len = compute_classification_accuracy_dropconnect(x_test, y_test, weights,args_snn, layers)
+        correct_test, loss_temp, test_len = compute_classification_accuracy_dropconnect(x_test, y_test, weights,args_snn, layers)
 
         #mean_loss = np.mean(local_loss)
-        print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(loss_test/test_len, correct_test, test_len, 100. * correct_test / test_len))
+        print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(loss_temp/test_len, correct_test, test_len, 100. * correct_test / test_len))
         #print("Epoch %i: loss=%.5e, train=%.5e, test=%.5e"%(e+1,mean_loss,train_acc[-1],test_acc[-1]))
-        loss_test.append(loss_test / test_len)
+        loss_test.append(loss_temp / test_len)
         test_acc.append(correct_test / test_len)
 
         if test_acc[-1] < 0.12:
