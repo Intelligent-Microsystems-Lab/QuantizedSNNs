@@ -13,14 +13,13 @@ import torch.nn as nn
 import torchvision
 
 from snn_loss import van_rossum
-
 from superspike import SuperSpike, current2firing_time, sparse_data_generator 
-
 from visual import mnist_train_curve, learning_para, precise_figs
-
 from neurons import read_out_layer
+from quantization import to_cat
 
 import line_profiler
+
 
 #@profile
 def get_weights(layers, device, time_step, tau_mem, scale_mult):
@@ -108,7 +107,11 @@ def train_classifier_dropconnect(x_data, y_data, x_test, y_test, nb_epochs, weig
 
             loss_val.backward()
             optimizer.step()
+
             import pdb; pdb.set_trace()
+            target_cat_hinge = to_cat(y_local, 10, device)
+            pred = m.argmax(dim=1, keepdim=True)
+            correct += pred.eq(target.view_as(pred)).sum().item()
             loss_guess += loss_val.item()
             if verbose:
                 _,am=torch.max(m,1)
