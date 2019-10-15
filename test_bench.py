@@ -108,7 +108,7 @@ layers = {'input'            : 28*28,
 parameters = {
     # general 
     'ds_name'     : ds_name,
-    'nb_epochs'   : 30,
+    'nb_epochs'   : 2,
     'neuron_type' : LIF_neuron,
     'read_out'    : "no_spike_integrate",
     'device'      : device,

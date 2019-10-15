@@ -10,30 +10,26 @@ import torch
 
 def mnist_train_curve(loss_train, loss_test, train_acc, test_acc, fig_title, file_name):
     
-    import pdb; pdb.set_trace()
     plt.clf()
-    #fig, ax1 = plt.subplots()
 
     plt.subplot(1, 2, 1)
-    #ax1.set_xlabel('Epochs')
-    #ax1.set_ylabel('Loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
     plt.plot(loss_train, label="Training Loss", color="green")
     plt.plot(loss_test, label="Test Loss", color="blue")
+    plt.title("Loss")
     plt.legend()
-    #ax1.tick_params(axis='y')
 
-    #ax2 = ax1.twinx()  
 
-    #ax2.set_ylabel('Accuracy')
     plt.subplot(1, 2, 2)
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
     plt.plot(train_acc, label="Training Accuracy", color="green")
     plt.plot(test_acc, label="Test Accuracy", color="blue")
-    #ax2.tick_params(axis='y')
-
     plt.legend()
     plt.title(fig_title)
 
-    fig.tight_layout()
+    plt.tight_layout()
 
     plt.savefig(file_name)
 
