@@ -113,7 +113,7 @@ def train_classifier_dropconnect(x_data, y_data, x_test, y_test, nb_epochs, weig
             if verbose:
                 _,am=torch.max(m,1)
                 print('\rTrain Epoch: {} [{:.0f}%]\tLoss: {:.6f} \tAccuarcy: {:.6f} \r'.format(e, 100. * batch_idx / batch_total, loss_guess/(batch_idx+1), 100* correct_guess/count ), end="")
-        train_acc.append(compute_classification_accuracy_dropconnect(x_data, y_data, weights, args_snn, layers))
+        #train_acc.append(compute_classification_accuracy_dropconnect(x_data, y_data, weights, args_snn, layers))
         test_acc.append(compute_classification_accuracy_dropconnect(x_test, y_test, weights,args_snn, layers))
 
         mean_loss = np.mean(local_loss)
