@@ -91,42 +91,46 @@ def train_classifier_dropconnect(x_data, y_data, x_test, y_test, nb_epochs, weig
     test_acc = []
     
     loss_hist = []
+    loss_guess = 0
     print("Training: go")
     for e in range(nb_epochs):
         local_loss = []
+        batch_idx = 0
+        batch_total = len(x_data) / args_snn['batch_size']
         for x_local, y_local in args_snn['data_gen'](X = x_data, y =  y_data, batch_size = args_snn['batch_size'], nb_steps = args_snn['nb_steps'], nb_units = layers['input'], shuffle = True, time_step = args_snn['time_step'], device = args_snn['device']):
+            batch_idx += 1
+            #with torch.autograd.detect_anomaly():
+            optimizer.zero_grad()
 
-            with torch.autograd.detect_anomaly():
-                optimizer.zero_grad()
+            m = run_snn_dropconnect(x_local.to_dense(), y_local, weights, layers, args_snn, p_drop, False)
+            log_p_y = log_softmax_fn(m)
+            loss_val = loss_fn(log_p_y, y_local)
 
-                #weights = quantize(weights = weights)
-                m = run_snn_dropconnect(x_local.to_dense(), y_local, weights, layers, args_snn, p_drop, False)
-                log_p_y = log_softmax_fn(m)
-                loss_val = loss_fn(log_p_y, y_local)
-
-                loss_val.backward()
-                optimizer.step()
-                #weights = quantize(weights = weights, mu = args_snn['mu'], var = args_snn['var'])
-            local_loss.append(float(loss_val.item()))
+            loss_val.backward()
+            optimizer.step()
+            import pdb; pdb.set_trace()
+            loss_guess += loss_val.item()
             if verbose:
                 _,am=torch.max(m,1)
-                print("Loss: "+str(loss_val)+" Predicted: "+str(am)+" Labels: "+str(y_local))
-        #weights = quantize(weights = weights, mu = args_snn['mu'], var = args_snn['var'])
-        #weights = quantize(weights = weights)
+                print('\rTrain Epoch: {} [{:.0f}%]\tLoss: {:.6f} \tAccuarcy: {:.6f} \r'.format(e, 100. * batch_idx / batch_total, loss_guess/(batch_idx+1), 100* correct_guess/count ), end="")
         train_acc.append(compute_classification_accuracy_dropconnect(x_data, y_data, weights, args_snn, layers))
         test_acc.append(compute_classification_accuracy_dropconnect(x_test, y_test, weights,args_snn, layers))
 
         mean_loss = np.mean(local_loss)
-        print("Epoch %i: loss=%.5e, train=%.5e, test=%.5e"%(e+1,mean_loss,train_acc[-1],test_acc[-1]))
+        print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(test_loss, correct, len(test_loader.dataset), 100. * correct / len(test_loader.dataset)))
+        #print("Epoch %i: loss=%.5e, train=%.5e, test=%.5e"%(e+1,mean_loss,train_acc[-1],test_acc[-1]))
         loss_hist.append(mean_loss)
-        if figures:
-            mnist_train_curve(loss_hist, train_acc, test_acc, fig_title, 'figures/results_'+args_snn['ds_name'] + "_" +args_snn['read_out']+"_" + args_snn['neuron_type'].__name__ + str('{date:%Y-%m-%d_%H-%M-%S}'.format( date=datetime.datetime.now() ))+'.png')
-            results = {'Parameters': args_snn, 'loss': loss_hist, 'train':train_acc, 'test': test_acc, 'w': weights}
 
-            with open('results/results_'+args_snn['ds_name'] + "_" +args_snn['read_out']+"_" + args_snn['neuron_type'].__name__ + str('{date:%Y-%m-%d_%H-%M-%S}'.format( date=datetime.datetime.now() ))+'.pkl', 'wb') as f:
-                pickle.dump(results, f)
         if test_acc[-1] < 0.12:
             return loss_hist, train_acc, test_acc, weights
+
+    if figures:
+        mnist_train_curve(loss_hist, train_acc, test_acc, fig_title, 'figures/results_'+args_snn['ds_name'] + "_" +args_snn['read_out']+"_" + args_snn['neuron_type'].__name__ + str('{date:%Y-%m-%d_%H-%M-%S}'.format( date=datetime.datetime.now() ))+'.png')
+        results = {'Parameters': args_snn, 'loss': loss_hist, 'train':train_acc, 'test': test_acc, 'w': weights}
+
+        with open('results/results_'+args_snn['ds_name'] + "_" +args_snn['read_out']+"_" + args_snn['neuron_type'].__name__ + str('{date:%Y-%m-%d_%H-%M-%S}'.format( date=datetime.datetime.now() ))+'.pkl', 'wb') as f:
+            pickle.dump(results, f)
+        
 
     return loss_hist, train_acc, test_acc, weights
 

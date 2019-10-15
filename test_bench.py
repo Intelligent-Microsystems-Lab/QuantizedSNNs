@@ -94,33 +94,22 @@ y_test  = torch.tensor(test_dataset.test_labels, device=device, dtype=dtype)
 # x_train = x_train.drop_duplicates()
 
 
-# !!! import input should always be quadratic
 # parameters + architecture
 layers = {'input'            : 28*28,
           #'convolutional_1'  : 5*5,
-          'fully-connected_1': 800,
+          'fully-connected_1': 100,
           'output'           : 10}
           #'input'            : 128*128,
           #'convolutional_1'  : 5*5,
           #'fully-connected_1': 8000,
           #'output'           : 12}
-#layers = [500, 300]
-#layers = [128*128, 800, 12]
 
 
-i = 1
-
-mu = torch.Tensor([.254, .589, .997, 1.3, 1.72, 2.24, 2.8, 3.36]).to(device)*10e-6
-var = torch.Tensor([5.8, 4.92, 5.91, 5.91, 7.57, 10.9, 12.1, 12.5]).to(device)*10e-8
-n_mu, n_var = normalize_distribution(mu, var, min_r = -1, max_r = 1)
-
-# mult_std = [0] + [10**x for x in range(7)]
-# for i in mult_std:
 parameters = {
     # general 
     'ds_name'     : ds_name,
     'nb_epochs'   : 30,
-    'neuron_type' : ferro_neuron,
+    'neuron_type' : LIF_neuron,
     'read_out'    : "no_spike_integrate",
     'device'      : device,
     'dtype'       : torch.float,
@@ -128,58 +117,48 @@ parameters = {
     'data_gen'    : sparse_data_generator,
     'time_step'   : 1e-3, #might need to be smaller
     'p_drop'      : 0.3,
-    'batch_size'  : 256,
-    'nb_steps'    : 200, #
+    'batch_size'  : 64,
+    'nb_steps'    : 100, #
     'lr'          : 5.58189e-04,
     'tau_vr'      : 4e-3,
-    'quant_nb'    : 8,
 
     # LIF
-    'fire_thresh' : gen_tau(mu = 1, var = i*1e-3*i, layers = layers, device = device),
-    'tau_syn'     : gen_tau(mu = 5e-3, var = i*5e-5*i, layers = layers, device = device),
-    'tau_mem'     : gen_tau(mu = 10e-4, var = i*10e-6*i, layers = layers, device = device),
+    'fire_thresh' : gen_tau(mu = 1, var = 0, layers = layers, device = device),
+    'tau_syn'     : gen_tau(mu = 5e-3, var = 0, layers = layers, device = device),
+    'tau_mem'     : gen_tau(mu = 10e-4, var = 0, layers = layers, device = device),
    
     #adapt. exp.
-    'tau_cur'     : gen_tau(mu = 2e-1, var = 5e-5*i, layers = layers, device = device),
-    'sharpness'   : gen_tau(mu = 0.04, var = 5e-5*i, layers = layers, device = device),
-    'a_cur'       : gen_tau(mu = 1e-40, var = 1e-42*i, layers = layers, device = device),
-    'b_cur'       : gen_tau(mu = 0.001, var = 5e-6*i, layers = layers, device = device),
-    'theta'       : gen_tau(mu = 0.95, var = 5e-5*i, layers = layers, device = device),
+    'tau_cur'     : gen_tau(mu = 2e-1, var = 0, layers = layers, device = device),
+    'sharpness'   : gen_tau(mu = 0.04, var = 0, layers = layers, device = device),
+    'a_cur'       : gen_tau(mu = 1e-40, var = 0, layers = layers, device = device),
+    'b_cur'       : gen_tau(mu = 0.001, var = 0, layers = layers, device = device),
+    'theta'       : gen_tau(mu = 0.95, var = 0, layers = layers, device = device),
     
 
     # ferro
-    'v_rest_e'    : gen_tau(mu = -65 * 1e-3, var = 0*i, layers = layers, device = device),
-    'dx_dt_param' : gen_tau(mu = 200e-3, var = 5e-5*i, layers = layers, device = device),
-    'v_reset_e'   : gen_tau(mu = -65 * 1e-3, var = 0*i, layers = layers, device = device),
-    'v_thresh_e'  : gen_tau(mu = -52*1e-3, var = 26e-5*i, layers = layers, device = device),
-    'refrac_e'    : gen_tau(mu = 5*1e-3, var = 0*i, layers = layers, device = device),
-    'tau_v'       : gen_tau(mu = 100 * 1e-3, var = 5e-4*i, layers = layers, device = device),
-    'del_theta'   : gen_tau(mu = 0.1*1e-3, var = 0*i, layers = layers, device = device),
-    'ge_max'      : gen_tau(mu = 8, var = 0*i, layers = layers, device = device),
-    'gi_max'      : gen_tau(mu = 5, var = 0*i, layers = layers, device = device),
-    'tau_ge'      : gen_tau(mu = 1*1e-3, var = 0*i, layers = layers, device = device),
-    'tau_gi'      : gen_tau(mu = 2*1e-3, var = 0*i, layers = layers, device = device),
-    'mu'          : n_mu,
-    'var'         : n_var
+    'v_rest_e'    : gen_tau(mu = -65 * 1e-3, var = 0, layers = layers, device = device),
+    'dx_dt_param' : gen_tau(mu = 200e-3, var = 5e-5, layers = layers, device = device),
+    'v_reset_e'   : gen_tau(mu = -65 * 1e-3, var = 0, layers = layers, device = device),
+    'v_thresh_e'  : gen_tau(mu = -52*1e-3, var = 26e-5, layers = layers, device = device),
+    'refrac_e'    : gen_tau(mu = 5*1e-3, var = 0, layers = layers, device = device),
+    'tau_v'       : gen_tau(mu = 100 * 1e-3, var = 5e-4, layers = layers, device = device),
+    'del_theta'   : gen_tau(mu = 0.1*1e-3, var = 0, layers = layers, device = device),
+    'ge_max'      : gen_tau(mu = 8, var = 0, layers = layers, device = device),
+    'gi_max'      : gen_tau(mu = 5, var = 0, layers = layers, device = device),
+    'tau_ge'      : gen_tau(mu = 1*1e-3, var = 0, layers = layers, device = device),
+    'tau_gi'      : gen_tau(mu = 2*1e-3, var = 0, layers = layers, device = device)
     }
 
 
-#for i in range(4):
-#    print("Weight Init ("+str(i)+")")
-    # weight initilalization
-weights = get_weights(layers, device=device, time_step=parameters['time_step'], tau_mem=parameters['tau_v'][0], scale_mult = 100000)
-#weights = [x+0.5 for x in weights]
-#weights = quantize(weights = weights)
-#weights = [x+0.5 for x in weights]
-#weights = quantize(weights = weights, mu = parameters['mu'], var = parameters['var'])
 
-loss_hist, train_acc, test_acc, result_w = train_classifier_dropconnect(x_data = x_train, y_data = y_train, x_test = x_test, y_test = y_test, nb_epochs = parameters['nb_epochs'], weights = weights, args_snn = parameters, layers = layers, figures = True, verbose=False, p_drop = parameters['p_drop'],  fig_title=ds_name + " "+ parameters['read_out']+" "+ parameters['neuron_type'].__name__ + ' std: '+str(i*1e-5))
-#if test_acc[-1] > 0.12:
-#    break
+weights = get_weights(layers, device=device, time_step=parameters['time_step'], tau_mem=parameters['tau_v'][0], scale_mult = 7)
 
 
-results = {'Parameters': parameters, 'loss': loss_hist, 'train':train_acc, 'test': test_acc, 'w': result_w}
+loss_hist, train_acc, test_acc, result_w = train_classifier_dropconnect(x_data = x_train, y_data = y_train, x_test = x_test, y_test = y_test, nb_epochs = parameters['nb_epochs'], weights = weights, args_snn = parameters, layers = layers, figures = True, verbose=False, p_drop = parameters['p_drop'],  fig_title=ds_name + " "+ parameters['read_out']+" "+ parameters['neuron_type'].__name__)
 
-with open('results/results_'+ds_name + "_" +parameters['read_out']+"_" + parameters['neuron_type'].__name__ + 'std_'+str(i*1e-5)+ str('{date:%Y-%m-%d_%H-%M-%S}'.format( date=datetime.datetime.now() ))+'.pkl', 'wb') as f:
-    pickle.dump(results, f)
+
+#results = {'Parameters': parameters, 'loss': loss_hist, 'train':train_acc, 'test': test_acc, 'w': result_w}
+
+#with open('results/results_'+ds_name + "_" +parameters['read_out']+"_" + parameters['neuron_type'].__name__ + 'std_'+str(i*1e-5)+ str('{date:%Y-%m-%d_%H-%M-%S}'.format( date=datetime.datetime.now() ))+'.pkl', 'wb') as f:
+#    pickle.dump(results, f)
 
