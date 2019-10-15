@@ -94,7 +94,7 @@ def compute_classification_accuracy_dropconnect(x_data, y_data, weights, args_sn
         #accs.append(tmp)
         pred = m.argmax(dim=1, keepdim=True)
         correct_guess += pred.eq(y_local.view_as(pred)).sum().item()
-    return correct_guess, loss_accum/batch_idx, full_len
+    return correct_guess, loss_accum/(batch_idx+1), full_len
 
 #@profile
 def train_classifier_dropconnect(x_data, y_data, x_test, y_test, nb_epochs, weights, args_snn, layers, figures, verbose, p_drop, fig_title="Training Curves"):
