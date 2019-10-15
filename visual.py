@@ -8,21 +8,27 @@ import seaborn as sns
 
 import torch
 
-def mnist_train_curve(loss_hist, train_acc, test_acc, fig_title, file_name):
+def mnist_train_curve(loss_train, loss_test, train_acc, test_acc, fig_title, file_name):
+    
+    import pdb; pdb.set_trace()
     plt.clf()
-    fig, ax1 = plt.subplots()
+    #fig, ax1 = plt.subplots()
 
-    ax1.set_xlabel('Epochs')
-    ax1.set_ylabel('Loss')
-    ax1.plot(loss_hist, label="Surrogate gradient", color="red")
-    ax1.tick_params(axis='y')
+    plt.subplot(1, 2, 1)
+    #ax1.set_xlabel('Epochs')
+    #ax1.set_ylabel('Loss')
+    plt.plot(loss_train, label="Training Loss", color="green")
+    plt.plot(loss_test, label="Test Loss", color="blue")
+    plt.legend()
+    #ax1.tick_params(axis='y')
 
-    ax2 = ax1.twinx()  
+    #ax2 = ax1.twinx()  
 
-    ax2.set_ylabel('Accuracy')
-    ax2.plot(train_acc, label="Training Accuracy", color="black")
-    ax2.plot(test_acc, label="Test Accuracy", color="blue")
-    ax2.tick_params(axis='y')
+    #ax2.set_ylabel('Accuracy')
+    plt.subplot(1, 2, 2)
+    plt.plot(train_acc, label="Training Accuracy", color="green")
+    plt.plot(test_acc, label="Test Accuracy", color="blue")
+    #ax2.tick_params(axis='y')
 
     plt.legend()
     plt.title(fig_title)
