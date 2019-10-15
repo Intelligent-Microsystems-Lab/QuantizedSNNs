@@ -10,14 +10,10 @@ import torch.nn as nn
 import torchvision
 
 from neurons import LIF_neuron, adex_LIF_neuron, ferro_neuron, ferroLIF_neuron
-
 from superspike import SuperSpike, sparse_data_generator, sparse_data_generator_DVS
-
 from snn_training import train_classifier, get_weights, get_global, training_precise, get_global_precise, train_classifier_dropconnect, gen_tau
-
 from visual import neuron_test
 
-from quantization import quantize, normalize_distribution
 
 import line_profiler
 
@@ -59,27 +55,27 @@ else:
 
 
 # MNIST
-# ds_name = "MNIST"
-# train_dataset = torchvision.datasets.MNIST('../data/MNIST', train=True, transform=None, target_transform=None, download=True)
-# test_dataset = torchvision.datasets.MNIST('../data/MNIST', train=False, transform=None, target_transform=None, download=True)
-# x_train = torch.tensor(train_dataset.train_data, device=device, dtype=dtype)
-# x_train = x_train.reshape(x_train.shape[0],-1)/255
-# x_test = torch.tensor(test_dataset.test_data, device=device, dtype=dtype)
-# x_test = x_test.reshape(x_test.shape[0],-1)/255
-# y_train = torch.tensor(train_dataset.train_labels, device=device, dtype=dtype)
-# y_test  = torch.tensor(test_dataset.test_labels, device=device, dtype=dtype)
+ds_name = "MNIST"
+train_dataset = torchvision.datasets.MNIST('../data/MNIST', train=True, transform=None, target_transform=None, download=True)
+test_dataset = torchvision.datasets.MNIST('../data/MNIST', train=False, transform=None, target_transform=None, download=True)
+x_train = torch.tensor(train_dataset.train_data, device=device, dtype=dtype)
+x_train = x_train.reshape(x_train.shape[0],-1)/255
+x_test = torch.tensor(test_dataset.test_data, device=device, dtype=dtype)
+x_test = x_test.reshape(x_test.shape[0],-1)/255
+y_train = torch.tensor(train_dataset.train_labels, device=device, dtype=dtype)
+y_test  = torch.tensor(test_dataset.test_labels, device=device, dtype=dtype)
 
 
 # Fashion MNIST
-ds_name = "FMNIST"
-train_dataset = torchvision.datasets.FashionMNIST('../data/FashonMNIST', train=True, transform=None, target_transform=None, download=True)
-test_dataset = torchvision.datasets.FashionMNIST('../data/FashonMNIST', train=False, transform=None, target_transform=None, download=True)
-x_train = torch.tensor(train_dataset.train_data, device=device, dtype=dtype)
-x_train = x_train.reshape(x_train.shape[0],-1)/255
-x_test  = torch.tensor(test_dataset.test_data, device=device, dtype=dtype)
-x_test  = x_test.reshape(x_test.shape[0],-1)/255
-y_train = torch.tensor(train_dataset.train_labels, device=device, dtype=dtype)
-y_test  = torch.tensor(test_dataset.test_labels, device=device, dtype=dtype)
+# ds_name = "FMNIST"
+# train_dataset = torchvision.datasets.FashionMNIST('../data/FashonMNIST', train=True, transform=None, target_transform=None, download=True)
+# test_dataset = torchvision.datasets.FashionMNIST('../data/FashonMNIST', train=False, transform=None, target_transform=None, download=True)
+# x_train = torch.tensor(train_dataset.train_data, device=device, dtype=dtype)
+# x_train = x_train.reshape(x_train.shape[0],-1)/255
+# x_test  = torch.tensor(test_dataset.test_data, device=device, dtype=dtype)
+# x_test  = x_test.reshape(x_test.shape[0],-1)/255
+# y_train = torch.tensor(train_dataset.train_labels, device=device, dtype=dtype)
+# y_test  = torch.tensor(test_dataset.test_labels, device=device, dtype=dtype)
 
 
 # DVS
@@ -168,18 +164,18 @@ parameters = {
     }
 
 
-for i in range(4):
-    print("Weight Init ("+str(i)+")")
+#for i in range(4):
+#    print("Weight Init ("+str(i)+")")
     # weight initilalization
-    weights = get_weights(layers, device=device, time_step=parameters['time_step'], tau_mem=parameters['tau_v'][0], scale_mult = 100000)
-    #weights = [x+0.5 for x in weights]
-    #weights = quantize(weights = weights)
-    #weights = [x+0.5 for x in weights]
-    #weights = quantize(weights = weights, mu = parameters['mu'], var = parameters['var'])
+weights = get_weights(layers, device=device, time_step=parameters['time_step'], tau_mem=parameters['tau_v'][0], scale_mult = 100000)
+#weights = [x+0.5 for x in weights]
+#weights = quantize(weights = weights)
+#weights = [x+0.5 for x in weights]
+#weights = quantize(weights = weights, mu = parameters['mu'], var = parameters['var'])
 
-    loss_hist, train_acc, test_acc, result_w = train_classifier_dropconnect(x_data = x_train, y_data = y_train, x_test = x_test, y_test = y_test, nb_epochs = parameters['nb_epochs'], weights = weights, args_snn = parameters, layers = layers, figures = True, verbose=False, p_drop = parameters['p_drop'],  fig_title=ds_name + " "+ parameters['read_out']+" "+ parameters['neuron_type'].__name__ + ' std: '+str(i*1e-5))
-    if test_acc[-1] > 0.12:
-        break
+loss_hist, train_acc, test_acc, result_w = train_classifier_dropconnect(x_data = x_train, y_data = y_train, x_test = x_test, y_test = y_test, nb_epochs = parameters['nb_epochs'], weights = weights, args_snn = parameters, layers = layers, figures = True, verbose=False, p_drop = parameters['p_drop'],  fig_title=ds_name + " "+ parameters['read_out']+" "+ parameters['neuron_type'].__name__ + ' std: '+str(i*1e-5))
+#if test_acc[-1] > 0.12:
+#    break
 
 
 results = {'Parameters': parameters, 'loss': loss_hist, 'train':train_acc, 'test': test_acc, 'w': result_w}

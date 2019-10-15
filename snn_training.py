@@ -20,8 +20,6 @@ from visual import mnist_train_curve, learning_para, precise_figs
 
 from neurons import read_out_layer
 
-from quantization import quantize
-
 import line_profiler
 
 #@profile
@@ -56,19 +54,19 @@ def run_snn_dropconnect(inputs, y, weights, layers, args, p_drop, infer):
         if i == 0:
             continue
         elif i == 1:
-            with torch.no_grad():
-                weights[-1] = quantize(weights[-1], nb=args['quant_nb'])
+            #with torch.no_grad():
+                #weights[-1] = quantize(weights[-1], nb=args['quant_nb'])
             _, spk_temp = args['neuron_type'](inputs=inputs, weights=weights[i-1], args = args, layer=i-1, layer_type = width, infer=infer)
         elif i < len(layers)-1:
-            with torch.no_grad():
-                weights[-1] = quantize(weights[-1], nb=args['quant_nb'])
+            #with torch.no_grad():
+                #weights[-1] = quantize(weights[-1], nb=args['quant_nb'])
             _, spk_temp = args['neuron_type'](inputs=spk_temp, weights=weights[i-1], args = args, layer=i-1, layer_type = width, infer=infer)
         else:
             continue
 
     # Readout layer
-    with torch.no_grad():
-        weights[-1] = quantize(weights[-1], nb=args['quant_nb'])
+    #with torch.no_grad():
+        #weights[-1] = quantize(weights[-1], nb=args['quant_nb'])
     m = read_out_layer(inputs = spk_temp, weights = weights[-1], args = args, infer = infer)
     return m
 
