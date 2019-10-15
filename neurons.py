@@ -84,7 +84,6 @@ def LIF_neuron(inputs, weights, args, layer, layer_type, infer):
     mem_rec = torch.stack(mem_rec,dim=1)
     spk_rec = torch.stack(spk_rec,dim=1)
 
-    import pdb; pdb.set_trace()
     return mem_rec, spk_rec
 
 #@profile
@@ -113,7 +112,7 @@ def read_out_layer(inputs, weights, args, infer):
             m, _ = torch.min(spk_temp,1)
             m = 1/m
         if args['read_out'] == "avg_interval":
-            import pdb; pdb.set_trace()
+            #import pdb; pdb.set_trace()
             m = 0 #not yet implemented 
 
     return m
