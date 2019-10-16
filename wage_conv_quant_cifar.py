@@ -179,12 +179,12 @@ train_loader = torch.utils.data.DataLoader(
                        transforms.RandomCrop([32,32]),
                        transforms.ToTensor()
                    ])),
-    batch_size=128, shuffle=True, num_workers = 2)
+    batch_size=64, shuffle=True, num_workers = 2)
 test_loader = torch.utils.data.DataLoader(
     datasets.CIFAR10('../data', train=False, transform=transforms.Compose([
                         transforms.ToTensor()
                    ])),
-    batch_size=128, shuffle=False, num_workers = 2)
+    batch_size=64, shuffle=False, num_workers = 2)
 
 # setting up the model
 model = Net(device).to(device)

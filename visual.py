@@ -15,8 +15,8 @@ def mnist_train_curve(loss_train, loss_test, train_acc, test_acc, fig_title, fil
     plt.subplot(1, 2, 1)
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
-    plt.plot(loss_train, label="Training Loss", color="green")
-    plt.plot(loss_test, label="Test Loss", color="blue")
+    plt.plot(loss_train, label="Training", color="green")
+    plt.plot(loss_test, label="Test", color="blue")
     plt.title("Loss")
     plt.legend()
 
@@ -24,10 +24,10 @@ def mnist_train_curve(loss_train, loss_test, train_acc, test_acc, fig_title, fil
     plt.subplot(1, 2, 2)
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
-    plt.plot(train_acc, label="Training Accuracy", color="green")
-    plt.plot(test_acc, label="Test Accuracy", color="blue")
+    plt.plot(train_acc, label="Training", color="green")
+    plt.plot(test_acc, label="Test", color="blue")
     plt.legend()
-    plt.title(fig_title)
+    plt.title('Accuracy')
 
     plt.tight_layout()
 
