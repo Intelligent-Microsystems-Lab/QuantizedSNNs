@@ -22,7 +22,7 @@ import line_profiler
 
 #@profile
 def run_MNIST(inputs, y, weights, layers, args, p_drop, infer):
-    _, spk_temp = LIF_neuron(inputs=inputs, weights=weights[0], args = args, layer=0, layer_type = width, infer=infer)
+    _, spk_temp = LIF_neuron(inputs=inputs, weights=weights[0], args = args, layer=0, layer_type = "LIF_linear", infer=infer)
 
     m = read_out_layer(inputs = spk_temp, weights = weights[1], args = args, infer = infer)
     return m
