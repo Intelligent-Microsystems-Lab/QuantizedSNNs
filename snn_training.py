@@ -153,10 +153,10 @@ def train_classifier_dropconnect(x_data, y_data, x_test, y_test, nb_epochs, weig
 
     if figures:
         mnist_train_curve(loss_train, loss_test, train_acc, test_acc, fig_title, 'figures/results_'+args_snn['ds_name'] + "_" +args_snn['read_out']+"_" + args_snn['neuron_type'].__name__ + str('{date:%Y-%m-%d_%H-%M-%S}'.format( date=datetime.datetime.now() ))+'.png')
-        results = {'Parameters': args_snn, 'loss': loss_hist, 'train':train_acc, 'test': test_acc, 'w': weights}
+        #results = {'Parameters': args_snn, 'loss': loss_train, 'train':train_acc, 'test': test_acc, 'w': weights}
 
-        with open('results/results_'+args_snn['ds_name'] + "_" +args_snn['read_out']+"_" + args_snn['neuron_type'].__name__ + str('{date:%Y-%m-%d_%H-%M-%S}'.format( date=datetime.datetime.now() ))+'.pkl', 'wb') as f:
-            pickle.dump(results, f)
+        #with open('results/results_'+args_snn['ds_name'] + "_" +args_snn['read_out']+"_" + args_snn['neuron_type'].__name__ + str('{date:%Y-%m-%d_%H-%M-%S}'.format( date=datetime.datetime.now() ))+'.pkl', 'wb') as f:
+        #    pickle.dump(results, f)
         
 
     return loss_test, loss_train, train_acc, test_acc, weights
