@@ -97,7 +97,8 @@ y_test  = torch.tensor(test_dataset.test_labels, device=device, dtype=dtype)
 # parameters + architecture
 layers = {'input'            : 28*28,
           #'convolutional_1'  : 5*5,
-          'fully-connected_1': 100,
+          'fully-connected_1': 512,
+          'fully-connected_2': 100,
           'output'           : 10}
           #'input'            : 128*128,
           #'convolutional_1'  : 5*5,
@@ -108,7 +109,7 @@ layers = {'input'            : 28*28,
 parameters = {
     # general 
     'ds_name'     : ds_name,
-    'nb_epochs'   : 2,
+    'nb_epochs'   : 4,
     'neuron_type' : LIF_neuron,
     'read_out'    : "no_spike_integrate",
     'device'      : device,

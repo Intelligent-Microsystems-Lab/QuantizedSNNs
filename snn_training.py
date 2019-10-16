@@ -15,16 +15,18 @@ import torchvision
 from snn_loss import van_rossum
 from superspike import SuperSpike, current2firing_time, sparse_data_generator 
 from visual import mnist_train_curve, learning_para, precise_figs
-from neurons import LIF_neuron, adex_LIF_neuron, ferro_neuron, ferroLIF_neuron
+from neurons import LIF_neuron, adex_LIF_neuron, ferro_neuron, ferroLIF_neuron, read_out_layer
 
 import line_profiler
 
 
 #@profile
 def run_MNIST(inputs, y, weights, layers, args, p_drop, infer):
-    _, spk_temp = LIF_neuron(inputs=inputs, weights=weights[0], args = args, layer=0, layer_type = "LIF_linear", infer=infer)
+    _, spk_temp = LIF_neuron(inputs=inputs, weights=weights[0], args = args, layer=0, layer_type = "LIF_linear_1", infer=infer)
 
-    m = read_out_layer(inputs = spk_temp, weights = weights[1], args = args, infer = infer)
+    _, spk_temp = LIF_neuron(inputs=spk_temp, weights=weights[1], args = args, layer=1, layer_type = "LIF_linear_2", infer=infer)
+
+    m = read_out_layer(inputs = spk_temp, weights = weights[2], args = args, infer = infer)
     return m
 
 
@@ -80,8 +82,8 @@ def train_classifier_dropconnect(x_data, y_data, x_test, y_test, nb_epochs, weig
         loss_test.append(loss_temp)
         test_acc.append(correct_test / test_len)
 
-        if test_acc[-1] < 0.12:
-            return loss_test, loss_train, train_acc, test_acc, weights
+        #if test_acc[-1] < 0.12:
+        #    return loss_test, loss_train, train_acc, test_acc, weights
 
     if figures:
         mnist_train_curve(loss_train, loss_test, train_acc, test_acc, fig_title, 'figures/results_'+args_snn['ds_name'] + "_" +args_snn['read_out']+"_" + args_snn['neuron_type'].__name__ + str('{date:%Y-%m-%d_%H-%M-%S}'.format( date=datetime.datetime.now() ))+'.png')

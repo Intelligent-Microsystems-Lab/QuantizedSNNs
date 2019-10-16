@@ -7,7 +7,7 @@ import numpy as np
 
 
 # global quantization variables
-global_wb = 2
+global_wb = 8
 global_ab = 8
 global_gb = 8
 global_eb = 8
