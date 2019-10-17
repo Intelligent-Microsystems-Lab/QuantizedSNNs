@@ -190,6 +190,9 @@ test_loader = torch.utils.data.DataLoader(
 model = Net(device).to(device)
 optimizer = optim.SGD(model.parameters(), lr=1, momentum=0, dampening=0, weight_decay=0, nesterov=False)
 
+# compute beta
+quantization.global_beta = step_d(quantization.global_wb)-.5
+
 # train
 teacc, teloss, taacc, taloss = [], [], [], []  
 for epoch in range(300):

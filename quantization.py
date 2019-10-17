@@ -47,8 +47,8 @@ def quant_w(x, scale = 1):
         y = quant(clip(x, global_wb) , global_wb)
         diff = (y - x)
 
-    if scale <= 1.8:
-        return x + diff
+    #if scale <= 1.8:
+    #    return x + diff
     return (x + diff)/scale
 
 def quant_act(x):
@@ -126,13 +126,15 @@ class clee_LinearFunction(torch.autograd.Function):
         if bias is not None:
             output += bias.unsqueeze(0).expand_as(output)
 
-        ctx.save_for_backward(input, weight, w_quant, bias, relu_mask, clip_info)
+        import pdb; pdb.set_trace()
+
+        ctx.save_for_backward(input, w_quant, bias, relu_mask, clip_info)
         return output
 
     # This function has only a single output, so it gets only one gradient
     @staticmethod
     def backward(ctx, grad_output):
-        input, weight, w_quant, bias, relu_mask, clip_info = ctx.saved_tensors
+        input, w_quant, bias, relu_mask, clip_info = ctx.saved_tensors
         grad_input = grad_weight = grad_bias = None
         quant_error = quant_err(grad_output) * relu_mask.float() * clip_info.float()
 
@@ -179,7 +181,7 @@ class clee_conv2d(torch.autograd.Function):
         if bias is not None:
             output += bias.unsqueeze(0).expand_as(output)
 
-        ctx.save_for_backward(input, weight, w_quant, bias, torch.tensor([pool]), relu_mask, clip_info, pool_indices, torch.tensor(size_pool))
+        ctx.save_for_backward(input, w_quant, bias, torch.tensor([pool]), relu_mask, clip_info, pool_indices, torch.tensor(size_pool))
         return output
 
     # This function has only a single output, so it gets only one gradient
@@ -187,7 +189,7 @@ class clee_conv2d(torch.autograd.Function):
     def backward(ctx, grad_output):
         unpool1 = nn.MaxUnpool2d(2, stride=2, padding = 0)
         
-        input, weight, w_quant, bias, pool, relu_mask, clip_info, pool_indices, size_pool = ctx.saved_tensors
+        input, w_quant, bias, pool, relu_mask, clip_info, pool_indices, size_pool = ctx.saved_tensors
         grad_input = grad_weight = grad_bias = None
 
         grad_output = grad_output * relu_mask.float() * clip_info.float()
