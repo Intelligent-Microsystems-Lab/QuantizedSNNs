@@ -6,6 +6,7 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 import numpy as np
 import matplotlib.pyplot as plt
+import pickle
 import argparse
 
 import quantization
@@ -27,7 +28,16 @@ quantization.global_gb = args['gb']
 quantization.global_eb = args['eb']
 quantization.global_rb = 16
 
-quantization.global_beta = 1.5
+if quantization.global_wb == None:
+    quantization.global_wb = 2
+    quantization.global_ab = 8
+    quantization.global_gb = 8
+    quantization.global_eb = 8
+
+
+# compute beta
+quantization.global_beta = quantization.step_d(quantization.global_wb)-.5
+#quantization.global_beta = 1.5 # default for 2 bits
 quantization.global_lr = 8
 
 class Net(nn.Module):
@@ -190,9 +200,6 @@ test_loader = torch.utils.data.DataLoader(
 model = Net(device).to(device)
 optimizer = optim.SGD(model.parameters(), lr=1, momentum=0, dampening=0, weight_decay=0, nesterov=False)
 
-# compute beta
-quantization.global_beta = step_d(quantization.global_wb)-.5
-
 # train
 teacc, teloss, taacc, taloss = [], [], [], []  
 for epoch in range(300):
@@ -209,6 +216,13 @@ for epoch in range(300):
 
 # graph results
 bit_string = str(quantization.global_wb) + str(quantization.global_ab) + str(quantization.global_gb) + str(quantization.global_eb)
+
+
+results = {'bit_string': bit_string, 'test_acc': teacc, 'train_acc': taacc, 'test_loss': teloss, 'train_loss': taloss}
+
+with open('results/torch_wage_acc_cifar10_' + bit_string + '.pkl', 'wb') as f:
+    pickle.dump(results, f)
+
 
 plt.clf()
 plt.ylabel('Accuracy')

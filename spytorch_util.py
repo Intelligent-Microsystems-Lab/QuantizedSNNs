@@ -17,16 +17,6 @@ if torch.cuda.is_available():
 else:
     device = torch.device("cpu")
 
-def compute_classification_accuracy(x_data, y_data):
-    """ Computes classification accuracy on supplied data in batches. """
-    accs = []
-    for x_local, y_local in sparse_data_generator(x_data, y_data, batch_size, nb_steps, nb_inputs, shuffle=False):
-        output,_ = run_snn(x_local.to_dense())
-        m,_= torch.max(output,1) # max over time
-        _,am=torch.max(m,1)      # argmax over output units
-        tmp = np.mean((y_local==am).detach().cpu().numpy()) # compare to labels
-        accs.append(tmp)
-    return np.mean(accs)
 
 def current2firing_time(x, tau=20, thr=0.2, tmax=1.0, epsilon=1e-7):
     """ Computes first firing time latency for a current input x assuming the charge time of a current based LIF neuron.
@@ -94,7 +84,6 @@ def sparse_data_generator(X, y, batch_size, nb_steps, nb_units, shuffle=True ):
         yield X_batch.to(device=device), y_batch.to(device=device)
 
         counter += 1
-
 
 
 

@@ -7,7 +7,7 @@ import numpy as np
 
 
 # global quantization variables
-global_wb = 8
+global_wb = 2
 global_ab = 8
 global_gb = 8
 global_eb = 8
@@ -126,17 +126,17 @@ class clee_LinearFunction(torch.autograd.Function):
         if bias is not None:
             output += bias.unsqueeze(0).expand_as(output)
 
-        import pdb; pdb.set_trace()
+        gradient_mask = relu_mask * clip_info
 
-        ctx.save_for_backward(input, w_quant, bias, relu_mask, clip_info)
+        ctx.save_for_backward(input, w_quant, bias, gradient_mask)
         return output
 
     # This function has only a single output, so it gets only one gradient
     @staticmethod
     def backward(ctx, grad_output):
-        input, w_quant, bias, relu_mask, clip_info = ctx.saved_tensors
+        input, w_quant, bias, gradient_mask = ctx.saved_tensors
         grad_input = grad_weight = grad_bias = None
-        quant_error = quant_err(grad_output) * relu_mask.float() * clip_info.float()
+        quant_error = quant_err(grad_output) * gradient_mask.float()
 
         if ctx.needs_input_grad[0]:
             # propagate quantized error
@@ -181,7 +181,9 @@ class clee_conv2d(torch.autograd.Function):
         if bias is not None:
             output += bias.unsqueeze(0).expand_as(output)
 
-        ctx.save_for_backward(input, w_quant, bias, torch.tensor([pool]), relu_mask, clip_info, pool_indices, torch.tensor(size_pool))
+        gradient_mask = relu_mask * clip_info
+
+        ctx.save_for_backward(input, w_quant, bias, torch.tensor([pool]), gradient_mask, pool_indices, torch.tensor(size_pool))
         return output
 
     # This function has only a single output, so it gets only one gradient
@@ -189,10 +191,10 @@ class clee_conv2d(torch.autograd.Function):
     def backward(ctx, grad_output):
         unpool1 = nn.MaxUnpool2d(2, stride=2, padding = 0)
         
-        input, w_quant, bias, pool, relu_mask, clip_info, pool_indices, size_pool = ctx.saved_tensors
+        input, w_quant, bias, pool, gradient_mask, pool_indices, size_pool = ctx.saved_tensors
         grad_input = grad_weight = grad_bias = None
 
-        grad_output = grad_output * relu_mask.float() * clip_info.float()
+        grad_output = grad_output * gradient_mask.float()
         if pool:
             grad_output = unpool1(grad_output, pool_indices, output_size = torch.Size(size_pool))
 
@@ -202,7 +204,7 @@ class clee_conv2d(torch.autograd.Function):
             # propagate quantized error
             grad_input = torch.nn.grad.conv2d_input(input.shape, w_quant, quant_error)
         if ctx.needs_input_grad[1]:
-            grad_weight = quant_grad(torch.nn.grad.conv2d_weight(input, weight.shape, quant_error)).float()
+            grad_weight = quant_grad(torch.nn.grad.conv2d_weight(input, w_quant.shape, quant_error)).float()
 
         if bias is not None and ctx.needs_input_grad[2]:
             grad_bias = grad_output.sum(0).squeeze(0)
