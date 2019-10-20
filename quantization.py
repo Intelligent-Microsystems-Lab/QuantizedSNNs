@@ -60,6 +60,16 @@ def quant_act(x):
         diff = y - x
     return x + diff, diff_map
 
+def quant_generic(x, cb):
+    save_x = x
+    x = clip(x, cb)
+    diff_map = (save_x == x)
+    with torch.no_grad():
+        y = quant(x, global_ab)
+        diff = y - x
+    return x + diff, diff_map
+
+
 def quant_grad(x):
     xmax = torch.max(torch.abs(x))
     x = x / shift(xmax)
@@ -163,7 +173,6 @@ class clee_conv2d(torch.autograd.Function):
         
         # compute output
         output = F.conv2d(input, w_quant, bias=None, stride=1, padding=0, dilation=1, groups=1)
-
         relu_mask = torch.ones(output.shape).to(output.device)
         clip_info = torch.ones(output.shape).to(output.device)
         pool_indices = torch.ones(output.shape).to(output.device)

@@ -9,19 +9,12 @@ import torch
 import torch.nn as nn
 import torchvision
 
-from quantization import quant_act, init_layer_weights, SSE, to_cat, clip, quant_w
+import quantization
+import spytorch_util
+from quantization import quant_act, init_layer_weights, SSE, to_cat, clip, quant_w, quant_err, quant_grad
 from spytorch_util import current2firing_time, sparse_data_generator, plot_voltage_traces, SuperSpike
 
 
-# The coarse network structure is dicated by the Fashion MNIST dataset. 
-nb_inputs  = 28*28
-nb_hidden  = 100
-nb_outputs = 10
-
-time_step = 1e-3
-nb_steps  = 100
-
-batch_size = 256
 
 
 
@@ -35,100 +28,33 @@ else:
 
 
 
-class SuperSpike_Linear(torch.autograd.Function):
-    """
-    Here we implement our spiking nonlinearity which also implements 
-    the surrogate gradient. By subclassing torch.autograd.Function, 
-    we will be able to use all of PyTorch's autograd functionality.
-    Here we use the normalized negative part of a fast sigmoid 
-    as this was done in Zenke & Ganguli (2018).
-    """
-    
-    scale = 100.0 # controls steepness of surrogate gradient
-
+class einsum_linear(torch.autograd.Function):
     @staticmethod
-    def forward(ctx, input, weight, bias=None):
-        """
-        In the forward pass we compute a step function of the input Tensor
-        and return it. ctx is a context object that we use to stash information which 
-        we need to later backpropagate our error signals. To achieve this we use the 
-        ctx.save_for_backward method.
-        """
-        #w_quant = quant_w(weight, scale)
-        w_quant = weight
+    def forward(ctx, input, weight, scale, bias=None):
+        w_quant = weight#quant_w(weight, scale)
 
         h1 = torch.einsum("abc,cd->abd", (input, w_quant))
-        syn = torch.zeros((batch_size,weight.shape[1]), device=device, dtype=dtype)
-        mem = torch.zeros((batch_size,weight.shape[1]), device=device, dtype=dtype)
+        
+        if bias is not None:
+            output += bias.unsqueeze(0).expand_as(output)
 
-        mem_rec = [mem]
-        spk_rec = [mem]
-        mthr_rec = [mem]
+        ctx.save_for_backward(input, w_quant, bias)
 
-        for t in range(nb_steps):
-            mthr = mem-1.0
-            #out = spike_fn(mthr)
-
-            out = torch.zeros_like(mthr)
-            out[mthr > 0] = 1.0
-
-            rst = torch.zeros_like(mem)
-            c   = (mthr > 0)
-            rst[c] = torch.ones_like(mem)[c]
-
-            new_syn = alpha*syn +h1[:,t]
-            new_mem = beta*mem +syn -rst
-
-            mem = new_mem
-            syn = new_syn
-
-            mthr_rec.append(mthr)
-            mem_rec.append(mem)
-            spk_rec.append(out)
-
-        mthr_rec = torch.stack(mthr_rec,dim=1)
-        mem_rec = torch.stack(mem_rec,dim=1)
-        spk_rec = torch.stack(spk_rec,dim=1)
-
-
-
-        ctx.save_for_backward(mthr_rec, w_quant)
-        #out = torch.zeros_like(input)
-        #out[input > 0] = 1.0
-        return mem_rec, spk_rec
+        return h1
 
     @staticmethod
-    def backward(ctx, grad_mem, grad_spk):
-        """
-        In the backward pass we receive a Tensor we need to compute the 
-        surrogate gradient of the loss with respect to the input. 
-        Here we use the normalized negative part of a fast sigmoid 
-        as this was done in Zenke & Ganguli (2018).
-
-        There will be no gradient for mem, since its not used.
-        """
-
-        import pdb; pdb.set_trace()
-        input, w_quant = ctx.saved_tensors
+    def backward(ctx, grad_output):
+        input, w_quant, bias = ctx.saved_tensors
         grad_input = grad_weight = grad_bias = None
-        quant_error = grad_spk
-
-        # input 64, 512
-        # error 64, 10
-        # w     10, 512
-        # grad_input 64, 512
+        quant_error = grad_output#quant_err(grad_output)
 
         if ctx.needs_input_grad[0]:
             # propagate quantized error
-            grad_input = torch.einsum("abc,cd->abd", (quant_error, w_quant.t()))
-            #grad_input = quant_error.mm(w_quant)
+            grad_input = torch.einsum("abc,dc->abd", (quant_error, w_quant))
 
         if ctx.needs_input_grad[1]:
-            grad = quant_error/(SuperSpike.scale*torch.abs(input)+1.0)**2
-            grad_weight = quant_error.t().mm(input)
+            grad_weight = torch.einsum("abc,abd->dc", (quant_error, input))#quant_grad(torch.einsum("abc,abd->dc", (quant_error, input))).float()
 
-
-            
         if bias is not None and ctx.needs_input_grad[2]:
             grad_bias = grad_output.sum(0).squeeze(0)
 
@@ -161,11 +87,15 @@ beta    = float(np.exp(-time_step/tau_mem))
 
 weight_scale = 0.2
 
-w1 = torch.empty((nb_inputs, nb_hidden),  device=device, dtype=dtype, requires_grad=True)
-torch.nn.init.normal_(w1, mean=0.0, std=weight_scale/np.sqrt(nb_inputs))
+spytorch_util.w1 = torch.empty((nb_inputs, nb_hidden),  device=device, dtype=dtype, requires_grad=True)
+scale1 = init_layer_weights(spytorch_util.w1, 28*28).to(device)
+#torch.nn.init.normal_(w1, mean=0.0, std=weight_scale/np.sqrt(nb_inputs))
+#torch.nn.init.uniform_(w1, a = 1, b = 1)
 
-w2 = torch.empty((nb_hidden, nb_outputs), device=device, dtype=dtype, requires_grad=True)
-torch.nn.init.normal_(w2, mean=0.0, std=weight_scale/np.sqrt(nb_hidden))
+spytorch_util.w2 = torch.empty((nb_hidden, nb_outputs), device=device, dtype=dtype, requires_grad=True)
+scale2 = init_layer_weights(spytorch_util.w2, 28*28).to(device)
+#torch.nn.init.normal_(w2, mean=0.0, std=weight_scale/np.sqrt(nb_hidden))
+#torch.nn.init.uniform_(w2, a = 1, b = 1)
 
 print("init done")
     
@@ -174,37 +104,49 @@ spike_fn  = SuperSpike.apply
 
 
 def run_snn(inputs):
-    # h1 = torch.einsum("abc,cd->abd", (inputs, w1))
-    # syn = torch.zeros((batch_size,nb_hidden), device=device, dtype=dtype)
-    # mem = torch.zeros((batch_size,nb_hidden), device=device, dtype=dtype)
+    #with torch.no_grad():
+    #    spytorch_util.w1 = clip(spytorch_util.w1, quantization.global_wb)
+    #    spytorch_util.w1.requires_grad = True
+    #    spytorch_util.w2 = clip(spytorch_util.w2, quantization.global_wb)
+    #    spytorch_util.w2.requires_grad = True
 
-    # mem_rec = [mem]
-    # spk_rec = [mem]
 
-    # # Compute hidden layer activity
-    # for t in range(nb_steps):
-    #     mthr = mem-1.0
-    #     out = spike_fn(mthr)
-    #     rst = torch.zeros_like(mem)
-    #     c   = (mthr > 0)
-    #     rst[c] = torch.ones_like(mem)[c]
+    #h1 = torch.einsum("abc,cd->abd", (inputs, w1))
+    h1 = einsum_linear.apply(inputs, spytorch_util.w1, scale1)
 
-    #     new_syn = alpha*syn +h1[:,t]
-    #     new_mem = beta*mem +syn -rst
 
-    #     mem = new_mem
-    #     syn = new_syn
+    syn = torch.zeros((batch_size,nb_hidden), device=device, dtype=dtype)
+    mem = torch.zeros((batch_size,nb_hidden), device=device, dtype=dtype)
 
-    #     mem_rec.append(mem)
-    #     spk_rec.append(out)
+    mem_rec = [mem]
+    spk_rec = [mem]
 
-    # mem_rec = torch.stack(mem_rec,dim=1)
-    # spk_rec = torch.stack(spk_rec,dim=1)
+    # Compute hidden layer activity
+    for t in range(nb_steps):
+        mthr = mem-1.0
+        out = spike_fn(mthr)
+        rst = torch.zeros_like(mem)
+        c   = (mthr > 0)
+        rst[c] = torch.ones_like(mem)[c]
 
-    mem_rec1, spk_rec1 = SuperSpike_Linear.apply(inputs, w1)
+        new_syn = alpha*syn +h1[:,t]
+        new_mem = beta*mem +syn -rst
 
-    # Readout layer
-    h2= torch.einsum("abc,cd->abd", (spk_rec1, w2))
+        mem = new_mem
+        syn = new_syn
+
+        mem_rec.append(mem)
+        spk_rec.append(out)
+
+    mem_rec = torch.stack(mem_rec,dim=1)
+    spk_rec = torch.stack(spk_rec,dim=1)
+
+
+    #Readout layer
+    #h2 = torch.einsum("abc,cd->abd", (spk_rec, w2))
+    h2 = einsum_linear.apply(spk_rec, spytorch_util.w2, scale2)
+
+
     flt = torch.zeros((batch_size,nb_outputs), device=device, dtype=dtype)
     out = torch.zeros((batch_size,nb_outputs), device=device, dtype=dtype)
     out_rec = [out]
@@ -218,21 +160,25 @@ def run_snn(inputs):
         out_rec.append(out)
 
     out_rec = torch.stack(out_rec,dim=1)
-    other_recs = [mem_rec1, spk_rec1]
+
+
+    other_recs = [mem_rec, spk_rec]
     return out_rec, other_recs
 
 
 def train(x_data, y_data, lr=1e-3, nb_epochs=10):
-    params = [w1,w2]
+    params = [spytorch_util.w1,spytorch_util.w2]
     optimizer = torch.optim.Adamax(params, lr=lr, betas=(0.9,0.999))
 
     log_softmax_fn = nn.LogSoftmax(dim=1)
     loss_fn = nn.NLLLoss()
     
     loss_hist = []
+    acc_hist = []
     for e in range(nb_epochs):
         local_loss = []
-        for x_local, y_local in sparse_data_generator(x_data, y_data, batch_size, nb_steps, nb_inputs):
+        for x_local, y_local in sparse_data_generator(x_data, y_data, batch_size, nb_steps, nb_inputs, shuffle = False):
+
             output,recs = run_snn(x_local.to_dense())
             _,spks=recs
             m,_=torch.max(output,1)
@@ -241,22 +187,26 @@ def train(x_data, y_data, lr=1e-3, nb_epochs=10):
             # Here we set up our regularizer loss
             # The strength paramters here are merely a guess and there should be ample room for improvement by
             # tuning these paramters.
-            reg_loss = 1e-5*torch.sum(spks) # L1 loss on total number of spikes
-            reg_loss += 1e-5*torch.mean(torch.sum(torch.sum(spks,dim=0),dim=0)**2) # L2 loss on spikes per neuron
+            #reg_loss = 1e-5*torch.sum(spks) # L1 loss on total number of spikes
+            #reg_loss += 1e-5*torch.mean(torch.sum(torch.sum(spks,dim=0),dim=0)**2) # L2 loss on spikes per neuron
             
             # Here we combine supervised loss and the regularizer
-            loss_val = loss_fn(log_p_y, y_local) + reg_loss
+            loss_val = loss_fn(log_p_y, y_local) #+ reg_loss
 
             optimizer.zero_grad()
             loss_val.backward()
             optimizer.step()
-            import pdb; pdb.set_trace()
             local_loss.append(loss_val.item())
+
         mean_loss = np.mean(local_loss)
         print("Epoch %i: loss=%.5f"%(e+1,mean_loss))
+        acc_temp = compute_classification_accuracy(x_test,y_test)
+        print("Test accuracy: %.3f"%(acc_temp))
         loss_hist.append(mean_loss)
+        acc_hist.append(acc_temp)
+
         
-    return loss_hist
+    return loss_hist, acc_hist
         
 
 def compute_classification_accuracy(x_data, y_data):
@@ -271,8 +221,42 @@ def compute_classification_accuracy(x_data, y_data):
     return np.mean(accs)
 
 
-loss_hist = train(x_train, y_train, lr=2e-4, nb_epochs=30)
+quantization.global_wb = 8
+quantization.global_ab = 8
+quantization.global_gb = 8
+quantization.global_eb = 8
+quantization.global_rb = 16
 
+# The coarse network structure is dicated by the Fashion MNIST dataset. 
+nb_inputs  = 28*28
+nb_hidden  = 100
+nb_outputs = 10
+
+time_step = 1e-3
+nb_steps  = 100
+
+
+batch_size = 256
+
+wb_list = [2,3,4,5,6,7,8]
+eb_list = [5,6,7,8,9]
+
+for i in wb_list:
+    for j in eb_list:
+        quantization.global_wb = i
+        quantization.global_ab = 8
+        quantization.global_gb = 8
+        quantization.global_eb = j
+        quantization.global_rb = 16
+
+        loss_hist, acc_hist = train(x_train, y_train, lr=2e-4, nb_epochs=30)
+
+        bit_string = str(quantization.global_wb) + str(quantization.global_ab) + str(quantization.global_gb) + str(quantization.global_eb)
+
+        results = {'bit_string': bit_string, 'test_acc': acc_hist, 'test_loss': loss_hist}
+
+        with open('results/snn_mnist_' + bit_string + '.pkl', 'wb') as f:
+            pickle.dump(results, f)
 
 print("Training accuracy: %.3f"%(compute_classification_accuracy(x_train,y_train)))
 print("Test accuracy: %.3f"%(compute_classification_accuracy(x_test,y_test)))
@@ -280,3 +264,12 @@ print("Test accuracy: %.3f"%(compute_classification_accuracy(x_test,y_test)))
 
 #(Pdb) w1.grad.sum()
 #tensor(0.2043, device='cuda:0')
+
+
+#import numpy as np
+#import matplotlib.mlab as mlab
+#import matplotlib.pyplot as plt
+
+#num_bins = 2**4
+#n, bins, patches = plt.hist(all_w, num_bins, facecolor='blue', alpha=0.5)
+#plt.savefig("./figures/joshi_hist.png")

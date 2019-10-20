@@ -17,6 +17,9 @@ if torch.cuda.is_available():
 else:
     device = torch.device("cpu")
 
+w1 = None
+w2 = None
+
 
 def current2firing_time(x, tau=20, thr=0.2, tmax=1.0, epsilon=1e-7):
     """ Computes first firing time latency for a current input x assuming the charge time of a current based LIF neuron.
