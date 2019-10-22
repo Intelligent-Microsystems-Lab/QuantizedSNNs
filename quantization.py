@@ -99,6 +99,7 @@ def init_layer_weights(weights_layer, shape, factor=1):
     limit = Wm if Wm > limit else limit
 
     torch.nn.init.uniform_(weights_layer, a = -float(limit), b = float(limit))
+    weights_layer.data = quant_generic(weights_layer.data, global_gb)[0]
     return torch.tensor([float(scale)])
 
 # sum of square errors

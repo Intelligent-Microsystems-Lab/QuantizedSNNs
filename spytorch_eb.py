@@ -12,15 +12,8 @@ import torchvision
 
 import quantization
 import spytorch_util
-from quantization import quant_act, init_layer_weights, SSE, to_cat, clip, quant_w, quant_err, quant_grad, quant_generic
+from quantization import quant_act, init_layer_weights, SSE, to_cat, clip, quant_w, quant_err, quant_grad, quant_generic, step_d
 from spytorch_util import current2firing_time, sparse_data_generator, plot_voltage_traces, SuperSpike
-
-
-quantization.global_wb = 8
-quantization.global_ab = 8
-quantization.global_gb = 8
-quantization.global_eb = 8
-quantization.global_rb = 16
 
 # The coarse network structure is dicated by the Fashion MNIST dataset. 
 nb_inputs  = 28*28
@@ -28,13 +21,12 @@ nb_hidden  = 100
 nb_outputs = 10
 
 time_step = 1e-3
-nb_steps  = 30
-
+nb_steps  = 100
 
 batch_size = 256
-
-
 dtype = torch.float
+
+stop_quant_level = 33
 
 # Check whether a GPU is available
 if torch.cuda.is_available():
@@ -44,10 +36,14 @@ else:
 
 
 
+
 class einsum_linear(torch.autograd.Function):
     @staticmethod
     def forward(ctx, input, weight, scale, bias=None):
-        w_quant = quant_w(weight, scale)
+        if quantization.global_wb < stop_quant_level:
+            w_quant = quant_w(weight, scale)
+        else:
+            w_quant = weight
 
         h1 = torch.einsum("abc,cd->abd", (input, w_quant))
         
@@ -62,14 +58,20 @@ class einsum_linear(torch.autograd.Function):
     def backward(ctx, grad_output):
         input, w_quant, bias = ctx.saved_tensors
         grad_input = grad_weight = grad_bias = None
-        quant_error = quant_err(grad_output)
+        if quantization.global_eb < stop_quant_level:
+            quant_error = quant_err(grad_output)
+        else:
+            quant_error = grad_output
 
         if ctx.needs_input_grad[0]:
             # propagate quantized error
             grad_input = torch.einsum("abc,dc->abd", (quant_error, w_quant))
 
         if ctx.needs_input_grad[1]:
-            grad_weight = quant_grad(torch.einsum("abc,abd->dc", (quant_error, input))).float()
+            if quantization.global_gb < stop_quant_level:
+                grad_weight = quant_grad(torch.einsum("abc,abd->dc", (quant_error, input))).float()
+            else:
+                grad_weight = torch.einsum("abc,abd->dc", (quant_error, input))
 
         if bias is not None and ctx.needs_input_grad[2]:
             grad_bias = grad_output.sum(0).squeeze(0)
@@ -80,14 +82,21 @@ class einsum_linear(torch.autograd.Function):
 class custom_quant(torch.autograd.Function):
     @staticmethod
     def forward(ctx, input, b_level):
-        output, clip_info = quant_generic(input, b_level)
+        if quantization.global_ab < stop_quant_level:
+            output, clip_info = quant_act(input)
+        else:
+            output, clip_info = input, None
         ctx.save_for_backward(clip_info)
         return output
 
     @staticmethod
     def backward(ctx, grad_output):
         clip_info = ctx.saved_tensors
-        return quant_err(grad_output)* clip_info[0].float(), None #
+        if quantization.global_eb < stop_quant_level:
+            quant_error = quant_err(grad_output) * clip_info[0].float()
+        else:
+            quant_error = grad_output
+        return quant_error, None
 
 # Here we load the Dataset
 train_dataset = torchvision.datasets.MNIST('../data', train=True, transform=None, target_transform=None, download=True)
@@ -123,16 +132,14 @@ spike_fn  = SuperSpike.apply
 
 
 def run_snn(inputs):
-    #with torch.no_grad():
-    #    spytorch_util.w1 = clip(spytorch_util.w1, quantization.global_wb)
-    #    spytorch_util.w1.requires_grad = True
-    #    spytorch_util.w2 = clip(spytorch_util.w2, quantization.global_wb)
-    #    spytorch_util.w2.requires_grad = True
+    with torch.no_grad():
+        spytorch_util.w1.data = clip(spytorch_util.w1.data, quantization.global_wb)
+        spytorch_util.w2.data = clip(spytorch_util.w2.data, quantization.global_wb)
 
 
     #h1 = torch.einsum("abc,cd->abd", (inputs, w1))
     h1 = einsum_linear.apply(inputs, spytorch_util.w1, scale1)
-    h1b = np.ceil(np.log2((2**quantization.global_wb-1)*nb_inputs))
+    #h1b = np.ceil(np.log2((2**quantization.global_wb-1)*nb_inputs))
 
     syn = torch.zeros((batch_size,nb_hidden), device=device, dtype=dtype)
     mem = torch.zeros((batch_size,nb_hidden), device=device, dtype=dtype)
@@ -168,7 +175,7 @@ def run_snn(inputs):
     #Readout layer
     #h2 = torch.einsum("abc,cd->abd", (spk_rec, w2))
     h2 = einsum_linear.apply(spk_rec, spytorch_util.w2, scale2)
-    h2b = np.ceil(np.log2((2**quantization.global_wb-1)*nb_hidden))
+    #h2b = np.ceil(np.log2((2**quantization.global_wb-1)*nb_hidden))
 
     flt = torch.zeros((batch_size,nb_outputs), device=device, dtype=dtype)
     out = torch.zeros((batch_size,nb_outputs), device=device, dtype=dtype)
@@ -208,7 +215,10 @@ def train(x_data, y_data, lr=1e-3, nb_epochs=10):
 
             output,recs = run_snn(x_local.to_dense())
             _,spks=recs
+
             m,_=torch.max(output,1)
+            #m = torch.sum(output,1)
+
             log_p_y = log_softmax_fn(m)
             
             # Here we set up our regularizer loss
@@ -222,6 +232,7 @@ def train(x_data, y_data, lr=1e-3, nb_epochs=10):
 
             optimizer.zero_grad()
             loss_val.backward()
+            #import pdb; pdb.set_trace()
             optimizer.step()
             local_loss.append(loss_val.item())
 
@@ -257,7 +268,7 @@ def compute_classification_accuracy(x_data, y_data):
 #    for j in eb_list:
 quantization.global_wb = 4
 quantization.global_ab = 8
-quantization.global_gb = 8
+quantization.global_gb = 33
 quantization.global_eb = 8
 quantization.global_rb = 16
 
@@ -265,15 +276,17 @@ bit_string = str(quantization.global_wb) + str(quantization.global_ab) + str(qua
 
 print(bit_string)
 
+
 spytorch_util.w1 = torch.empty((nb_inputs, nb_hidden),  device=device, dtype=dtype, requires_grad=True)
 scale1 = init_layer_weights(spytorch_util.w1, 28*28).to(device)
 
 spytorch_util.w2 = torch.empty((nb_hidden, nb_outputs), device=device, dtype=dtype, requires_grad=True)
 scale2 = init_layer_weights(spytorch_util.w2, 28*28).to(device)
 
-global_lr = 2
+
+quantization.global_lr = 1
 # lr = 2e-4
-loss_hist, acc_hist = train(x_train, y_train, lr=2e-4, nb_epochs=30)
+loss_hist, acc_hist = train(x_train, y_train, lr = .001, nb_epochs = 30) #/step_d(16)*10
 
 
 #results = {'bit_string': bit_string, 'test_acc': acc_hist, 'test_loss': loss_hist}
@@ -296,3 +309,5 @@ loss_hist, acc_hist = train(x_train, y_train, lr=2e-4, nb_epochs=30)
 #num_bins = 2**4
 #n, bins, patches = plt.hist(all_w, num_bins, facecolor='blue', alpha=0.5)
 #plt.savefig("./figures/joshi_hist.png")
+
+
