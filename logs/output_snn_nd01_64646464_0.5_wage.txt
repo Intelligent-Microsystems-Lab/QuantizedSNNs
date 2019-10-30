@@ -1,0 +1,10 @@
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+Traceback (most recent call last):
+  File "spytorch_precise_01.py", line 279, in <module>
+    x_train = pickle.load(f).t().to(device)
+RuntimeError: CUDA error: out of memory
