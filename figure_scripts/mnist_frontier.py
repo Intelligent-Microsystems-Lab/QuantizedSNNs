@@ -78,9 +78,11 @@ for w_c in global_wb_list:
 			tue_clee = data[data['Weight Bits'] == w_c]
 			tue_clee = tue_clee[tue_clee['Activation Bits'] == a_c]
 			tue_clee = tue_clee[tue_clee['Gradient Bits'] == 8]
+			tue_clee = tue_clee[tue_clee['Dataset'] == 'cifar']
 
 			tue_clee_ds1 = tue_clee[tue_clee['Data Structure'] == "PB-BMP"]
 			tue_clee_ds2 = tue_clee[tue_clee['Data Structure'] == "PB-CSR"]
+
 
 
 
@@ -115,6 +117,7 @@ for w_c in global_wb_list:
 			tue_clee = data[data['Weight Bits'] == w_c]
 			tue_clee = tue_clee[tue_clee['Activation Bits'] == 8]
 			tue_clee = tue_clee[tue_clee['Gradient Bits'] == g_c]
+			tue_clee = tue_clee[tue_clee['Dataset'] == 'cifar']
 
 			tue_clee_ds1 = tue_clee[tue_clee['Data Structure'] == "PB-BMP"]
 			tue_clee_ds2 = tue_clee[tue_clee['Data Structure'] == "PB-CSR"]
@@ -194,7 +197,7 @@ for w_c in global_wb_list:
 
 			tue_clee_ds1 = tue_clee[tue_clee['Data Structure'] == "PB-BMP"]
 			tue_clee_ds2 = tue_clee[tue_clee['Data Structure'] == "PB-CSR"]
-
+			tue_clee = tue_clee[tue_clee['Dataset'] == 'mnist']
 
 
 			temp1 = float(tue_clee_ds2['Energy']) * y_list[-1]
@@ -228,6 +231,7 @@ for w_c in global_wb_list:
 			tue_clee = data[data['Weight Bits'] == w_c]
 			tue_clee = tue_clee[tue_clee['Activation Bits'] == 8]
 			tue_clee = tue_clee[tue_clee['Gradient Bits'] == g_c]
+			tue_clee = tue_clee[tue_clee['Dataset'] == 'mnist']
 
 			tue_clee_ds1 = tue_clee[tue_clee['Data Structure'] == "PB-BMP"]
 			tue_clee_ds2 = tue_clee[tue_clee['Data Structure'] == "PB-CSR"]

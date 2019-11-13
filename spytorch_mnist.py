@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 import seaborn as sns
+import pickle
 
 import torch
 import torch.nn as nn
@@ -11,14 +12,21 @@ import torchvision
 
 import quantization
 import spytorch_util
-from quantization import quant_act, init_layer_weights, SSE, to_cat, clip, quant_w, quant_err, quant_grad
+from quantization import quant_act, init_layer_weights, SSE, to_cat, clip, quant_w, quant_err, quant_grad, quant_generic, step_d
 from spytorch_util import current2firing_time, sparse_data_generator, plot_voltage_traces, SuperSpike
 
+# The coarse network structure is dicated by the Fashion MNIST dataset. 
+nb_inputs  = 28*28
+nb_hidden  = 100
+nb_outputs = 10
 
+time_step = 1e-3
+nb_steps  = 100
 
-
-
+batch_size = 256
 dtype = torch.float
+
+stop_quant_level = 33
 
 # Check whether a GPU is available
 if torch.cuda.is_available():
@@ -28,10 +36,14 @@ else:
 
 
 
+
 class einsum_linear(torch.autograd.Function):
     @staticmethod
     def forward(ctx, input, weight, scale, bias=None):
-        w_quant = weight#quant_w(weight, scale)
+        if quantization.global_wb < stop_quant_level:
+            w_quant = quant_w(weight, scale)
+        else:
+            w_quant = weight
 
         h1 = torch.einsum("abc,cd->abd", (input, w_quant))
         
@@ -46,20 +58,45 @@ class einsum_linear(torch.autograd.Function):
     def backward(ctx, grad_output):
         input, w_quant, bias = ctx.saved_tensors
         grad_input = grad_weight = grad_bias = None
-        quant_error = grad_output#quant_err(grad_output)
+        if quantization.global_eb < stop_quant_level:
+            quant_error = quant_err(grad_output)
+        else:
+            quant_error = grad_output
 
         if ctx.needs_input_grad[0]:
             # propagate quantized error
             grad_input = torch.einsum("abc,dc->abd", (quant_error, w_quant))
 
         if ctx.needs_input_grad[1]:
-            grad_weight = torch.einsum("abc,abd->dc", (quant_error, input))#quant_grad(torch.einsum("abc,abd->dc", (quant_error, input))).float()
+            if quantization.global_gb < stop_quant_level:
+                grad_weight = quant_grad(torch.einsum("abc,abd->dc", (quant_error, input))).float()
+            else:
+                grad_weight = torch.einsum("abc,abd->dc", (quant_error, input))
 
         if bias is not None and ctx.needs_input_grad[2]:
             grad_bias = grad_output.sum(0).squeeze(0)
 
         return grad_input, grad_weight, grad_bias
 
+
+class custom_quant(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, input, b_level):
+        if quantization.global_ab < stop_quant_level:
+            output, clip_info = quant_act(input)
+        else:
+            output, clip_info = input, None
+        ctx.save_for_backward(clip_info)
+        return output
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        clip_info = ctx.saved_tensors
+        if quantization.global_eb < stop_quant_level:
+            quant_error = quant_err(grad_output) * clip_info[0].float()
+        else:
+            quant_error = grad_output
+        return quant_error, None
 
 # Here we load the Dataset
 train_dataset = torchvision.datasets.MNIST('../data', train=True, transform=None, target_transform=None, download=True)
@@ -82,20 +119,11 @@ tau_mem = 10e-3
 tau_syn = 5e-3
 
 alpha   = float(np.exp(-time_step/tau_syn))
+alpha   = .75
 beta    = float(np.exp(-time_step/tau_mem))
-
+beta    = .875
 
 weight_scale = 0.2
-
-spytorch_util.w1 = torch.empty((nb_inputs, nb_hidden),  device=device, dtype=dtype, requires_grad=True)
-scale1 = init_layer_weights(spytorch_util.w1, 28*28).to(device)
-#torch.nn.init.normal_(w1, mean=0.0, std=weight_scale/np.sqrt(nb_inputs))
-#torch.nn.init.uniform_(w1, a = 1, b = 1)
-
-spytorch_util.w2 = torch.empty((nb_hidden, nb_outputs), device=device, dtype=dtype, requires_grad=True)
-scale2 = init_layer_weights(spytorch_util.w2, 28*28).to(device)
-#torch.nn.init.normal_(w2, mean=0.0, std=weight_scale/np.sqrt(nb_hidden))
-#torch.nn.init.uniform_(w2, a = 1, b = 1)
 
 print("init done")
     
@@ -104,16 +132,14 @@ spike_fn  = SuperSpike.apply
 
 
 def run_snn(inputs):
-    #with torch.no_grad():
-    #    spytorch_util.w1 = clip(spytorch_util.w1, quantization.global_wb)
-    #    spytorch_util.w1.requires_grad = True
-    #    spytorch_util.w2 = clip(spytorch_util.w2, quantization.global_wb)
-    #    spytorch_util.w2.requires_grad = True
+    with torch.no_grad():
+        spytorch_util.w1.data = clip(spytorch_util.w1.data, quantization.global_wb)
+        spytorch_util.w2.data = clip(spytorch_util.w2.data, quantization.global_wb)
 
 
     #h1 = torch.einsum("abc,cd->abd", (inputs, w1))
     h1 = einsum_linear.apply(inputs, spytorch_util.w1, scale1)
-
+    #h1b = np.ceil(np.log2((2**quantization.global_wb-1)*nb_inputs))
 
     syn = torch.zeros((batch_size,nb_hidden), device=device, dtype=dtype)
     mem = torch.zeros((batch_size,nb_hidden), device=device, dtype=dtype)
@@ -123,17 +149,21 @@ def run_snn(inputs):
 
     # Compute hidden layer activity
     for t in range(nb_steps):
-        mthr = mem-1.0
+        mthr = mem-.9
+        mthr = custom_quant.apply(mthr, quantization.global_ab)
         out = spike_fn(mthr)
+
         rst = torch.zeros_like(mem)
         c   = (mthr > 0)
         rst[c] = torch.ones_like(mem)[c]
 
         new_syn = alpha*syn +h1[:,t]
+        new_syn = custom_quant.apply(new_syn, quantization.global_ab)
         new_mem = beta*mem +syn -rst
+        new_mem = custom_quant.apply(new_mem, quantization.global_ab)
 
-        mem = new_mem
         syn = new_syn
+        mem = new_mem
 
         mem_rec.append(mem)
         spk_rec.append(out)
@@ -145,17 +175,21 @@ def run_snn(inputs):
     #Readout layer
     #h2 = torch.einsum("abc,cd->abd", (spk_rec, w2))
     h2 = einsum_linear.apply(spk_rec, spytorch_util.w2, scale2)
-
+    #h2b = np.ceil(np.log2((2**quantization.global_wb-1)*nb_hidden))
 
     flt = torch.zeros((batch_size,nb_outputs), device=device, dtype=dtype)
     out = torch.zeros((batch_size,nb_outputs), device=device, dtype=dtype)
     out_rec = [out]
     for t in range(nb_steps):
-        new_flt = alpha*flt +h2[:,t]
-        new_out = beta*out +flt
 
-        flt = new_flt
-        out = new_out
+
+        new_flt = alpha*flt +h2[:,t]
+        new_flt = custom_quant.apply(new_flt, quantization.global_ab)
+        new_out = beta*out +flt
+        new_out = custom_quant.apply(new_out, quantization.global_ab)
+
+        flt = new_flt 
+        out = new_out 
 
         out_rec.append(out)
 
@@ -181,7 +215,10 @@ def train(x_data, y_data, lr=1e-3, nb_epochs=10):
 
             output,recs = run_snn(x_local.to_dense())
             _,spks=recs
+
             m,_=torch.max(output,1)
+            #m = torch.sum(output,1)
+
             log_p_y = log_softmax_fn(m)
             
             # Here we set up our regularizer loss
@@ -195,6 +232,7 @@ def train(x_data, y_data, lr=1e-3, nb_epochs=10):
 
             optimizer.zero_grad()
             loss_val.backward()
+            #import pdb; pdb.set_trace()
             optimizer.step()
             local_loss.append(loss_val.item())
 
@@ -212,54 +250,52 @@ def train(x_data, y_data, lr=1e-3, nb_epochs=10):
 def compute_classification_accuracy(x_data, y_data):
     """ Computes classification accuracy on supplied data in batches. """
     accs = []
-    for x_local, y_local in sparse_data_generator(x_data, y_data, batch_size, nb_steps, nb_inputs, shuffle=False):
-        output,_ = run_snn(x_local.to_dense())
-        m,_= torch.max(output,1) # max over time
-        _,am=torch.max(m,1)      # argmax over output units
-        tmp = np.mean((y_local==am).detach().cpu().numpy()) # compare to labels
-        accs.append(tmp)
+    with torch.no_grad():
+        for x_local, y_local in sparse_data_generator(x_data, y_data, batch_size, nb_steps, nb_inputs, shuffle=False):
+            output,_ = run_snn(x_local.to_dense())
+            m,_= torch.max(output,1) # max over time
+            _,am=torch.max(m,1)      # argmax over output units
+            tmp = np.mean((y_local==am).detach().cpu().numpy()) # compare to labels
+            accs.append(tmp)
     return np.mean(accs)
 
 
-quantization.global_wb = 8
+
+#wb_list = [2,3,4,5,6,7,8]
+#eb_list = [5,6,7,8,9]
+
+#for i in wb_list:
+#    for j in eb_list:
+quantization.global_wb = 4
 quantization.global_ab = 8
-quantization.global_gb = 8
+quantization.global_gb = 33
 quantization.global_eb = 8
 quantization.global_rb = 16
 
-# The coarse network structure is dicated by the Fashion MNIST dataset. 
-nb_inputs  = 28*28
-nb_hidden  = 100
-nb_outputs = 10
+bit_string = str(quantization.global_wb) + str(quantization.global_ab) + str(quantization.global_gb) + str(quantization.global_eb)
 
-time_step = 1e-3
-nb_steps  = 100
+print(bit_string)
 
 
-batch_size = 256
+spytorch_util.w1 = torch.empty((nb_inputs, nb_hidden),  device=device, dtype=dtype, requires_grad=True)
+scale1 = init_layer_weights(spytorch_util.w1, 28*28).to(device)
 
-wb_list = [2,3,4,5,6,7,8]
-eb_list = [5,6,7,8,9]
+spytorch_util.w2 = torch.empty((nb_hidden, nb_outputs), device=device, dtype=dtype, requires_grad=True)
+scale2 = init_layer_weights(spytorch_util.w2, 28*28).to(device)
 
-for i in wb_list:
-    for j in eb_list:
-        quantization.global_wb = i
-        quantization.global_ab = 8
-        quantization.global_gb = 8
-        quantization.global_eb = j
-        quantization.global_rb = 16
 
-        loss_hist, acc_hist = train(x_train, y_train, lr=2e-4, nb_epochs=30)
+quantization.global_lr = 1
+# lr = 2e-4
+loss_hist, acc_hist = train(x_train, y_train, lr = .001, nb_epochs = 30) #/step_d(16)*10
 
-        bit_string = str(quantization.global_wb) + str(quantization.global_ab) + str(quantization.global_gb) + str(quantization.global_eb)
 
-        results = {'bit_string': bit_string, 'test_acc': acc_hist, 'test_loss': loss_hist}
+#results = {'bit_string': bit_string, 'test_acc': acc_hist, 'test_loss': loss_hist}
 
-        with open('results/snn_mnist_' + bit_string + '.pkl', 'wb') as f:
-            pickle.dump(results, f)
+#with open('results/snn_mnist_eb_' + bit_string + '.pkl', 'wb') as f:
+#    pickle.dump(results, f)
 
-print("Training accuracy: %.3f"%(compute_classification_accuracy(x_train,y_train)))
-print("Test accuracy: %.3f"%(compute_classification_accuracy(x_test,y_test)))
+#print("Training accuracy: %.3f"%(compute_classification_accuracy(x_train,y_train)))
+#print("Test accuracy: %.3f"%(compute_classification_accuracy(x_test,y_test)))
 
 
 #(Pdb) w1.grad.sum()
@@ -273,3 +309,5 @@ print("Test accuracy: %.3f"%(compute_classification_accuracy(x_test,y_test)))
 #num_bins = 2**4
 #n, bins, patches = plt.hist(all_w, num_bins, facecolor='blue', alpha=0.5)
 #plt.savefig("./figures/joshi_hist.png")
+
+
