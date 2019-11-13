@@ -303,7 +303,7 @@ spytorch_util.w2.data = spytorch_util.w2.data * .05
 
 #quantization.global_lr = .01
 # lr = 2e-4
-loss_hist, output_hist = train(x_train, y_train, lr = .0001, nb_epochs = 10000) #/step_d(16)*10
+loss_hist, output_hist = train(x_train, y_train, lr = .0001, nb_epochs = 10) #/step_d(16)*10
 
 bit_string = str(quantization.global_wb) + str(quantization.global_ab) + str(quantization.global_gb) + str(quantization.global_eb)
 

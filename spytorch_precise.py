@@ -274,7 +274,7 @@ scale2 = init_layer_weights(spytorch_util.w2, 28*28).to(device)
 
 quantization.global_lr = .1
 # lr = 2e-4
-loss_hist, output = train(x_train, y_train, lr = 1, nb_epochs = 2000) #/step_d(16)*10
+loss_hist, output = train(x_train, y_train, lr = 1, nb_epochs = 20) #/step_d(16)*10
 
 bit_string = str(quantization.global_wb) + str(quantization.global_ab) + str(quantization.global_gb) + str(quantization.global_eb)
 

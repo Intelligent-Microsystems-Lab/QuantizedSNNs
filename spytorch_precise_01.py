@@ -41,10 +41,10 @@ quantization.trial = args['t']
 quantization.global_rb = 16
 
 if quantization.global_wb == None:
-    quantization.global_wb = 34
-    quantization.global_ab = 34
-    quantization.global_gb = 34
-    quantization.global_eb = 34
+    quantization.global_wb = 2
+    quantization.global_ab = 8
+    quantization.global_gb = 8
+    quantization.global_eb = 8
     quantization.global_lr = 1
 
 # Check whether a GPU is available
@@ -300,7 +300,7 @@ scale2 = init_layer_weights(spytorch_util.w2, nb_hidden).to(device)
 
 #quantization.global_lr = .01
 # lr = 2e-4
-loss_hist, output = train(x_train, y_train, lr = 1, nb_epochs = 10000) #/step_d(16)*10
+loss_hist, output = train(x_train, y_train, lr = 1, nb_epochs = 10) #/step_d(16)*10
 
 bit_string = str(quantization.global_wb) + str(quantization.global_ab) + str(quantization.global_gb) + str(quantization.global_eb) +'_'+str(quantization.global_lr) + "_t" +str(quantization.trial)
 
