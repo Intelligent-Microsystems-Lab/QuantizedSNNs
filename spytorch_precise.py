@@ -23,21 +23,48 @@ if torch.cuda.is_available():
 else:
     device = torch.device("cpu")
 
+<<<<<<< HEAD
+=======
+global_beta = 1.5 # we need to compute this one here too
+
+# quiet init -> limit time a factor....
+def init_layer_weights_silent(weights_layer, shape, factor=1):
+    silent_factor = .5
+
+    fan_in = shape
+    limit = torch.sqrt(torch.tensor([3*factor/fan_in]))
+    Wm = global_beta/step_d(torch.tensor([float(quantization.global_wb)]))
+    scale = 2 ** round(math.log(Wm / limit, 2.0))
+    scale = scale if scale > 1 else 1.0
+    limit = Wm if Wm > limit else limit
+
+    torch.nn.init.uniform_(weights_layer, a = -float(limit)*silent_factor, b = float(limit)*silent_factor)
+    weights_layer.data = quant_generic(weights_layer.data, quantization.global_gb)[0]
+    return torch.tensor([float(scale)])
+>>>>>>> 733bec1bcc072cf7ba3c5905b135d207120fdff7
 
 def conv_exp_kernel(inputs, time_step, tau, device):
     dtype = torch.float
     nb_hidden = inputs.shape[1]
     nb_steps = inputs.shape[0]
+<<<<<<< HEAD
 
     # hyper para -> what value do we need here?
     #alpha = float(torch.exp(torch.tensor([-time_step/tau], device= device, dtype=dtype)))
+=======
+    alpha = float(torch.exp(torch.tensor([-time_step/tau], device= device, dtype=dtype)))
+>>>>>>> 733bec1bcc072cf7ba3c5905b135d207120fdff7
 
     u = torch.zeros((nb_hidden), device=device, dtype=dtype)
     rec_u = []
     
     for t in range(nb_steps):
+<<<<<<< HEAD
         u = beta*u + inputs[t,:]
         #u = custom_quant.apply(u, quantization.global_ab)
+=======
+        u = alpha*u + inputs[t,:]
+>>>>>>> 733bec1bcc072cf7ba3c5905b135d207120fdff7
         rec_u.append(u)
 
     rec_u = torch.stack(rec_u,dim=0)    
@@ -46,8 +73,11 @@ def conv_exp_kernel(inputs, time_step, tau, device):
 def van_rossum(x, y, time_step, tau, device):
     tild_x = conv_exp_kernel(x, time_step, tau, device)
     tild_y = conv_exp_kernel(y, time_step, tau, device)
+<<<<<<< HEAD
 
     # how granular do we want this?
+=======
+>>>>>>> 733bec1bcc072cf7ba3c5905b135d207120fdff7
     return torch.sqrt(1/tau*torch.sum((tild_x - tild_y)**2))
 
 class SuperSpike(torch.autograd.Function):
@@ -226,10 +256,17 @@ def train(x_data, y_data, lr=1e-3, nb_epochs=10):
        
 spike_fn  = SuperSpike.apply 
 
+<<<<<<< HEAD
 quantization.global_wb = 2
 quantization.global_ab = 8
 quantization.global_gb = 8
 quantization.global_eb = 8
+=======
+quantization.global_wb = 33
+quantization.global_ab = 33
+quantization.global_gb = 33
+quantization.global_eb = 33
+>>>>>>> 733bec1bcc072cf7ba3c5905b135d207120fdff7
 quantization.global_rb = 16
 stop_quant_level = 33
 
@@ -243,17 +280,27 @@ lr_change = 2e-4
 
 
 
+<<<<<<< HEAD
 #alpha   = float(np.exp(-time_step/tau_syn))
 alpha   = .75
 #beta    = float(np.exp(-time_step/tau_mem))
 beta    = .875
+=======
+alpha   = float(np.exp(-time_step/tau_syn))
+#alpha   = .75
+beta    = float(np.exp(-time_step/tau_mem))
+#beta    = .875
+>>>>>>> 733bec1bcc072cf7ba3c5905b135d207120fdff7
 
 nb_inputs  = 700
 nb_hidden  = 400
 nb_outputs = 250
 
+<<<<<<< HEAD
 quantization.global_beta = quantization.step_d(quantization.global_wb)-.5
 
+=======
+>>>>>>> 733bec1bcc072cf7ba3c5905b135d207120fdff7
 with open("./data/input_700_250_25.pkl", 'rb') as f:
     x_train = pickle.load(f).t().to(device)
 
@@ -270,6 +317,7 @@ bit_string = str(quantization.global_wb) + str(quantization.global_ab) + str(qua
 print(bit_string)
 
 spytorch_util.w1 = torch.empty((nb_inputs, nb_hidden),  device=device, dtype=dtype, requires_grad=True)
+<<<<<<< HEAD
 scale1 = init_layer_weights(spytorch_util.w1, 28*28).to(device)
 
 spytorch_util.w2 = torch.empty((nb_hidden, nb_outputs), device=device, dtype=dtype, requires_grad=True)
@@ -285,6 +333,21 @@ bit_string = str(quantization.global_wb) + str(quantization.global_ab) + str(qua
 results = {'bit_string': bit_string ,'loss_hist': loss_hist, 'output': output.cpu()}
 
 with open('results/snn_nd_precise_'+bit_string+'.pkl', 'wb') as f:
+=======
+scale1 = init_layer_weights_silent(spytorch_util.w1, 28*28).to(device)
+
+spytorch_util.w2 = torch.empty((nb_hidden, nb_outputs), device=device, dtype=dtype, requires_grad=True)
+scale2 = init_layer_weights_silent(spytorch_util.w2, 28*28).to(device)
+
+
+quantization.global_lr = .001
+# lr = 2e-4
+loss_hist, output = train(x_train, y_train, lr = quantization.global_lr, nb_epochs = 2000) #/step_d(16)*10
+
+results = {'loss_hist': loss_hist, 'output': output.cpu()}
+
+with open('results/snn_nd_precise.pkl', 'wb') as f:
+>>>>>>> 733bec1bcc072cf7ba3c5905b135d207120fdff7
     pickle.dump(results, f)
 
 
