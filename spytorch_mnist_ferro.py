@@ -17,9 +17,10 @@ from quantization import quant_act, init_layer_weights, SSE, to_cat, clip, quant
 from spytorch_util import current2firing_time, sparse_data_generator, plot_voltage_traces, SuperSpike
 
 
+#here test
 
 # set global variables
-quantization.global_wb = 33
+quantization.global_wb = 35
 quantization.global_ab = 33
 quantization.global_gb = 33
 quantization.global_eb = 33
@@ -30,7 +31,7 @@ nb_inputs  = 28*28
 nb_hidden  = 100
 nb_outputs = 10
 
-time_step = 1e-3
+time_step = 1e-3 
 nb_steps  = 100
 
 batch_size = 256
@@ -145,61 +146,85 @@ spike_fn  = SuperSpike.apply
 
 
 def run_snn(inputs):
-    v_rest_e    = -65 * 1e-3
-    dx_dt_param = 200e-3
-    v_reset_e   = -65 * 1e-3
-    v_thresh_e  = -52*1e-3
-    refrac_e    = 5*1e-3
-    tau_v       = 100 * 1e-3
-    del_theta   = 0.1*1e-3
-    ge_max      = 8
-    gi_max      = 5
-    tau_ge      = 1*1e-3
-    tau_gi      = 2*1e-3
+    mV = 1e-3
+    ms = 1e-3
+    nS = 1e-9
+
+    # Neuron parameterss
+    v_exc = 0*mV
+    v_inh = -100*mV
+    v_rest_e = -65*mV
+    v_reset_e_mult = -65*mV
+    v_thresh_e_mult = -52*mV
+    refrac_e = 5*ms
+    tau_v = 100*ms
+
+    theta = 0
+    del_theta_mult = 0.1*mV
+
+    t_leak = 1
+    tau_leak = 100
+
+    # Synapse parameters
+    ge_max = 8
+    gi_max = 5
+    tau_ge = 1*ms
+    tau_gi = 2*ms
 
 
-    with torch.no_grad():
-        spytorch_util.w1.data = clip(spytorch_util.w1.data, quantization.global_wb)
-        spytorch_util.w2.data = clip(spytorch_util.w2.data, quantization.global_wb)
+    # doesnt change anything but I'll keep it out for now
+    #with torch.no_grad():
+    #    spytorch_util.w1.data = clip(spytorch_util.w1.data, quantization.global_wb)
+    #    spytorch_util.w2.data = clip(spytorch_util.w2.data, quantization.global_wb)
 
     h1 = einsum_linear.apply(inputs, spytorch_util.w1, scale1)
 
     g_e = torch.zeros((batch_size,nb_hidden), device=device, dtype=dtype)
-    theta = torch.zeros((batch_size,nb_hidden), device=device, dtype=dtype)
-    I_syn_E = torch.zeros((batch_size,nb_hidden), device=device, dtype=dtype)
     v = torch.ones((batch_size,nb_hidden), device=device, dtype=dtype) * v_rest_e
-    dx_dt = torch.zeros((batch_size,nb_hidden), device=device, dtype=dtype)
-    alpha = torch.ones((batch_size,nb_hidden), device=device, dtype=dtype)
-    v_rest_e = torch.ones((batch_size,nb_hidden), device=device, dtype=dtype) * v_rest_e
-    del_theta = torch.ones((batch_size,nb_hidden), device=device, dtype=dtype) * del_theta
+    alpha = torch.zeros((batch_size,nb_hidden), device=device, dtype=dtype)
+    theta = torch.zeros((batch_size,nb_hidden), device=device, dtype=dtype)
+    v_thresh_e = torch.ones((batch_size,nb_hidden), device=device, dtype=dtype)*v_thresh_e_mult
+    del_theta = torch.ones((batch_size,nb_hidden), device=device, dtype=dtype)*del_theta_mult
+    v_reset_e = torch.ones((batch_size,nb_hidden), device=device, dtype=dtype)*v_reset_e_mult
+
 
     mem_rec = [v]
     spk_rec = [g_e]
     
     for t in range(nb_steps-1):
         dge_dt = -g_e/tau_ge
-        g_e, I_syn_E, dx_dt = g_e + time_step*dge_dt + h1[:,t], (- g_e*v)*1e-9, -g_e/dx_dt_param
-        alpha = alpha + time_step * dx_dt
-        dv_dt = (v_rest_e*alpha - v)/(.1*tau_v) + (I_syn_E/1e-9)/(1*tau_v)
+
+
+        g_e, I_syn_E, dx_dt = g_e + time_step*dge_dt + h1[:,t], (g_e*v_exc - g_e*v)*nS, -g_e/200e-3
+        #alpha = alpha + time_step*dx_dt
+        # ferro
+        #dv_dt = (v_rest_e*alpha - v)/(.1*tau_v) + (I_syn_E/nS)/(1*tau_v)
+        # ferro lif
+        dv_dt = (v_rest_e - v)/(1*tau_v) + (I_syn_E/nS)/(1*tau_v)
         v = v + time_step*dv_dt
 
         out = spike_fn(v - (v_thresh_e+theta))
         c = (out==1.0)
-        v[c] = v_rest_e[c]
         theta[c] += del_theta[c]
-        alpha[c] = 1
+        #alpha[c] = 1
+        v[c] = v_reset_e[c]
 
         mem_rec.append(v)
         spk_rec.append(out)
 
+    mem_rec = torch.stack(mem_rec,dim=1)
+    spk_rec = torch.stack(spk_rec,dim=1)
 
-    #syn = torch.zeros((batch_size,nb_hidden), device=device, dtype=dtype)
-    #mem = torch.zeros((batch_size,nb_hidden), device=device, dtype=dtype)#
+    import pdb; pdb.set_trace()
 
-    #mem_rec = [mem]
-    #spk_rec = [mem]
 
-    # Compute hidden layer activity
+    # syn = torch.zeros((batch_size,nb_hidden), device=device, dtype=dtype)
+    # mem = torch.zeros((batch_size,nb_hidden), device=device, dtype=dtype)#
+
+    # mem_rec = [mem]
+    # spk_rec = [mem]
+
+    # #Compute hidden layer activity
     # for t in range(nb_steps):
     #     mthr = mem-.9
     #     mthr = custom_quant.apply(mthr, quantization.global_ab)
@@ -209,10 +234,10 @@ def run_snn(inputs):
     #     c   = (mthr > 0)
     #     rst[c] = torch.ones_like(mem)[c]
 
-    #     new_syn = alpha*syn +h1[:,t]
-    #     new_syn = custom_quant.apply(new_syn, quantization.global_ab)
+    #     new_syn = alpha1*syn +h1[:,t]
+    #     #new_syn = custom_quant.apply(new_syn, quantization.global_ab)
     #     new_mem = beta*mem +syn -rst
-    #     new_mem = custom_quant.apply(new_mem, quantization.global_ab)
+    #     #new_mem = custom_quant.apply(new_mem, quantization.global_ab)
 
     #     syn = new_syn
     #     mem = new_mem
@@ -220,29 +245,55 @@ def run_snn(inputs):
     #     mem_rec.append(mem)
     #     spk_rec.append(out)
 
-    mem_rec = torch.stack(mem_rec,dim=1)
-    spk_rec = torch.stack(spk_rec,dim=1)
+
+    #mem_rec = torch.stack(mem_rec,dim=1)
+    #spk_rec = torch.stack(spk_rec,dim=1)
 
 
     #Readout layer
     h2 = einsum_linear.apply(spk_rec, spytorch_util.w2, scale2)
 
-    flt = torch.zeros((batch_size,nb_outputs), device=device, dtype=dtype)
-    out = torch.zeros((batch_size,nb_outputs), device=device, dtype=dtype)
-    out_rec = [out]
-    for t in range(nb_steps):
-        #import pdb; pdb.set_trace()
-        new_flt = alpha1*flt +h2[:,t]
-        #new_flt = custom_quant.apply(new_flt, quantization.global_ab)
-        new_out = beta*out +flt
-        #new_out = custom_quant.apply(new_out, quantization.global_ab)
 
-        flt = new_flt 
-        out = new_out 
+    g_e = torch.zeros((batch_size,nb_outputs), device=device, dtype=dtype)
+    v = torch.ones((batch_size,nb_outputs), device=device, dtype=dtype) * v_rest_e
+    alpha = torch.zeros((batch_size,nb_outputs), device=device, dtype=dtype)
+    theta = torch.zeros((batch_size,nb_outputs), device=device, dtype=dtype)
+    v_thresh_e = torch.ones((batch_size,nb_outputs), device=device, dtype=dtype)*v_thresh_e_mult
+    del_theta = torch.ones((batch_size,nb_outputs), device=device, dtype=dtype)*del_theta_mult
 
-        out_rec.append(out)
+    out_rec = [v]
+    
+    for t in range(nb_steps-1):
+        dge_dt = -g_e/tau_ge
+
+        g_e, I_syn_E, dx_dt = g_e + time_step*dge_dt + h2[:,t], (g_e*v_exc - g_e*v)*nS, -g_e/200e-3
+        #alpha = alpha + time_step*dx_dt
+        # ferro
+        #dv_dt = (v_rest_e*alpha - v)/(.1*tau_v) + (I_syn_E/nS)/(1*tau_v)
+        # ferro lif
+        dv_dt = (v_rest_e - v)/(1*tau_v) + (I_syn_E/nS)/(1*tau_v)
+        v = v + time_step*dv_dt
+
+        out_rec.append(v)
 
     out_rec = torch.stack(out_rec,dim=1)
+
+    # flt = torch.zeros((batch_size,nb_outputs), device=device, dtype=dtype)
+    # out = torch.zeros((batch_size,nb_outputs), device=device, dtype=dtype)
+    # out_rec = [out]
+    # for t in range(nb_steps):
+    #     #import pdb; pdb.set_trace()
+    #     new_flt = alpha1*flt +h2[:,t]
+    #     #new_flt = custom_quant.apply(new_flt, quantization.global_ab)
+    #     new_out = beta*out +flt
+    #     #new_out = custom_quant.apply(new_out, quantization.global_ab)
+
+    #     flt = new_flt 
+    #     out = new_out 
+
+    #     out_rec.append(out)
+
+    # out_rec = torch.stack(out_rec,dim=1)
 
 
     other_recs = [mem_rec, spk_rec]
