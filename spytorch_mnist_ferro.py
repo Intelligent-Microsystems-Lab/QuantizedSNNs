@@ -333,7 +333,7 @@ def train(x_data, y_data, lr, nb_epochs):
         local_loss = []
         accs = []
 
-        scheduler.step()
+        
         for x_local, y_local in sparse_data_generator(x_data, y_data, batch_size, nb_steps, nb_inputs, shuffle = False):
 
             output,recs = run_snn(x_local.to_dense())
@@ -365,6 +365,7 @@ def train(x_data, y_data, lr, nb_epochs):
             optimizer.step()
             local_loss.append(loss_val.item())
 
+        scheduler.step()
         mean_loss = np.mean(local_loss)
         print("Epoch %i: loss=%.5f"%(e+1,mean_loss))
         acc_test = compute_classification_accuracy(x_test,y_test)
@@ -411,7 +412,7 @@ results = {'bit_string': bit_string, 'test_acc': test_acc, 'test_loss': loss_his
 date_string = time.strftime("%Y%m%d%H%M%S")
 
 
-with open('results/snn_mnist_' + bit_string + '_' + inp_mult + '_' + date_string + '.pkl', 'wb') as f:
+with open('results/snn_mnist_' + bit_string + '_' + str(inp_mult) + '_' + date_string + '.pkl', 'wb') as f:
     pickle.dump(results, f)
 
 
