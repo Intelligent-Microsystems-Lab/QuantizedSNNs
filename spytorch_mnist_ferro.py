@@ -411,7 +411,7 @@ spytorch_util.w2 = torch.empty((nb_hidden, nb_outputs), device=device, dtype=dty
 scale2 = init_layer_weights(spytorch_util.w2, 28*28).to(device)
 
 
-loss_hist, test_acc, train_acc = train(x_train, y_train, lr = 1e-5, nb_epochs = 50)
+loss_hist, test_acc, train_acc = train(x_train, y_train, lr = 1e-5, nb_epochs = 80)
 
 
 results = {'bit_string': bit_string, 'test_acc': test_acc, 'test_loss': loss_hist, 'train_acc': train_acc ,'weight': [quant_w(spytorch_util.w1, scale1), quant_w(spytorch_util.w2, scale2)]}
