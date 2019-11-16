@@ -38,7 +38,7 @@ if inp_mult == None:
 #here test
 
 # set global variables
-quantization.global_wb = 4
+#quantization.global_wb = 4
 quantization.global_ab = 33
 quantization.global_gb = 33
 quantization.global_eb = 33
