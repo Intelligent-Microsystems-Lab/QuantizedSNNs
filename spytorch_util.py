@@ -140,7 +140,7 @@ class SuperSpike(torch.autograd.Function):
         return grad
 
 
-def sparse_data_generator_DVS(X, y, batch_size, nb_steps, nb_units, shuffle=True, time_step=1e-3, device=torch.device("cpu")):
+def sparse_data_generator_DVS(X, y, batch_size, nb_steps, nb_units, shuffle, time_step, device):
     """ This generator takes datasets in analog format and generates spiking network input as sparse tensors. 
 
     Args:

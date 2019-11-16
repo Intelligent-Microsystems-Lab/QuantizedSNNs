@@ -3,6 +3,7 @@ import time
 import argparse
 
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 import seaborn as sns
@@ -338,7 +339,7 @@ def train(x_data, y_data, lr, nb_epochs):
         accs = []
 
         
-        for x_local, y_local in sparse_data_generator_DVS(x_data, y_data, batch_size, nb_steps, nb_inputs, shuffle = False):
+        for x_local, y_local in sparse_data_generator_DVS(x_data, y_data, batch_size, nb_steps, nb_inputs, shuffle = False, device=device):
 
             output,recs = run_snn(x_local.to_dense())
             _,spks=recs
