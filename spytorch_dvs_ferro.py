@@ -15,7 +15,8 @@ import torchvision
 import quantization
 import spytorch_util
 from quantization import quant_act, init_layer_weights, SSE, to_cat, clip, quant_w, quant_err, quant_grad, quant_generic, step_d
-from spytorch_util import current2firing_time, sparse_data_generator, plot_voltage_traces, SuperSpike
+from spytorch_util import current2firing_time, sparse_data_generator, plot_voltage_traces, SuperSpike, sparse_data_generator_DVS
+
 
 
 
@@ -50,9 +51,9 @@ quantization.global_eb = 33
 quantization.global_rb = 16
 quantization.global_lr = 1
 
-nb_inputs  = 28*28
+nb_inputs  = 128*128
 nb_hidden  = 500
-nb_outputs = 10
+nb_outputs = 12
 
 time_step = 1e-3 
 nb_steps  = 100
@@ -80,21 +81,18 @@ else:
 
 # Here we load the Dataset
 
-train_dataset = torchvision.datasets.MNIST('../data', train=True, transform=None, target_transform=None, download=True)
-test_dataset = torchvision.datasets.MNIST('../data', train=False, transform=None, target_transform=None, download=True)
-
-# Standardize data
-# x_train = torch.tensor(train_dataset.train_data, device=device, dtype=dtype)
-x_train = np.array(train_dataset.train_data, dtype=np.float)
-x_train = x_train.reshape(x_train.shape[0],-1)/255
-# x_test = torch.tensor(test_dataset.test_data, device=device, dtype=dtype)
-x_test = np.array(test_dataset.test_data, dtype=np.float)
-x_test = x_test.reshape(x_test.shape[0],-1)/255
-
-# y_train = torch.tensor(train_dataset.train_labels, device=device, dtype=dtype)
-# y_test  = torch.tensor(test_dataset.test_labels, device=device, dtype=dtype)
-y_train = np.array(train_dataset.train_labels, dtype=np.int)
-y_test  = np.array(test_dataset.test_labels, dtype=np.int)
+test_dataset = pd.read_pickle('../DVS/test_complete.pkl')
+y_test = torch.tensor(test_dataset['label'], device=device, dtype=dtype)
+train_dataset = pd.read_pickle('../DVS/train_complete.pkl')
+y_train = torch.tensor(train_dataset['label'], device=device, dtype=dtype)
+with open('../DVS_prep/full_data_train.pkl', 'rb') as f:
+   train_data = pickle.load(f)
+with open('../DVS_prep/full_data_test.pkl', 'rb') as f:
+    test_data = pickle.load(f)
+x_test = pd.DataFrame({'batch':test_data[0],'ts':test_data[1],'unit':test_data[2]})
+x_test = x_test.drop_duplicates()
+x_train = pd.DataFrame({'batch':train_data[0],'ts':train_data[1],'unit':train_data[2]})
+x_train = x_train.drop_duplicates()
 
 
 class einsum_linear(torch.autograd.Function):
@@ -340,7 +338,7 @@ def train(x_data, y_data, lr, nb_epochs):
         accs = []
 
         
-        for x_local, y_local in sparse_data_generator(x_data, y_data, batch_size, nb_steps, nb_inputs, shuffle = False):
+        for x_local, y_local in sparse_data_generator_DVS(x_data, y_data, batch_size, nb_steps, nb_inputs, shuffle = False):
 
             output,recs = run_snn(x_local.to_dense())
             _,spks=recs

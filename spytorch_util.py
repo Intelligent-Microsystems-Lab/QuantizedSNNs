@@ -138,3 +138,52 @@ class SuperSpike(torch.autograd.Function):
         grad_input = grad_output.clone()
         grad = grad_input/(SuperSpike.scale*torch.abs(input)+1.0)**2
         return grad
+
+
+def sparse_data_generator_DVS(X, y, batch_size, nb_steps, nb_units, shuffle=True, time_step=1e-3, device=torch.device("cpu")):
+    """ This generator takes datasets in analog format and generates spiking network input as sparse tensors. 
+
+    Args:
+        X: The data ( sample x event x 2 ) the last dim holds (time,neuron) tuples
+        y: The labels
+    """
+
+    try:
+        labels_ = np.array(y.cpu(),dtype=np.int)
+    except:
+        labels_ = np.array(y,dtype=np.int)
+    number_of_batches = len(y)//batch_size
+    sample_index = np.arange(len(y))
+
+
+    if shuffle:
+        np.random.shuffle(sample_index)
+
+    total_batch_count = 0
+    counter = 0
+    while counter<number_of_batches:
+        batch_index = sample_index[batch_size*counter:batch_size*(counter+1)]
+
+        coo = [ [] for i in range(3) ]
+        for bc,idx in enumerate(batch_index):
+            
+            temp = X[X['batch'] == idx]
+
+            batch = [bc for _ in range(len(temp['ts']))]
+            coo[0].extend(batch)
+            coo[1].extend(temp['ts'].tolist())
+            coo[2].extend(temp['unit'].tolist())
+
+
+        i = torch.LongTensor(coo)#.to(device)
+        v = torch.FloatTensor(np.ones(len(coo[0])))#.to(device)
+
+        X_batch = torch.sparse.FloatTensor(i, v, torch.Size([batch_size,300,128*128]))#.to(device)
+        y_batch = torch.tensor(labels_[batch_index])
+
+        try:
+            yield X_batch.to(device=device), y_batch.to(device=device)
+            counter += 1
+        except StopIteration:
+            return
+

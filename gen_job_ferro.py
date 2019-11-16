@@ -87,9 +87,3 @@ for mult_cur in mult_sweep:
 
 
 
-
-
-
-
-
-
