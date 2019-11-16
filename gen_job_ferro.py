@@ -11,15 +11,15 @@ main_string2 = """# Specify queue (use ‘debug’ for development) // gpu@qa-20
 #$ -l gpu_card=1 
 #$ -N ferro_"""
 main_string3 = """     # Specify job name
-#$ -o ./logs/output_snn_smile_"""
+#$ -o ./logs/output_ferro_"""
 main_string4 = """_wage.txt
-#$ -e ./logs/error_snn_smile_"""
+#$ -e ./logs/error_ferro_"""
 main_string5 = """_wage.txt
 
 module load python       # Required modules
 setenv OMP_NUM_THREADS $NSLOTS
 
-python spytorch_precise_01.py -wb """
+python spytorch_mnist_ferro.py -wb """
 main_string6 = """ -wb 2 -ab 6 -eb 6 -gb 8"""
 
 
