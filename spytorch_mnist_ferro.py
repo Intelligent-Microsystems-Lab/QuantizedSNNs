@@ -1,5 +1,6 @@
 import os
 import time
+import argparse
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -17,10 +18,27 @@ from quantization import quant_act, init_layer_weights, SSE, to_cat, clip, quant
 from spytorch_util import current2firing_time, sparse_data_generator, plot_voltage_traces, SuperSpike
 
 
+
+ap = argparse.ArgumentParser()
+ap.add_argument("-wb", "--wb", type = int, help = "weight bits")
+ap.add_argument("-m", "--m", type = int, help="multiplier")
+args = vars(ap.parse_args())
+
+
+quantization.global_wb = args['wb']
+inp_mult = args['m']
+
+if quantization.global_wb == None:
+    quantization.global_wb = 4
+
+if inp_mult == None:
+    inp_mult = 150
+
+
 #here test
 
 # set global variables
-quantization.global_wb = 35
+quantization.global_wb = 4
 quantization.global_ab = 33
 quantization.global_gb = 33
 quantization.global_eb = 33
@@ -48,14 +66,11 @@ beta    = float(np.exp(-time_step/tau_mem))
 
 
 
-
-
 # Check whether a GPU is available
 if torch.cuda.is_available():
     device = torch.device("cuda")     
 else:
     device = torch.device("cpu")
-
 
 
 # Here we load the Dataset
@@ -146,6 +161,8 @@ spike_fn  = SuperSpike.apply
 
 
 def run_snn(inputs):
+
+
     mV = 1e-3
     ms = 1e-3
     nS = 1e-9
@@ -162,6 +179,7 @@ def run_snn(inputs):
     theta = 0
     del_theta_mult = 0.1*mV
 
+
     t_leak = 1
     tau_leak = 100
 
@@ -173,9 +191,9 @@ def run_snn(inputs):
 
 
     # doesnt change anything but I'll keep it out for now
-    #with torch.no_grad():
-    #    spytorch_util.w1.data = clip(spytorch_util.w1.data, quantization.global_wb)
-    #    spytorch_util.w2.data = clip(spytorch_util.w2.data, quantization.global_wb)
+    with torch.no_grad():
+        spytorch_util.w1.data = clip(spytorch_util.w1.data, quantization.global_wb)
+        spytorch_util.w2.data = clip(spytorch_util.w2.data, quantization.global_wb)
 
     h1 = einsum_linear.apply(inputs, spytorch_util.w1, scale1)
 
@@ -195,18 +213,18 @@ def run_snn(inputs):
         dge_dt = -g_e/tau_ge
 
 
-        g_e, I_syn_E, dx_dt = g_e + time_step*dge_dt + h1[:,t], (g_e*v_exc - g_e*v)*nS, -g_e/200e-3
-        #alpha = alpha + time_step*dx_dt
+        g_e, I_syn_E, dx_dt = g_e + time_step*dge_dt + h1[:,t]*inp_mult, (g_e*v_exc - g_e*v)*nS, -g_e/200e-3
+        alpha = alpha + time_step*dx_dt
         # ferro
-        #dv_dt = (v_rest_e*alpha - v)/(.1*tau_v) + (I_syn_E/nS)/(1*tau_v)
+        dv_dt = (v_rest_e*alpha - v)/(.1*tau_v) + (I_syn_E/nS)/(1*tau_v)
         # ferro lif
-        dv_dt = (v_rest_e - v)/(1*tau_v) + (I_syn_E/nS)/(1*tau_v)
+        #dv_dt = (v_rest_e - v)/(1*tau_v) + (I_syn_E/nS)/(1*tau_v)
         v = v + time_step*dv_dt
 
         out = spike_fn(v - (v_thresh_e+theta))
         c = (out==1.0)
         theta[c] += del_theta[c]
-        #alpha[c] = 1
+        alpha[c] = 1
         v[c] = v_reset_e[c]
 
         mem_rec.append(v)
@@ -215,8 +233,8 @@ def run_snn(inputs):
     mem_rec = torch.stack(mem_rec,dim=1)
     spk_rec = torch.stack(spk_rec,dim=1)
 
-    import pdb; pdb.set_trace()
 
+    #import pdb; pdb.set_trace()
 
     # syn = torch.zeros((batch_size,nb_hidden), device=device, dtype=dtype)
     # mem = torch.zeros((batch_size,nb_hidden), device=device, dtype=dtype)#
@@ -266,12 +284,12 @@ def run_snn(inputs):
     for t in range(nb_steps-1):
         dge_dt = -g_e/tau_ge
 
-        g_e, I_syn_E, dx_dt = g_e + time_step*dge_dt + h2[:,t], (g_e*v_exc - g_e*v)*nS, -g_e/200e-3
-        #alpha = alpha + time_step*dx_dt
+        g_e, I_syn_E, dx_dt = g_e + time_step*dge_dt + h2[:,t]*inp_mult, (g_e*v_exc - g_e*v)*nS, -g_e/200e-3
+        alpha = alpha + time_step*dx_dt
         # ferro
-        #dv_dt = (v_rest_e*alpha - v)/(.1*tau_v) + (I_syn_E/nS)/(1*tau_v)
+        dv_dt = (v_rest_e*alpha - v)/(.1*tau_v) + (I_syn_E/nS)/(1*tau_v)
         # ferro lif
-        dv_dt = (v_rest_e - v)/(1*tau_v) + (I_syn_E/nS)/(1*tau_v)
+        #dv_dt = (v_rest_e - v)/(1*tau_v) + (I_syn_E/nS)/(1*tau_v)
         v = v + time_step*dv_dt
 
         out_rec.append(v)
@@ -300,9 +318,10 @@ def run_snn(inputs):
     return out_rec, other_recs
 
 
-def train(x_data, y_data, lr=1e-3, nb_epochs=10):
+def train(x_data, y_data, lr, nb_epochs):
     params = [spytorch_util.w1,spytorch_util.w2]
-    optimizer = torch.optim.Adamax(params, lr=lr, betas=(0.9,0.999))
+    optimizer = torch.optim.Adam(params, lr=lr, betas=(0.9,0.999))
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
 
     log_softmax_fn = nn.LogSoftmax(dim=1)
     loss_fn = nn.NLLLoss()
@@ -313,6 +332,8 @@ def train(x_data, y_data, lr=1e-3, nb_epochs=10):
     for e in range(nb_epochs):
         local_loss = []
         accs = []
+
+        scheduler.step()
         for x_local, y_local in sparse_data_generator(x_data, y_data, batch_size, nb_steps, nb_inputs, shuffle = False):
 
             output,recs = run_snn(x_local.to_dense())
@@ -383,14 +404,14 @@ spytorch_util.w2 = torch.empty((nb_hidden, nb_outputs), device=device, dtype=dty
 scale2 = init_layer_weights(spytorch_util.w2, 28*28).to(device)
 
 
-loss_hist, test_acc, train_acc = train(x_train, y_train, lr = 2e-3, nb_epochs = 30)
+loss_hist, test_acc, train_acc = train(x_train, y_train, lr = 1e-4, nb_epochs = 3)
 
 
 results = {'bit_string': bit_string, 'test_acc': test_acc, 'test_loss': loss_hist, 'train_acc': train_acc ,'weight': [quant_w(spytorch_util.w1, scale1), quant_w(spytorch_util.w2, scale2)]}
 date_string = time.strftime("%Y%m%d%H%M%S")
 
 
-with open('results/snn_mnist_' + bit_string + '_' + date_string + '.pkl', 'wb') as f:
+with open('results/snn_mnist_' + bit_string + '_' + inp_mult + '_' + date_string + '.pkl', 'wb') as f:
     pickle.dump(results, f)
 
 
@@ -404,7 +425,7 @@ plt.clf()
 plt.plot(test_acc, label="test")
 plt.plot(train_acc, label= "train")
 plt.legend()
-plt.title(bit_string)
+plt.title(bit_string + " " + str(inp_mult))
 plt.savefig("./figures/ferro_mnist_"+date_string+".png")
 
 
