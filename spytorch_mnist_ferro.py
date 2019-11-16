@@ -22,17 +22,22 @@ from spytorch_util import current2firing_time, sparse_data_generator, plot_volta
 ap = argparse.ArgumentParser()
 ap.add_argument("-wb", "--wb", type = int, help = "weight bits")
 ap.add_argument("-m", "--m", type = int, help="multiplier")
+ap.add_argument("-ds", "--ds", type = int, help="dataset")
 args = vars(ap.parse_args())
 
 
 quantization.global_wb = args['wb']
 inp_mult = args['m']
+select_ds = args['ds']
 
 if quantization.global_wb == None:
     quantization.global_wb = 4
 
 if inp_mult == None:
     inp_mult = 150
+
+if select_ds == None:
+    select_ds = "MNIST"
 
 
 #here test
@@ -74,6 +79,7 @@ else:
 
 
 # Here we load the Dataset
+
 train_dataset = torchvision.datasets.MNIST('../data', train=True, transform=None, target_transform=None, download=True)
 test_dataset = torchvision.datasets.MNIST('../data', train=False, transform=None, target_transform=None, download=True)
 
@@ -405,7 +411,7 @@ spytorch_util.w2 = torch.empty((nb_hidden, nb_outputs), device=device, dtype=dty
 scale2 = init_layer_weights(spytorch_util.w2, 28*28).to(device)
 
 
-loss_hist, test_acc, train_acc = train(x_train, y_train, lr = 1e-4, nb_epochs = 3)
+loss_hist, test_acc, train_acc = train(x_train, y_train, lr = 1e-4, nb_epochs = 50)
 
 
 results = {'bit_string': bit_string, 'test_acc': test_acc, 'test_loss': loss_hist, 'train_acc': train_acc ,'weight': [quant_w(spytorch_util.w1, scale1), quant_w(spytorch_util.w2, scale2)]}
