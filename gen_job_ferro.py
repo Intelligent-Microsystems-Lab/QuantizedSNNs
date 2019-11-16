@@ -38,10 +38,10 @@ mult_sweep = [150, 130, 180, 250]
 for mult_cur in mult_sweep:
 	for w_cur in wb_sweep:
 		bit_string = str(w_cur)+'_'+str(mult_cur)
-		file_string = main_string1 + "gpu@@joshi" + main_string2 + bit_string + main_string3 + bit_string + main_string4 + bit_string + main_string5 + str(w_cur) + " -m " + str(mult_cur)
-		with open('jobscripts/ferro_'+bit_string+'.script', 'w') as f:
-			f.write(file_string)
-		os.system("qsub "+'jobscripts/ferro_'+bit_string+'.script')
+		#file_string = main_string1 + "gpu@@joshi" + main_string2 + bit_string + main_string3 + bit_string + main_string4 + bit_string + main_string5 + str(w_cur) + " -m " + str(mult_cur)
+		#with open('jobscripts/ferro_'+bit_string+'.script', 'w') as f:
+		#	f.write(file_string)
+		#os.system("qsub "+'jobscripts/ferro_'+bit_string+'.script')
 
 
 		file_string = main_string1 + "gpu@@joshi" + main_string2 + bit_string + main_string3 + bit_string + main_string4 + bit_string + main_string5_alt + str(w_cur) + " -m " + str(mult_cur)

@@ -53,7 +53,7 @@ quantization.global_rb = 16
 quantization.global_lr = 1
 
 nb_inputs  = 128*128
-nb_hidden  = 3000
+nb_hidden  = 2000
 nb_outputs = 12
 
 time_step = 1e-3 
