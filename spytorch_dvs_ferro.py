@@ -53,7 +53,7 @@ quantization.global_rb = 16
 quantization.global_lr = 1
 
 nb_inputs  = 128*128
-nb_hidden  = 500
+nb_hidden  = 3000
 nb_outputs = 12
 
 time_step = 1e-3 
@@ -339,7 +339,7 @@ def train(x_data, y_data, lr, nb_epochs):
         accs = []
 
         
-        for x_local, y_local in sparse_data_generator_DVS(x_data, y_data, batch_size, nb_steps, nb_inputs, shuffle = False, device=device):
+        for x_local, y_local in sparse_data_generator_DVS(x_data, y_data, batch_size, nb_steps, nb_inputs, time_step=time_step, shuffle = True, device=device):
 
             output,recs = run_snn(x_local.to_dense())
             _,spks=recs
@@ -389,7 +389,7 @@ def compute_classification_accuracy(x_data, y_data):
     """ Computes classification accuracy on supplied data in batches. """
     accs = []
     with torch.no_grad():
-        for x_local, y_local in sparse_data_generator(x_data, y_data, batch_size, nb_steps, nb_inputs, shuffle=False):
+        for x_local, y_local in sparse_data_generator_DVS(x_data, y_data, batch_size, nb_steps, nb_inputs, time_step=time_step, shuffle = True, device=device):
             output,_ = run_snn(x_local.to_dense())
             m,_= torch.max(output,1) # max over time
             _,am=torch.max(m,1)      # argmax over output units
@@ -417,7 +417,7 @@ results = {'bit_string': bit_string, 'test_acc': test_acc, 'test_loss': loss_his
 date_string = time.strftime("%Y%m%d%H%M%S")
 
 
-with open('results/snn_mnist_' + bit_string + '_' + str(inp_mult) + '_' + date_string + '.pkl', 'wb') as f:
+with open('results/snn_dvs_' + bit_string + '_' + str(inp_mult) + '_' + date_string + '.pkl', 'wb') as f:
     pickle.dump(results, f)
 
 
@@ -432,6 +432,6 @@ plt.plot(test_acc, label="test")
 plt.plot(train_acc, label= "train")
 plt.legend()
 plt.title(bit_string + " " + str(inp_mult))
-plt.savefig("./figures/ferro_mnist_"+date_string+".png")
+plt.savefig("./figures/ferro_dvs_"+date_string+".png")
 
 

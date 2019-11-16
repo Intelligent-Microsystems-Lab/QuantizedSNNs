@@ -23,6 +23,13 @@ python spytorch_mnist_ferro.py -wb """
 main_string6 = """ -wb 2 -ab 6 -eb 6 -gb 8"""
 
 
+main_string5_alt = """_wage.txt
+
+module load python       # Required modules
+setenv OMP_NUM_THREADS $NSLOTS
+
+python spytorch_dvs_ferro.py -wb """
+
 
 wb_sweep = [3,4,5,6,8]
 mult_sweep = [150, 130, 180, 250]
@@ -35,6 +42,12 @@ for mult_cur in mult_sweep:
 		with open('jobscripts/ferro_'+bit_string+'.script', 'w') as f:
 			f.write(file_string)
 		os.system("qsub "+'jobscripts/ferro_'+bit_string+'.script')
+
+
+		file_string = main_string1 + "gpu@@joshi" + main_string2 + bit_string + main_string3 + bit_string + main_string4 + bit_string + main_string5_alt + str(w_cur) + " -m " + str(mult_cur)
+		with open('jobscripts/ferro_dvs_'+bit_string+'.script', 'w') as f:
+			f.write(file_string)
+		os.system("qsub "+'jobscripts/ferro_dvs_'+bit_string+'.script')
 
 
 #trials = 4
