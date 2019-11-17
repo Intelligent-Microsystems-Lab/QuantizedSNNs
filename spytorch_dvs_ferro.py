@@ -33,10 +33,10 @@ inp_mult = args['m']
 select_ds = args['ds']
 
 if quantization.global_wb == None:
-    quantization.global_wb = 4
+    quantization.global_wb = 34
 
 if inp_mult == None:
-    inp_mult = 150
+    inp_mult = 140
 
 if select_ds == None:
     select_ds = "MNIST"
@@ -53,7 +53,7 @@ quantization.global_rb = 16
 quantization.global_lr = 1
 
 nb_inputs  = 128*128
-nb_hidden  = 2000
+nb_hidden  = 8000
 nb_outputs = 12
 
 time_step = 1e-3 
@@ -211,7 +211,7 @@ def run_snn(inputs):
     v_reset_e = torch.ones((batch_size,nb_hidden), device=device, dtype=dtype)*v_reset_e_mult
 
 
-    mem_rec = [v]
+    #mem_rec = [v]
     spk_rec = [g_e]
     
     for t in range(nb_steps-1):
@@ -232,10 +232,10 @@ def run_snn(inputs):
         alpha[c] = 1
         v[c] = v_reset_e[c]
 
-        mem_rec.append(v)
+        #mem_rec.append(v)
         spk_rec.append(out)
 
-    mem_rec = torch.stack(mem_rec,dim=1)
+    #mem_rec = torch.stack(mem_rec,dim=1)
     spk_rec = torch.stack(spk_rec,dim=1)
 
 
@@ -319,8 +319,8 @@ def run_snn(inputs):
     # out_rec = torch.stack(out_rec,dim=1)
 
 
-    other_recs = [mem_rec, spk_rec]
-    return out_rec, other_recs
+    #other_recs = [mem_rec, spk_rec]
+    return out_rec, None # other_recs 
 
 
 def train(x_data, y_data, lr, nb_epochs):
