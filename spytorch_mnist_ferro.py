@@ -329,6 +329,7 @@ def train(x_data, y_data, lr, nb_epochs):
     optimizer = torch.optim.Adam(params, lr=lr, betas=(0.9,0.999))
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
 
+
     log_softmax_fn = nn.LogSoftmax(dim=1)
     loss_fn = nn.NLLLoss()
     

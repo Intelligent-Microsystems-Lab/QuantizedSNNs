@@ -31,6 +31,7 @@ setenv OMP_NUM_THREADS $NSLOTS
 python spytorch_dvs_ferro.py -wb """
 
 
+
 wb_sweep = {34:80, 3:150, 4:130, 5:110, 6:100, 8:90}
 
 
@@ -47,6 +48,7 @@ for w_cur, mult_cur in wb_sweep.items():
 	# with open('jobscripts/ferro_dvs_'+bit_string+'.script', 'w') as f:
 	# 	f.write(file_string)
 	# os.system("qsub "+'jobscripts/ferro_dvs_'+bit_string+'.script')
+
 
 
 #trials = 4
