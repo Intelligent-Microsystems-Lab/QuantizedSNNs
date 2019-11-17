@@ -3,6 +3,7 @@ import time
 import argparse
 
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 import seaborn as sns
@@ -15,7 +16,8 @@ import torchvision
 import quantization
 import spytorch_util
 from quantization import quant_act, init_layer_weights, SSE, to_cat, clip, quant_w, quant_err, quant_grad, quant_generic, step_d
-from spytorch_util import current2firing_time, sparse_data_generator, plot_voltage_traces, SuperSpike
+from spytorch_util import current2firing_time, sparse_data_generator, plot_voltage_traces, SuperSpike, sparse_data_generator_DVS
+
 
 
 
@@ -34,7 +36,7 @@ if quantization.global_wb == None:
     quantization.global_wb = 34
 
 if inp_mult == None:
-    inp_mult = 80 # 90 yielded high results for full
+    inp_mult = 140
 
 if select_ds == None:
     select_ds = "MNIST"
@@ -48,16 +50,16 @@ quantization.global_ab = 33
 quantization.global_gb = 33
 quantization.global_eb = 33
 quantization.global_rb = 16
-quantization.global_lr = 4e-5
+quantization.global_lr = 1
 
-nb_inputs  = 28*28
-nb_hidden  = 1050
-nb_outputs = 10
+nb_inputs  = 128*128
+nb_hidden  = 8000
+nb_outputs = 12
 
 time_step = 1e-3 
-nb_steps  = 150 # 100 previously
+nb_steps  = 100
 
-batch_size = 100
+batch_size = 256
 dtype = torch.float
 
 stop_quant_level = 33
@@ -66,7 +68,7 @@ stop_quant_level = 33
 # LIF with those, no quant .95
 tau_mem = 10e-3
 tau_syn = 5e-3
-alpha1  = float(np.exp(-time_step/tau_syn))
+alpha1   = float(np.exp(-time_step/tau_syn))
 beta    = float(np.exp(-time_step/tau_mem))
 
 
@@ -80,21 +82,18 @@ else:
 
 # Here we load the Dataset
 
-train_dataset = torchvision.datasets.MNIST('../data', train=True, transform=None, target_transform=None, download=True)
-test_dataset = torchvision.datasets.MNIST('../data', train=False, transform=None, target_transform=None, download=True)
-
-# Standardize data
-# x_train = torch.tensor(train_dataset.train_data, device=device, dtype=dtype)
-x_train = np.array(train_dataset.train_data, dtype=np.float)
-x_train = x_train.reshape(x_train.shape[0],-1)/255
-# x_test = torch.tensor(test_dataset.test_data, device=device, dtype=dtype)
-x_test = np.array(test_dataset.test_data, dtype=np.float)
-x_test = x_test.reshape(x_test.shape[0],-1)/255
-
-# y_train = torch.tensor(train_dataset.train_labels, device=device, dtype=dtype)
-# y_test  = torch.tensor(test_dataset.test_labels, device=device, dtype=dtype)
-y_train = np.array(train_dataset.train_labels, dtype=np.int)
-y_test  = np.array(test_dataset.test_labels, dtype=np.int)
+test_dataset = pd.read_pickle('../DVS/test_complete.pkl')
+y_test = torch.tensor(test_dataset['label'], device=device, dtype=dtype)
+train_dataset = pd.read_pickle('../DVS/train_complete.pkl')
+y_train = torch.tensor(train_dataset['label'], device=device, dtype=dtype)
+with open('../DVS_prep/full_data_train.pkl', 'rb') as f:
+   train_data = pickle.load(f)
+with open('../DVS_prep/full_data_test.pkl', 'rb') as f:
+    test_data = pickle.load(f)
+x_test = pd.DataFrame({'batch':test_data[0],'ts':test_data[1],'unit':test_data[2]})
+x_test = x_test.drop_duplicates()
+x_train = pd.DataFrame({'batch':train_data[0],'ts':train_data[1],'unit':train_data[2]})
+x_train = x_train.drop_duplicates()
 
 
 class einsum_linear(torch.autograd.Function):
@@ -201,7 +200,7 @@ def run_snn(inputs):
         spytorch_util.w1.data = clip(spytorch_util.w1.data, quantization.global_wb)
         spytorch_util.w2.data = clip(spytorch_util.w2.data, quantization.global_wb)
 
-    h1 = einsum_linear.apply(inputs, spytorch_util.w1*inp_mult, scale1)
+    h1 = einsum_linear.apply(inputs, spytorch_util.w1, scale1)
 
     g_e = torch.zeros((batch_size,nb_hidden), device=device, dtype=dtype)
     v = torch.ones((batch_size,nb_hidden), device=device, dtype=dtype) * v_rest_e
@@ -212,14 +211,14 @@ def run_snn(inputs):
     v_reset_e = torch.ones((batch_size,nb_hidden), device=device, dtype=dtype)*v_reset_e_mult
 
 
-    mem_rec = [v]
+    #mem_rec = [v]
     spk_rec = [g_e]
     
     for t in range(nb_steps-1):
         dge_dt = -g_e/tau_ge
 
 
-        g_e, I_syn_E, dx_dt = g_e + time_step*dge_dt + h1[:,t], (g_e*v_exc - g_e*v)*nS, -g_e/200e-3
+        g_e, I_syn_E, dx_dt = g_e + time_step*dge_dt + h1[:,t]*inp_mult, (g_e*v_exc - g_e*v)*nS, -g_e/200e-3
         alpha = alpha + time_step*dx_dt
         # ferro
         dv_dt = (v_rest_e*alpha - v)/(.1*tau_v) + (I_syn_E/nS)/(1*tau_v)
@@ -233,10 +232,10 @@ def run_snn(inputs):
         alpha[c] = 1
         v[c] = v_reset_e[c]
 
-        mem_rec.append(v)
+        #mem_rec.append(v)
         spk_rec.append(out)
 
-    mem_rec = torch.stack(mem_rec,dim=1)
+    #mem_rec = torch.stack(mem_rec,dim=1)
     spk_rec = torch.stack(spk_rec,dim=1)
 
 
@@ -275,7 +274,7 @@ def run_snn(inputs):
 
 
     #Readout layer
-    h2 = einsum_linear.apply(spk_rec, spytorch_util.w2*inp_mult, scale2)
+    h2 = einsum_linear.apply(spk_rec, spytorch_util.w2, scale2)
 
 
     g_e = torch.zeros((batch_size,nb_outputs), device=device, dtype=dtype)
@@ -290,7 +289,7 @@ def run_snn(inputs):
     for t in range(nb_steps-1):
         dge_dt = -g_e/tau_ge
 
-        g_e, I_syn_E, dx_dt = g_e + time_step*dge_dt + h2[:,t], (g_e*v_exc - g_e*v)*nS, -g_e/200e-3
+        g_e, I_syn_E, dx_dt = g_e + time_step*dge_dt + h2[:,t]*inp_mult, (g_e*v_exc - g_e*v)*nS, -g_e/200e-3
         alpha = alpha + time_step*dx_dt
         # ferro
         dv_dt = (v_rest_e*alpha - v)/(.1*tau_v) + (I_syn_E/nS)/(1*tau_v)
@@ -320,14 +319,14 @@ def run_snn(inputs):
     # out_rec = torch.stack(out_rec,dim=1)
 
 
-    other_recs = [mem_rec, spk_rec]
-    return out_rec, other_recs
+    #other_recs = [mem_rec, spk_rec]
+    return out_rec, None # other_recs 
 
 
 def train(x_data, y_data, lr, nb_epochs):
     params = [spytorch_util.w1,spytorch_util.w2]
     optimizer = torch.optim.Adam(params, lr=lr, betas=(0.9,0.999))
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
 
     log_softmax_fn = nn.LogSoftmax(dim=1)
     loss_fn = nn.NLLLoss()
@@ -340,17 +339,14 @@ def train(x_data, y_data, lr, nb_epochs):
         accs = []
 
         
-        for x_local, y_local in sparse_data_generator(x_data, y_data, batch_size, nb_steps, nb_inputs, shuffle = True):
+        for x_local, y_local in sparse_data_generator_DVS(x_data, y_data, batch_size, nb_steps, nb_inputs, time_step=time_step, shuffle = True, device=device):
 
             output,recs = run_snn(x_local.to_dense())
             _,spks=recs
 
+            m,_=torch.max(output,1)
 
 
-            #import pdb; pdb.set_trace()
-            #m,_=torch.max(output,1) # max val
-
-            m = output.sum(axis = 1) # integrate
 
             _,am=torch.max(m,1)
             tmp = np.mean((y_local==am).detach().cpu().numpy())
@@ -393,7 +389,7 @@ def compute_classification_accuracy(x_data, y_data):
     """ Computes classification accuracy on supplied data in batches. """
     accs = []
     with torch.no_grad():
-        for x_local, y_local in sparse_data_generator(x_data, y_data, batch_size, nb_steps, nb_inputs, shuffle=True):
+        for x_local, y_local in sparse_data_generator_DVS(x_data, y_data, batch_size, nb_steps, nb_inputs, time_step=time_step, shuffle = True, device=device):
             output,_ = run_snn(x_local.to_dense())
             m,_= torch.max(output,1) # max over time
             _,am=torch.max(m,1)      # argmax over output units
@@ -403,11 +399,9 @@ def compute_classification_accuracy(x_data, y_data):
 
 
 
-bit_string = str(quantization.global_wb) #+ str(quantization.global_ab) + str(quantization.global_gb) + str(quantization.global_eb)
-#print(bit_string)
+bit_string = str(quantization.global_wb) + str(quantization.global_ab) + str(quantization.global_gb) + str(quantization.global_eb)
+print(bit_string)
 
-para_dict = {'quantization.global_wb':quantization.global_wb, 'inp_mult':inp_mult, 'nb_hidden':nb_hidden, 'nb_steps':nb_steps, 'batch_size': batch_size, 'quantization.global_lr':quantization.global_lr}
-print(para_dict)
 
 spytorch_util.w1 = torch.empty((nb_inputs, nb_hidden),  device=device, dtype=dtype, requires_grad=True)
 scale1 = init_layer_weights(spytorch_util.w1, 28*28).to(device)
@@ -416,14 +410,14 @@ spytorch_util.w2 = torch.empty((nb_hidden, nb_outputs), device=device, dtype=dty
 scale2 = init_layer_weights(spytorch_util.w2, 28*28).to(device)
 
 
-loss_hist, test_acc, train_acc = train(x_train, y_train, lr = quantization.global_lr, nb_epochs = 80)
+loss_hist, test_acc, train_acc = train(x_train, y_train, lr = 1e-5, nb_epochs = 80)
 
 
 results = {'bit_string': bit_string, 'test_acc': test_acc, 'test_loss': loss_hist, 'train_acc': train_acc ,'weight': [quant_w(spytorch_util.w1, scale1), quant_w(spytorch_util.w2, scale2)]}
 date_string = time.strftime("%Y%m%d%H%M%S")
 
 
-with open('results/snn_mnist_' + bit_string + '_' + str(inp_mult) + '_' + date_string + '.pkl', 'wb') as f:
+with open('results/snn_dvs_' + bit_string + '_' + str(inp_mult) + '_' + date_string + '.pkl', 'wb') as f:
     pickle.dump(results, f)
 
 
@@ -437,7 +431,7 @@ plt.clf()
 plt.plot(test_acc, label="test")
 plt.plot(train_acc, label= "train")
 plt.legend()
-plt.title(str(para_dict))
-plt.savefig("./figures/ferro_mnist_"+date_string+".png")
+plt.title(bit_string + " " + str(inp_mult))
+plt.savefig("./figures/ferro_dvs_"+date_string+".png")
 
 
