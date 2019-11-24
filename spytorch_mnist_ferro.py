@@ -34,7 +34,7 @@ if quantization.global_wb == None:
     quantization.global_wb = 34
 
 if inp_mult == None:
-    inp_mult = 85 # 90 yielded high results for full
+    inp_mult = 80 # 90 yielded high results for full
 
 if select_ds == None:
     select_ds = "MNIST"
@@ -51,13 +51,13 @@ quantization.global_rb = 16
 quantization.global_lr = 1
 
 nb_inputs  = 28*28
-nb_hidden  = 900
+nb_hidden  = 1050
 nb_outputs = 10
 
 time_step = 1e-3 
-nb_steps  = 120 # 100 previously
+nb_steps  = 150 # 100 previously
 
-batch_size = 128
+batch_size = 100
 dtype = torch.float
 
 stop_quant_level = 33
@@ -327,7 +327,7 @@ def run_snn(inputs):
 def train(x_data, y_data, lr, nb_epochs):
     params = [spytorch_util.w1,spytorch_util.w2]
     optimizer = torch.optim.Adam(params, lr=lr, betas=(0.9,0.999))
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=6, gamma=0.1)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=9, gamma=0.1)
 
     log_softmax_fn = nn.LogSoftmax(dim=1)
     loss_fn = nn.NLLLoss()
