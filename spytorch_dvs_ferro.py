@@ -19,8 +19,6 @@ from quantization import quant_act, init_layer_weights, SSE, to_cat, clip, quant
 from spytorch_util import current2firing_time, sparse_data_generator, plot_voltage_traces, SuperSpike, sparse_data_generator_DVS
 
 
-
-
 ap = argparse.ArgumentParser()
 ap.add_argument("-wb", "--wb", type = int, help = "weight bits")
 ap.add_argument("-m", "--m", type = int, help="multiplier")
@@ -34,12 +32,18 @@ select_ds = args['ds']
 
 if quantization.global_wb == None:
     quantization.global_wb = 34
-
 if inp_mult == None:
-    inp_mult = 140
+    inp_mult = 80 # 90 yielded high results for full
+quantization.global_lr = 4e-4
+batch_size = 128
+nb_hidden  = 2000
+nb_steps  =  150 # 100 previously, some good results with 150
+reg_size = 0# 5e-5
+p_drop = 0
 
-if select_ds == None:
-    select_ds = "MNIST"
+
+#ferro_mnist_20191116160656
+
 
 
 #here test
@@ -50,16 +54,16 @@ quantization.global_ab = 33
 quantization.global_gb = 33
 quantization.global_eb = 33
 quantization.global_rb = 16
-quantization.global_lr = 1
+
 
 nb_inputs  = 128*128
-nb_hidden  = 8000
+
 nb_outputs = 12
 
 time_step = 1e-3 
-nb_steps  = 100
 
-batch_size = 256
+
+
 dtype = torch.float
 
 stop_quant_level = 33
@@ -68,7 +72,7 @@ stop_quant_level = 33
 # LIF with those, no quant .95
 tau_mem = 10e-3
 tau_syn = 5e-3
-alpha1   = float(np.exp(-time_step/tau_syn))
+alpha1  = float(np.exp(-time_step/tau_syn))
 beta    = float(np.exp(-time_step/tau_mem))
 
 
@@ -78,7 +82,6 @@ if torch.cuda.is_available():
     device = torch.device("cuda")     
 else:
     device = torch.device("cpu")
-
 
 # Here we load the Dataset
 
@@ -94,8 +97,6 @@ x_test = pd.DataFrame({'batch':test_data[0],'ts':test_data[1],'unit':test_data[2
 x_test = x_test.drop_duplicates()
 x_train = pd.DataFrame({'batch':train_data[0],'ts':train_data[1],'unit':train_data[2]})
 x_train = x_train.drop_duplicates()
-
-
 class einsum_linear(torch.autograd.Function):
     @staticmethod
     def forward(ctx, input, weight, scale, bias=None):
@@ -200,7 +201,8 @@ def run_snn(inputs):
         spytorch_util.w1.data = clip(spytorch_util.w1.data, quantization.global_wb)
         spytorch_util.w2.data = clip(spytorch_util.w2.data, quantization.global_wb)
 
-    h1 = einsum_linear.apply(inputs, spytorch_util.w1, scale1)
+    mask = torch.bernoulli(1-p_drop * torch.ones_like(spytorch_util.w1))
+    h1 = einsum_linear.apply(inputs, spytorch_util.w1*inp_mult*mask, scale1)
 
     g_e = torch.zeros((batch_size,nb_hidden), device=device, dtype=dtype)
     v = torch.ones((batch_size,nb_hidden), device=device, dtype=dtype) * v_rest_e
@@ -211,17 +213,17 @@ def run_snn(inputs):
     v_reset_e = torch.ones((batch_size,nb_hidden), device=device, dtype=dtype)*v_reset_e_mult
 
 
-    #mem_rec = [v]
+    mem_rec = [v]
     spk_rec = [g_e]
     
     for t in range(nb_steps-1):
         dge_dt = -g_e/tau_ge
 
 
-        g_e, I_syn_E, dx_dt = g_e + time_step*dge_dt + h1[:,t]*inp_mult, (g_e*v_exc - g_e*v)*nS, -g_e/200e-3
+        g_e, I_syn_E, dx_dt = g_e + time_step*dge_dt + h1[:,t], (g_e*v_exc - g_e*v)*nS, -g_e/200e-3
         alpha = alpha + time_step*dx_dt
         # ferro
-        dv_dt = (v_rest_e*alpha - v)/(.1*tau_v) + (I_syn_E/nS)/(1*tau_v)
+        dv_dt = (v_rest_e*alpha - v)/(.12*tau_v) + (I_syn_E/nS)/(1*tau_v) #.12
         # ferro lif
         #dv_dt = (v_rest_e - v)/(1*tau_v) + (I_syn_E/nS)/(1*tau_v)
         v = v + time_step*dv_dt
@@ -232,10 +234,10 @@ def run_snn(inputs):
         alpha[c] = 1
         v[c] = v_reset_e[c]
 
-        #mem_rec.append(v)
+        mem_rec.append(v)
         spk_rec.append(out)
 
-    #mem_rec = torch.stack(mem_rec,dim=1)
+    mem_rec = torch.stack(mem_rec,dim=1)
     spk_rec = torch.stack(spk_rec,dim=1)
 
 
@@ -274,7 +276,8 @@ def run_snn(inputs):
 
 
     #Readout layer
-    h2 = einsum_linear.apply(spk_rec, spytorch_util.w2, scale2)
+    mask = torch.bernoulli(1-p_drop * torch.ones_like(spytorch_util.w2))
+    h2 = einsum_linear.apply(spk_rec, spytorch_util.w2*inp_mult*mask, scale2)
 
 
     g_e = torch.zeros((batch_size,nb_outputs), device=device, dtype=dtype)
@@ -289,10 +292,10 @@ def run_snn(inputs):
     for t in range(nb_steps-1):
         dge_dt = -g_e/tau_ge
 
-        g_e, I_syn_E, dx_dt = g_e + time_step*dge_dt + h2[:,t]*inp_mult, (g_e*v_exc - g_e*v)*nS, -g_e/200e-3
+        g_e, I_syn_E, dx_dt = g_e + time_step*dge_dt + h2[:,t], (g_e*v_exc - g_e*v)*nS, -g_e/200e-3
         alpha = alpha + time_step*dx_dt
         # ferro
-        dv_dt = (v_rest_e*alpha - v)/(.1*tau_v) + (I_syn_E/nS)/(1*tau_v)
+        dv_dt = (v_rest_e*alpha - v)/(.12*tau_v) + (I_syn_E/nS)/(1*tau_v) #.12
         # ferro lif
         #dv_dt = (v_rest_e - v)/(1*tau_v) + (I_syn_E/nS)/(1*tau_v)
         v = v + time_step*dv_dt
@@ -319,14 +322,15 @@ def run_snn(inputs):
     # out_rec = torch.stack(out_rec,dim=1)
 
 
-    #other_recs = [mem_rec, spk_rec]
-    return out_rec, None # other_recs 
+    other_recs = [mem_rec, spk_rec]
+    return out_rec, other_recs
 
 
 def train(x_data, y_data, lr, nb_epochs):
     params = [spytorch_util.w1,spytorch_util.w2]
     optimizer = torch.optim.Adam(params, lr=lr, betas=(0.9,0.999))
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=25, gamma=0.1)
+
 
     log_softmax_fn = nn.LogSoftmax(dim=1)
     loss_fn = nn.NLLLoss()
@@ -334,19 +338,24 @@ def train(x_data, y_data, lr, nb_epochs):
     loss_hist = []
     acc_hist = []
     acc_train = []
+
+    best = {'weights': [spytorch_util.w1, spytorch_util.w2], 'test_acc':0}
     for e in range(nb_epochs):
         local_loss = []
         accs = []
 
         
-        for x_local, y_local in sparse_data_generator_DVS(x_data, y_data, batch_size, nb_steps, nb_inputs, time_step=time_step, shuffle = True, device=device):
+        for x_local, y_local in sparse_data_generator_DVS(x_data, y_data, batch_size, nb_steps, nb_inputs, True, time_step, device):
 
             output,recs = run_snn(x_local.to_dense())
             _,spks=recs
 
-            m,_=torch.max(output,1)
 
 
+            #import pdb; pdb.set_trace()
+            #m,_=torch.max(output,1) # max val
+
+            m = output.sum(axis = 1) # integrate
 
             _,am=torch.max(m,1)
             tmp = np.mean((y_local==am).detach().cpu().numpy())
@@ -363,7 +372,8 @@ def train(x_data, y_data, lr, nb_epochs):
             #reg_loss += 1e-5*torch.mean(torch.sum(torch.sum(spks,dim=0),dim=0)**2) # L2 loss on spikes per neuron
             
             # Here we combine supervised loss and the regularizer
-            loss_val = loss_fn(log_p_y, y_local) #+ reg_loss
+
+            loss_val = loss_fn(log_p_y, y_local) + (torch.sum(spytorch_util.w1**2) + torch.sum(spytorch_util.w1**2))*reg_size
 
             optimizer.zero_grad()
             loss_val.backward()
@@ -377,19 +387,23 @@ def train(x_data, y_data, lr, nb_epochs):
         #acc_train = compute_classification_accuracy(x_train,y_train)
         print("Test accuracy: %.3f"%(acc_test))
         print("Train accuracy: %.3f"%(np.mean(accs)))
+
+        if best['test_acc'] < acc_test:
+            best['test_acc'] = acc_test
+            best['weights'] = [spytorch_util.w1, spytorch_util.w2]
         loss_hist.append(mean_loss)
         acc_hist.append(acc_test)
         acc_train.append(np.mean(accs))
 
         
-    return loss_hist, acc_hist, acc_train
+    return loss_hist, acc_hist, acc_train, best
         
 
 def compute_classification_accuracy(x_data, y_data):
     """ Computes classification accuracy on supplied data in batches. """
     accs = []
     with torch.no_grad():
-        for x_local, y_local in sparse_data_generator_DVS(x_data, y_data, batch_size, nb_steps, nb_inputs, time_step=time_step, shuffle = True, device=device):
+        for x_local, y_local in sparse_data_generator_DVS(x_data, y_data, batch_size, nb_steps, nb_inputs, True, time_step, device):
             output,_ = run_snn(x_local.to_dense())
             m,_= torch.max(output,1) # max over time
             _,am=torch.max(m,1)      # argmax over output units
@@ -399,9 +413,11 @@ def compute_classification_accuracy(x_data, y_data):
 
 
 
-bit_string = str(quantization.global_wb) + str(quantization.global_ab) + str(quantization.global_gb) + str(quantization.global_eb)
-print(bit_string)
+bit_string = str(quantization.global_wb) #+ str(quantization.global_ab) + str(quantization.global_gb) + str(quantization.global_eb)
+#print(bit_string)
 
+para_dict = {'quantization.global_wb':quantization.global_wb, 'inp_mult':inp_mult, 'nb_hidden':nb_hidden, 'nb_steps':nb_steps, 'batch_size': batch_size, 'quantization.global_lr':quantization.global_lr, 'reg_size':reg_size, 'p_drop':p_drop}
+print(para_dict)
 
 spytorch_util.w1 = torch.empty((nb_inputs, nb_hidden),  device=device, dtype=dtype, requires_grad=True)
 scale1 = init_layer_weights(spytorch_util.w1, 28*28).to(device)
@@ -410,11 +426,12 @@ spytorch_util.w2 = torch.empty((nb_hidden, nb_outputs), device=device, dtype=dty
 scale2 = init_layer_weights(spytorch_util.w2, 28*28).to(device)
 
 
-loss_hist, test_acc, train_acc = train(x_train, y_train, lr = 1e-5, nb_epochs = 80)
+loss_hist, test_acc, train_acc, best = train(x_train, y_train, lr = quantization.global_lr, nb_epochs = 40)
 
 
-results = {'bit_string': bit_string, 'test_acc': test_acc, 'test_loss': loss_hist, 'train_acc': train_acc ,'weight': [quant_w(spytorch_util.w1, scale1), quant_w(spytorch_util.w2, scale2)]}
+results = {'bit_string': bit_string, 'test_acc': test_acc, 'test_loss': loss_hist, 'train_acc': train_acc ,'weight': [quant_w(spytorch_util.w1, scale1), quant_w(spytorch_util.w2, scale2)], 'best': best}
 date_string = time.strftime("%Y%m%d%H%M%S")
+
 
 
 with open('results/snn_dvs_' + bit_string + '_' + str(inp_mult) + '_' + date_string + '.pkl', 'wb') as f:

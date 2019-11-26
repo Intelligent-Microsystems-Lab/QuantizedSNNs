@@ -28,26 +28,26 @@ main_string5_alt = """_wage.txt
 module load python       # Required modules
 setenv OMP_NUM_THREADS $NSLOTS
 
-python spytorch_dvs_ferro.py -wb """
+python spytorch_mnist_ferro.py -wb """
 
 
 
-wb_sweep = {34:80, 3:150, 4:130, 5:110, 6:100, 8:90}
+wb_sweep = [(34, 85, 5e-5), (3, 250, 0), (4,180, 0), (5, 150, 0), (6, 120, 5e-5), (8, 110, 5e-5)]
 
 
 
-for w_cur, mult_cur in wb_sweep.items():
-	bit_string = str(w_cur)+'_'+str(mult_cur)
-	file_string = main_string1 + "gpu@@joshi" + main_string2 + bit_string + main_string3 + bit_string + main_string4 + bit_string + main_string5 + str(w_cur) + " -m " + str(mult_cur)
-	with open('jobscripts/ferro_'+bit_string+'.script', 'w') as f:
+for cur_config in wb_sweep:
+	bit_string = str(cur_config[0])+'_'+str(cur_config[1])
+	#	file_string = main_string1 + "gpu@@joshi" + main_string2 + bit_string + main_string3 + bit_string + main_string4 + bit_string + main_string5 + str(w_cur) + " -m " + str(mult_cur)
+	#	with open('jobscripts/ferro_'+bit_string+'.script', 'w') as f:
+	#		f.write(file_string)
+	#	os.system("qsub "+'jobscripts/ferro_'+bit_string+'.script')
+
+
+	file_string = main_string1 + "gpu@@joshi" + main_string2 + bit_string + main_string3 + bit_string + main_string4 + bit_string + main_string5_alt + str(cur_config[0]) + " -m " + str(cur_config[0]) + " -rg " + str(cur_config[2])
+	with open('jobscripts/ferro_dvs_'+bit_string+'.script', 'w') as f:
 		f.write(file_string)
-	os.system("qsub "+'jobscripts/ferro_'+bit_string+'.script')
-
-
-	# file_string = main_string1 + "gpu@@joshi" + main_string2 + bit_string + main_string3 + bit_string + main_string4 + bit_string + main_string5_alt + str(w_cur) + " -m " + str(mult_cur)
-	# with open('jobscripts/ferro_dvs_'+bit_string+'.script', 'w') as f:
-	# 	f.write(file_string)
-	# os.system("qsub "+'jobscripts/ferro_dvs_'+bit_string+'.script')
+	os.system("qsub "+'jobscripts/ferro_dvs_'+bit_string+'.script')
 
 
 

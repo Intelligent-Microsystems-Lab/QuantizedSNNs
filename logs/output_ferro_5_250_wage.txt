@@ -412,3 +412,5 @@ Train accuracy: 0.693
 Epoch 80: loss=2.13192
 Test accuracy: 0.696
 Train accuracy: 0.693
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0

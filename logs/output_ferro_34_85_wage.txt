@@ -1,0 +1,140 @@
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+usage: spytorch_dvs_ferro.py [-h] [-wb WB] [-m M] [-ds DS]
+spytorch_dvs_ferro.py: error: unrecognized arguments: -rg 5e-05
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+usage: spytorch_mnist_ferro.py [-h] [-wb WB] [-m M] [-ds DS] [-rg RG]
+spytorch_mnist_ferro.py: error: argument -rg/--rg: invalid int value: '5e-05'
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:53: UserWarning: train_data has been renamed data
+  warnings.warn("train_data has been renamed data")
+/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:58: UserWarning: test_data has been renamed data
+  warnings.warn("test_data has been renamed data")
+/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:43: UserWarning: train_labels has been renamed targets
+  warnings.warn("train_labels has been renamed targets")
+/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:48: UserWarning: test_labels has been renamed targets
+  warnings.warn("test_labels has been renamed targets")
+init done
+{'quantization.global_wb': 34, 'inp_mult': 34, 'nb_hidden': 1050, 'nb_steps': 150, 'batch_size': 128, 'quantization.global_lr': 0.0004, 'reg_size': 5e-05, 'p_drop': 0.0, 'mult_eq': 0.12, 'class_method': 'integrate'}
+Epoch 1: loss=1.32447
+Test accuracy: 0.868
+Train accuracy: 0.837
+Epoch 2: loss=0.58439
+Test accuracy: 0.885
+Train accuracy: 0.870
+Epoch 3: loss=0.51040
+Test accuracy: 0.884
+Train accuracy: 0.877
+Epoch 4: loss=0.47162
+Test accuracy: 0.895
+Train accuracy: 0.885
+Epoch 5: loss=0.44315
+Test accuracy: 0.897
+Train accuracy: 0.893
+Epoch 6: loss=0.42422
+Test accuracy: 0.908
+Train accuracy: 0.898
+Epoch 7: loss=0.40357
+Test accuracy: 0.906
+Train accuracy: 0.903
+Epoch 8: loss=0.39045
+Test accuracy: 0.910
+Train accuracy: 0.905
+Epoch 9: loss=0.38057
+Test accuracy: 0.911
+Train accuracy: 0.908
+Epoch 10: loss=0.36575
+Test accuracy: 0.909
+Train accuracy: 0.913
+Epoch 11: loss=0.35865
+Test accuracy: 0.918
+Train accuracy: 0.915
+Epoch 12: loss=0.34568
+Test accuracy: 0.921
+Train accuracy: 0.918
+Epoch 13: loss=0.33838
+Test accuracy: 0.923
+Train accuracy: 0.921
+Epoch 14: loss=0.32878
+Test accuracy: 0.926
+Train accuracy: 0.922
+Epoch 15: loss=0.31991
+Test accuracy: 0.922
+Train accuracy: 0.925
+Epoch 16: loss=0.31101
+Test accuracy: 0.931
+Train accuracy: 0.928
+Epoch 17: loss=0.30662
+Test accuracy: 0.922
+Train accuracy: 0.928
+Epoch 18: loss=0.29852
+Test accuracy: 0.926
+Train accuracy: 0.931
+Epoch 19: loss=0.29357
+Test accuracy: 0.933
+Train accuracy: 0.932
+Epoch 20: loss=0.29067
+Test accuracy: 0.929
+Train accuracy: 0.933
+Epoch 21: loss=0.28677
+Test accuracy: 0.930
+Train accuracy: 0.934
+Epoch 22: loss=0.28305
+Test accuracy: 0.933
+Train accuracy: 0.935
+Epoch 23: loss=0.27673
+Test accuracy: 0.938
+Train accuracy: 0.937
+Epoch 24: loss=0.26963
+Test accuracy: 0.935
+Train accuracy: 0.939
+Epoch 25: loss=0.26921
+Test accuracy: 0.929
+Train accuracy: 0.938
+Epoch 26: loss=0.22955
+Test accuracy: 0.941
+Train accuracy: 0.947
+Epoch 27: loss=0.22655
+Test accuracy: 0.940
+Train accuracy: 0.946
+Epoch 28: loss=0.22752
+Test accuracy: 0.940
+Train accuracy: 0.946
+Epoch 29: loss=0.22639
+Test accuracy: 0.939
+Train accuracy: 0.946
+Epoch 30: loss=0.22667
+Test accuracy: 0.940
+Train accuracy: 0.946
+Epoch 31: loss=0.22655
+Test accuracy: 0.940
+Train accuracy: 0.945
+Epoch 32: loss=0.22480
+Test accuracy: 0.940
+Train accuracy: 0.946
+Epoch 33: loss=0.22542
+Test accuracy: 0.940
+Train accuracy: 0.946
+Epoch 34: loss=0.22399
+Test accuracy: 0.940
+Train accuracy: 0.946
+Epoch 35: loss=0.22546
+Test accuracy: 0.940
+Train accuracy: 0.946
+Epoch 36: loss=0.22397
+Test accuracy: 0.940
+Train accuracy: 0.946
+Epoch 37: loss=0.22356
+Test accuracy: 0.939
+Train accuracy: 0.946
+Epoch 38: loss=0.22204
+Test accuracy: 0.938
+Train accuracy: 0.947
+Epoch 39: loss=0.22323
+Test accuracy: 0.940
+Train accuracy: 0.946
+Epoch 40: loss=0.22153
+Test accuracy: 0.938
+Train accuracy: 0.946
