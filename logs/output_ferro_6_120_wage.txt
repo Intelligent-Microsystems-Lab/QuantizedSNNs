@@ -1,0 +1,138 @@
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+usage: spytorch_dvs_ferro.py [-h] [-wb WB] [-m M] [-ds DS]
+spytorch_dvs_ferro.py: error: unrecognized arguments: -rg 5e-05
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:53: UserWarning: train_data has been renamed data
+  warnings.warn("train_data has been renamed data")
+/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:58: UserWarning: test_data has been renamed data
+  warnings.warn("test_data has been renamed data")
+/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:43: UserWarning: train_labels has been renamed targets
+  warnings.warn("train_labels has been renamed targets")
+/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:48: UserWarning: test_labels has been renamed targets
+  warnings.warn("test_labels has been renamed targets")
+init done
+{'quantization.global_wb': 6, 'inp_mult': 6, 'nb_hidden': 1050, 'nb_steps': 150, 'batch_size': 128, 'quantization.global_lr': 0.0004, 'reg_size': 5e-05, 'p_drop': 0.0, 'mult_eq': 0.12, 'class_method': 'integrate'}
+Epoch 1: loss=2.64444
+Test accuracy: 0.113
+Train accuracy: 0.102
+Epoch 2: loss=2.35430
+Test accuracy: 0.113
+Train accuracy: 0.103
+Epoch 3: loss=2.35520
+Test accuracy: 0.097
+Train accuracy: 0.100
+Epoch 4: loss=2.35308
+Test accuracy: 0.113
+Train accuracy: 0.103
+Epoch 5: loss=2.35483
+Test accuracy: 0.089
+Train accuracy: 0.103
+Epoch 6: loss=2.35511
+Test accuracy: 0.114
+Train accuracy: 0.102
+Epoch 7: loss=2.35492
+Test accuracy: 0.089
+Train accuracy: 0.102
+Epoch 8: loss=2.35474
+Test accuracy: 0.101
+Train accuracy: 0.104
+Epoch 9: loss=2.35706
+Test accuracy: 0.113
+Train accuracy: 0.102
+Epoch 10: loss=2.35830
+Test accuracy: 0.114
+Train accuracy: 0.101
+Epoch 11: loss=2.35403
+Test accuracy: 0.103
+Train accuracy: 0.104
+Epoch 12: loss=2.35728
+Test accuracy: 0.103
+Train accuracy: 0.102
+Epoch 13: loss=2.35844
+Test accuracy: 0.103
+Train accuracy: 0.102
+Epoch 14: loss=2.35710
+Test accuracy: 0.103
+Train accuracy: 0.101
+Epoch 15: loss=2.35754
+Test accuracy: 0.113
+Train accuracy: 0.102
+Epoch 16: loss=2.35914
+Test accuracy: 0.103
+Train accuracy: 0.101
+Epoch 17: loss=2.35686
+Test accuracy: 0.101
+Train accuracy: 0.101
+Epoch 18: loss=2.35675
+Test accuracy: 0.103
+Train accuracy: 0.104
+Epoch 19: loss=2.35806
+Test accuracy: 0.103
+Train accuracy: 0.103
+Epoch 20: loss=2.35803
+Test accuracy: 0.103
+Train accuracy: 0.102
+Epoch 21: loss=2.36008
+Test accuracy: 0.098
+Train accuracy: 0.102
+Epoch 22: loss=2.35945
+Test accuracy: 0.103
+Train accuracy: 0.102
+Epoch 23: loss=2.35807
+Test accuracy: 0.089
+Train accuracy: 0.102
+Epoch 24: loss=2.35758
+Test accuracy: 0.101
+Train accuracy: 0.103
+Epoch 25: loss=2.35877
+Test accuracy: 0.103
+Train accuracy: 0.103
+Epoch 26: loss=2.35106
+Test accuracy: 0.103
+Train accuracy: 0.104
+Epoch 27: loss=2.35205
+Test accuracy: 0.103
+Train accuracy: 0.103
+Epoch 28: loss=2.35473
+Test accuracy: 0.103
+Train accuracy: 0.101
+Epoch 29: loss=2.35114
+Test accuracy: 0.103
+Train accuracy: 0.102
+Epoch 30: loss=2.35217
+Test accuracy: 0.103
+Train accuracy: 0.102
+Epoch 31: loss=2.35306
+Test accuracy: 0.103
+Train accuracy: 0.102
+Epoch 32: loss=2.35154
+Test accuracy: 0.103
+Train accuracy: 0.102
+Epoch 33: loss=2.35301
+Test accuracy: 0.103
+Train accuracy: 0.102
+Epoch 34: loss=2.35242
+Test accuracy: 0.103
+Train accuracy: 0.103
+Epoch 35: loss=2.35245
+Test accuracy: 0.103
+Train accuracy: 0.103
+Epoch 36: loss=2.35374
+Test accuracy: 0.103
+Train accuracy: 0.103
+Epoch 37: loss=2.35080
+Test accuracy: 0.103
+Train accuracy: 0.102
+Epoch 38: loss=2.35355
+Test accuracy: 0.103
+Train accuracy: 0.100
+Epoch 39: loss=2.35115
+Test accuracy: 0.103
+Train accuracy: 0.103
+Epoch 40: loss=2.35215
+Test accuracy: 0.103
+Train accuracy: 0.103
