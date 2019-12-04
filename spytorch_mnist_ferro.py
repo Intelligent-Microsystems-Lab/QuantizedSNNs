@@ -48,7 +48,7 @@ quantization.global_ab = 33
 quantization.global_gb = 33
 quantization.global_eb = 33
 quantization.global_rb = 16
-quantization.global_lr = 1
+quantization.global_lr = 4e-5
 
 nb_inputs  = 28*28
 nb_hidden  = 1050
@@ -403,9 +403,11 @@ def compute_classification_accuracy(x_data, y_data):
 
 
 
-bit_string = str(quantization.global_wb) + str(quantization.global_ab) + str(quantization.global_gb) + str(quantization.global_eb)
-print(bit_string)
+bit_string = str(quantization.global_wb) #+ str(quantization.global_ab) + str(quantization.global_gb) + str(quantization.global_eb)
+#print(bit_string)
 
+para_dict = {'quantization.global_wb':quantization.global_wb, 'inp_mult':inp_mult, 'nb_hidden':nb_hidden, 'nb_steps':nb_steps, 'batch_size': batch_size, 'quantization.global_lr':quantization.global_lr}
+print(para_dict)
 
 spytorch_util.w1 = torch.empty((nb_inputs, nb_hidden),  device=device, dtype=dtype, requires_grad=True)
 scale1 = init_layer_weights(spytorch_util.w1, 28*28).to(device)
@@ -414,7 +416,7 @@ spytorch_util.w2 = torch.empty((nb_hidden, nb_outputs), device=device, dtype=dty
 scale2 = init_layer_weights(spytorch_util.w2, 28*28).to(device)
 
 
-loss_hist, test_acc, train_acc = train(x_train, y_train, lr = 4e-5, nb_epochs = 80)
+loss_hist, test_acc, train_acc = train(x_train, y_train, lr = quantization.global_lr, nb_epochs = 80)
 
 
 results = {'bit_string': bit_string, 'test_acc': test_acc, 'test_loss': loss_hist, 'train_acc': train_acc ,'weight': [quant_w(spytorch_util.w1, scale1), quant_w(spytorch_util.w2, scale2)]}
@@ -435,7 +437,7 @@ plt.clf()
 plt.plot(test_acc, label="test")
 plt.plot(train_acc, label= "train")
 plt.legend()
-plt.title(bit_string + " " + str(inp_mult))
+plt.title(str(para_dict))
 plt.savefig("./figures/ferro_mnist_"+date_string+".png")
 
 
