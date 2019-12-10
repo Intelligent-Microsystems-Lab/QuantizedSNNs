@@ -22,28 +22,46 @@ from spytorch_util import current2firing_time, sparse_data_generator, plot_volta
 ap = argparse.ArgumentParser()
 ap.add_argument("-wb", "--wb", type = int, help = "weight bits")
 ap.add_argument("-m", "--m", type = int, help="multiplier")
-ap.add_argument("-ds", "--ds", type = int, help="dataset")
 ap.add_argument("-rg", "--rg", type = float, help="reg")
+ap.add_argument("-s1", "--s1", type = float, help="sum1")
+ap.add_argument("-s2", "--s2", type = float, help="sum2")
 args = vars(ap.parse_args())
 
 
 quantization.global_wb = args['wb']
 inp_mult = args['m']
-select_ds = args['ds']
 reg_size = args['rg']
+sum1v = args['s1']
+sum2v = args['s2']
 
 if quantization.global_wb == None:
-    quantization.global_wb = 34
+    quantization.global_wb = 33
 if inp_mult == None:
     inp_mult = 85 # 90 yielded high results for full
+
+if sum1v == None:
+    sum1v = 
+if sum2v == None:
+    sum2v = 0.001
+
+
 if reg_size == None:
-    reg_size = 0
+    reg1 = 1e-03
+    reg2 = reg1
+else:
+    reg1 = reg_size
+    reg2 = reg_size
+
+
 quantization.global_lr = 4e-4
 batch_size = 128
-nb_hidden  = 1050 
+nb_hidden  = 800
 nb_steps  =  150 # 100 previously, some good results with 150
 
-p_drop = .0
+
+#bernarbe tricks
+threshold_saturation = np.inf
+
 mult_eq = .12
 class_method = "integrate"
 
@@ -56,6 +74,8 @@ dtype = torch.float
 stop_quant_level = 32
 quantization.global_gb = 33
 quantization.global_eb = 33
+
+
 
 
 # Check whether a GPU is available
@@ -82,14 +102,6 @@ x_test = x_test.reshape(x_test.shape[0],-1)/255
 y_train = np.array(train_dataset.train_labels, dtype=np.int)
 y_test  = np.array(test_dataset.test_labels, dtype=np.int)
 
-
-def compute_dropconnect_inputs(inputs, weights, p_drop, device):
-    prob = 1-p_drop
-    mu = prob * torch.einsum("abc,cd->abd", (inputs, weights))
-    w_sqr = (weights*weights)
-    inp_sqr = (inputs*inputs)
-    sigma = prob*(1-prob) * torch.einsum("abc,cd->abd",  (inp_sqr, w_sqr))
-    return torch.randn((sigma.shape[0], sigma.shape[1], sigma.shape[2]), device=device)*sigma+mu
 
 
 
@@ -171,16 +183,12 @@ def run_snn(inputs, infer):
     tau_gi = 2*ms
 
 
-    # doesnt change anything but I'll keep it for now
     with torch.no_grad():
         spytorch_util.w1.data = clip(spytorch_util.w1.data, quantization.global_wb)
         spytorch_util.w2.data = clip(spytorch_util.w2.data, quantization.global_wb)
 
-    if infer: 
-        h1 = compute_dropconnect_inputs(inputs, spytorch_util.w1*inp_mult, p_drop, device)
-    else:
-        mask = torch.bernoulli(1-p_drop * torch.ones_like(spytorch_util.w1))
-        h1 = einsum_linear.apply(inputs, spytorch_util.w1*inp_mult*mask, scale1)
+    
+    h1 = einsum_linear.apply(inputs, spytorch_util.w1*inp_mult, scale1)
 
     g_e = torch.zeros((batch_size,nb_hidden), device=device, dtype=dtype)
     v = torch.ones((batch_size,nb_hidden), device=device, dtype=dtype) * v_rest_e
@@ -208,7 +216,14 @@ def run_snn(inputs, infer):
 
         out = spike_fn(v - (v_thresh_e+theta))
         c = (out==1.0)
-        theta[c] += del_theta[c]
+        # threhshold increase, bernarbe trick 1
+        theta[c] += del_theta[c] 
+
+        # neuron threshold saturation, bernarbe trick 3
+        #theta[theta > threshold_saturation] = threshold_saturation
+
+        # lateral inhibition, bernarbe trick 4
+
         alpha[c] = 1
         v[c] = v_reset_e[c]
 
@@ -221,11 +236,7 @@ def run_snn(inputs, infer):
 
 
     #Readout layer #infer is fine
-    if infer: 
-        h2 = compute_dropconnect_inputs(spk_rec, spytorch_util.w2*inp_mult, p_drop, device)
-    else:
-        mask = torch.bernoulli(1-p_drop * torch.ones_like(spytorch_util.w2))
-        h2 = einsum_linear.apply(spk_rec, spytorch_util.w2*inp_mult*mask, scale2)
+    h2 = einsum_linear.apply(spk_rec, spytorch_util.w2*inp_mult, scale2)
 
 
     g_e = torch.zeros((batch_size,nb_outputs), device=device, dtype=dtype)
@@ -307,12 +318,27 @@ def train(x_data, y_data, lr, nb_epochs):
             tmp = np.mean((y_local==am).detach().cpu().numpy())
             accs.append(tmp)
 
+            
             log_p_y = log_softmax_fn(m)
-            loss_val = loss_fn(log_p_y, y_local) + (torch.sum(torch.abs(spytorch_util.w1)) + torch.sum(torch.abs(spytorch_util.w1)))*reg_size
+
+            # bernarbe trick 2 -> l2
+            loss_val = loss_fn(log_p_y, y_local) + reg1 * ((spytorch_util.w1**2).sum(axis=0) - sum1v).abs().sum() + reg2 * ((spytorch_util.w2**2).sum(axis=0) - sum2v).abs().sum()
+            # bernarbe trick 2 -> l1
+            #loss_val = loss_fn(log_p_y, y_local) + reg1 * ((spytorch_util.w1.abs()).sum(axis=0) - 20).sum() + reg2 * ((spytorch_util.w2.abs()).sum(axis=0) - 12).sum()
+            #+ (torch.sum(torch.abs(spytorch_util.w1)) + torch.sum(torch.abs(spytorch_util.w1)))*reg_size
 
             optimizer.zero_grad()
             loss_val.backward()
             optimizer.step()
+
+            # normalize weights, bernarbe trick 2
+            # with torch.no_grad():
+            #     spytorch_util.w1.data = (spytorch_util.w1.data - spytorch_util.w1.data.min()) / (spytorch_util.w1.data - spytorch_util.w1.data.min()).sum() * first_sum
+            #     spytorch_util.w2.data = (spytorch_util.w2.data - spytorch_util.w2.data.min()) / (spytorch_util.w2.data - spytorch_util.w2.data.min()).sum() * second_sum
+            #     spytorch_util.w1.data = clip(spytorch_util.w1.data, quantization.global_wb)
+            #     spytorch_util.w2.data = clip(spytorch_util.w2.data, quantization.global_wb)
+
+
             local_loss.append(loss_val.item())
 
         scheduler.step()
@@ -336,9 +362,8 @@ def train(x_data, y_data, lr, nb_epochs):
 
 
 
-
 bit_string = str(quantization.global_wb)
-para_dict = {'quantization.global_wb':quantization.global_wb, 'inp_mult':inp_mult, 'nb_hidden':nb_hidden, 'nb_steps':nb_steps, 'batch_size': batch_size, 'quantization.global_lr':quantization.global_lr, 'reg_size':reg_size, 'p_drop':p_drop, 'mult_eq':mult_eq, 'class_method':class_method}
+para_dict = {'quantization.global_wb':quantization.global_wb, 'inp_mult':inp_mult, 'nb_hidden':nb_hidden, 'nb_steps':nb_steps, 'batch_size': batch_size, 'quantization.global_lr':quantization.global_lr, 'reg_size':reg_size, 'mult_eq':mult_eq, 'class_method':class_method}
 print(para_dict)
 
 spytorch_util.w1 = torch.empty((nb_inputs, nb_hidden),  device=device, dtype=dtype, requires_grad=True)
@@ -348,10 +373,21 @@ spytorch_util.w2 = torch.empty((nb_hidden, nb_outputs), device=device, dtype=dty
 scale2 = init_layer_weights(spytorch_util.w2, 28*28).to(device)
 
 
+
+# with torch.no_grad():
+#     spytorch_util.w1.data = (spytorch_util.w1.data - spytorch_util.w1.data.min()) / (spytorch_util.w1.data - spytorch_util.w1.data.min()).sum() * first_sum
+#     spytorch_util.w2.data = (spytorch_util.w2.data - spytorch_util.w2.data.min()) / (spytorch_util.w2.data - spytorch_util.w2.data.min()).sum() * second_sum
+
+#     #spytorch_util.w1.data = spytorch_util.w1.data / spytorch_util.w1.data.sum() * first_sum
+#     #spytorch_util.w2.data = spytorch_util.w2.data / spytorch_util.w2.data.sum() * second_sum
+#     spytorch_util.w1.data = clip(spytorch_util.w1.data, quantization.global_wb)
+#     spytorch_util.w2.data = clip(spytorch_util.w2.data, quantization.global_wb)
+
+
 loss_hist, test_acc, train_acc, best = train(x_train, y_train, lr = quantization.global_lr, nb_epochs = 40)
 
 
-results = {'bit_string': bit_string, 'test_acc': test_acc, 'test_loss': loss_hist, 'train_acc': train_acc ,'weight': [spytorch_util.w1, spytorch_util.w2], 'best': best, 'para':para_dict}
+results = {'bit_string': bit_string, 'test_acc': test_acc, 'test_loss': loss_hist, 'train_acc': train_acc ,'weight': [spytorch_util.w1, spytorch_util.w2], 'best': best, 'para':para_dict, 'args': args}
 date_string = time.strftime("%Y%m%d%H%M%S")
 
 
@@ -373,10 +409,11 @@ plt.title(str(para_dict))
 plt.savefig("./figures/ferro_mnist_"+date_string+".png")
 
 
+plt.clf()
 
-
-
-
+plt.hist(spytorch_util.w1.data.sum(axis=0).tolist() + spytorch_util.w2.data.sum(axis=0).tolist(), bins=100)
+plt.title("Sum of Weights for j")
+plt.savefig("./figures/sum_weights.png")
 
 
 
