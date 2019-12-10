@@ -40,9 +40,9 @@ if inp_mult == None:
     inp_mult = 85 # 90 yielded high results for full
 
 if sum1v == None:
-    sum1v = 
+    sum1v = 2.1
 if sum2v == None:
-    sum2v = 0.001
+    sum2v = 0.003
 
 
 if reg_size == None:
