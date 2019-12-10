@@ -411,12 +411,6 @@ plt.savefig("./figures/ferro_mnist_"+date_string+".png")
 
 plt.clf()
 
-plt.hist(spytorch_util.w1.data.sum(axis=0).tolist() + spytorch_util.w2.data.sum(axis=0).tolist(), bins=100)
-plt.title("Sum of Weights for j")
-plt.savefig("./figures/sum_weights.png")
-
-
-
 
 
 # performance quant test
