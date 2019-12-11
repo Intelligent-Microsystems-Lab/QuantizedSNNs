@@ -37,7 +37,7 @@ sum2v = args['s2']
 if quantization.global_wb == None:
     quantization.global_wb = 33
 if inp_mult == None:
-    inp_mult = 85 # 90 yielded high results for full
+    inp_mult = 200 # 90 yielded high results for full
 
 if sum1v == None:
     sum1v = 2.1
