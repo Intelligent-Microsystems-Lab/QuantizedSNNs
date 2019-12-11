@@ -361,7 +361,7 @@ def train(x_data, y_data, lr, nb_epochs):
 
 
 results_sweep = []
-for i in [0.1, 1, 2, 3, 4, 10]:
+for i in list(np.geomspace(start = 1e-5, stop =  4, num = 12, endpoint=True)):
 
     sum1v = 2.1 * i
     sum2v = 0.003 * i
@@ -407,7 +407,7 @@ plt.plot(results_sweep)
 plt.xlabel("Weight Sum")
 plt.ylabel("Test Acc")
 plt.legend()
-plt.title(str(para_dict))
+plt.title("Sweep Weight Sum")
 plt.savefig("./figures/ferro_mnist_"+date_string+".png")
 
 

@@ -361,7 +361,7 @@ def train(x_data, y_data, lr, nb_epochs):
 
 
 results_sweep = []
-for i in [1e-03, 1e-07, 1e-05, 1e-02, 1e-1, 1e-0, 1e+1]:
+for i in list(np.geomspace(start = 1e-10, stop =  1, num = 12, endpoint=True)):
 
     reg1 = i
 
@@ -403,10 +403,10 @@ import matplotlib.pyplot as plt
 
 plt.clf()
 plt.plot(results_sweep)
-plt.xlabel("Weight Sum")
-plt.ylabel("Reg Size")
+plt.xlabel("Reg Size")
+plt.ylabel("Test Acc")
 plt.legend()
-plt.title(str(para_dict))
+plt.title("Sweep Reg Size")
 plt.savefig("./figures/ferro_mnist_"+date_string+".png")
 
 
