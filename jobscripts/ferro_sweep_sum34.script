@@ -1,0 +1,14 @@
+#!/bin/csh
+
+#$ -M cschaef6@nd.edu	 # Email address for job notification
+#$ -m abe
+#$ -q gpu@@joshi# Specify queue (use ‘debug’ for development) // gpu@qa-2080ti-001.crc.nd.edu , qa-2080ti-002.crc.nd.edu , ta-titanv-001.crc.nd.edu, qa-titanx-001.crc.nd.edu, qa-1080ti-001.crc.nd.edu, da-1080-001.crc.nd.edu
+#$ -l gpu_card=1 
+#$ -N ferro_sweep_sum34     # Specify job name
+#$ -o ./logs/output_ferro_sweep_sum34.txt
+#$ -e ./logs/error_ferro_sweep_sum34.txt
+
+module load python       # Required modules
+setenv OMP_NUM_THREADS $NSLOTS
+
+python sweep_sum34.py -wb 34 -m 80 -rg 0.001 -s1 2.1 -s2 0.003

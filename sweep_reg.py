@@ -367,7 +367,7 @@ for i in list(np.geomspace(start = 1e-6, stop =  0.8, num = 12, endpoint=True)):
 
 
     bit_string = str(quantization.global_wb)
-    para_dict = {'quantization.global_wb':quantization.global_wb, 'inp_mult':inp_mult, 'nb_hidden':nb_hidden, 'nb_steps':nb_steps, 'batch_size': batch_size, 'quantization.global_lr':quantization.global_lr, 'reg_size':reg_size, 'mult_eq':mult_eq, 'class_method':class_method}
+    para_dict = {'quantization.global_wb':quantization.global_wb, 'inp_mult':inp_mult, 'nb_hidden':nb_hidden, 'nb_steps':nb_steps, 'batch_size': batch_size, 'quantization.global_lr':quantization.global_lr, 'reg_size':reg_size, 'mult_eq':mult_eq, 'class_method':class_method, 'weight_sum': [sum1v, sum2v]}
     print(para_dict)
 
     spytorch_util.w1 = torch.empty((nb_inputs, nb_hidden),  device=device, dtype=dtype, requires_grad=True)
