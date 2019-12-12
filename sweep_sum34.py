@@ -361,7 +361,7 @@ def train(x_data, y_data, lr, nb_epochs):
 
 
 results_sweep = []
-for i in list(np.geomspace(start = 1e-5, stop =  4, num = 12, endpoint=True)):
+for i in list(np.geomspace(start = 1e-4, stop =  2, num = 12, endpoint=True)):
 
     sum1v = 2.1 * i
     sum2v = 0.003 * i
@@ -378,7 +378,7 @@ for i in list(np.geomspace(start = 1e-5, stop =  4, num = 12, endpoint=True)):
     scale2 = init_layer_weights(spytorch_util.w2, 28*28).to(device)
 
 
-    loss_hist, test_acc, train_acc, best = train(x_train, y_train, lr = quantization.global_lr, nb_epochs = 3)
+    loss_hist, test_acc, train_acc, best = train(x_train, y_train, lr = quantization.global_lr, nb_epochs = 15)
 
 
     results_sweep.append(np.max(test_acc))
