@@ -1,12 +1,13 @@
 import os
 import time
 import argparse
+import re
+import pickle
 
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 import seaborn as sns
-import pickle
 
 import torch
 import torch.nn as nn
@@ -31,8 +32,8 @@ args = vars(ap.parse_args())
 quantization.global_wb = args['wb']
 inp_mult = args['m']
 reg_size = args['rg']
-sum1v = args['s1']
-sum2v = args['s2']
+sum1v = args['s1']*2.1
+sum2v = args['s2']*0.003
 
 if quantization.global_wb == None:
     quantization.global_wb = 33
@@ -53,6 +54,36 @@ else:
     reg2 = reg_size
 
 
+
+# Neuron Parameters
+mV = 1e-3
+ms = 1e-3
+nS = 1e-9
+
+# Neuron parameterss
+v_exc = 0*mV
+v_inh = -100*mV
+v_rest_e = -65*mV
+v_reset_e_mult = -65*mV
+v_thresh_e_mult = -52*mV
+refrac_e = 5*ms
+tau_v = 100*ms
+
+theta = 0
+del_theta_mult = 0.1*mV
+
+
+t_leak = 1
+tau_leak = 100
+
+# Synapse parameters
+ge_max = 8
+gi_max = 5
+tau_ge = 1*ms
+tau_gi = 2*ms
+
+
+
 quantization.global_lr = 4e-4
 batch_size = 128
 nb_hidden  = 800
@@ -60,11 +91,10 @@ nb_steps  =  150 # 100 previously, some good results with 150
 
 
 #bernarbe tricks
-threshold_saturation = np.inf
+threshold_saturation = del_theta_mult * 7 # the number 7 is the foundation of God's word ... lets hope
 
 mult_eq = .12
 class_method = "integrate"
-
 
 
 nb_inputs  = 28*28
@@ -155,34 +185,6 @@ spike_fn  = SuperSpike.apply
 
 def run_snn(inputs, infer):
 
-
-    mV = 1e-3
-    ms = 1e-3
-    nS = 1e-9
-
-    # Neuron parameterss
-    v_exc = 0*mV
-    v_inh = -100*mV
-    v_rest_e = -65*mV
-    v_reset_e_mult = -65*mV
-    v_thresh_e_mult = -52*mV
-    refrac_e = 5*ms
-    tau_v = 100*ms
-
-    theta = 0
-    del_theta_mult = 0.1*mV
-
-
-    t_leak = 1
-    tau_leak = 100
-
-    # Synapse parameters
-    ge_max = 8
-    gi_max = 5
-    tau_ge = 1*ms
-    tau_gi = 2*ms
-
-
     with torch.no_grad():
         spytorch_util.w1.data = clip(spytorch_util.w1.data, quantization.global_wb)
         spytorch_util.w2.data = clip(spytorch_util.w2.data, quantization.global_wb)
@@ -220,7 +222,7 @@ def run_snn(inputs, infer):
         theta[c] += del_theta[c] 
 
         # neuron threshold saturation, bernarbe trick 3
-        #theta[theta > threshold_saturation] = threshold_saturation
+        theta[theta > threshold_saturation] = threshold_saturation
 
         # lateral inhibition, bernarbe trick 4
 
@@ -363,7 +365,7 @@ def train(x_data, y_data, lr, nb_epochs):
 
 
 bit_string = str(quantization.global_wb)
-para_dict = {'quantization.global_wb':quantization.global_wb, 'inp_mult':inp_mult, 'nb_hidden':nb_hidden, 'nb_steps':nb_steps, 'batch_size': batch_size, 'quantization.global_lr':quantization.global_lr, 'reg_size':reg_size, 'mult_eq':mult_eq, 'class_method':class_method}
+para_dict = {'quantization.global_wb':quantization.global_wb, 'inp_mult':inp_mult, 'nb_hidden':nb_hidden, 'nb_steps':nb_steps, 'batch_size': batch_size, 'quantization.global_lr':quantization.global_lr, 'reg_size':reg1, 'mult_eq':mult_eq, 'class_method':class_method}
 print(para_dict)
 
 spytorch_util.w1 = torch.empty((nb_inputs, nb_hidden),  device=device, dtype=dtype, requires_grad=True)
@@ -384,14 +386,14 @@ scale2 = init_layer_weights(spytorch_util.w2, 28*28).to(device)
 #     spytorch_util.w2.data = clip(spytorch_util.w2.data, quantization.global_wb)
 
 
-loss_hist, test_acc, train_acc, best = train(x_train, y_train, lr = quantization.global_lr, nb_epochs = 40)
+loss_hist, test_acc, train_acc, best = train(x_train, y_train, lr = quantization.global_lr, nb_epochs = 35)
 
 
 results = {'bit_string': bit_string, 'test_acc': test_acc, 'test_loss': loss_hist, 'train_acc': train_acc ,'weight': [spytorch_util.w1, spytorch_util.w2], 'best': best, 'para':para_dict, 'args': args}
 date_string = time.strftime("%Y%m%d%H%M%S")
 
 
-with open('results/snn_mnist_' + bit_string + '_' + str(inp_mult) + '_' + date_string + '.pkl', 'wb') as f:
+with open('results/snn_mnist_' + "_".join([re.sub('[^A-Za-z0-9.]+', '', x) for x in str(para_dict).split(" ")])+"_"+date_string + '.pkl', 'wb') as f:
     pickle.dump(results, f)
 
 
@@ -405,11 +407,14 @@ plt.clf()
 plt.plot(test_acc, label="test")
 plt.plot(train_acc, label= "train")
 plt.legend()
-plt.title(str(para_dict))
-plt.savefig("./figures/ferro_mnist_"+date_string+".png")
+para_dict = {'quantization.global_wb':quantization.global_wb, 'inp_mult':inp_mult, 'reg_size':reg1, 'weight_sum': sum1v }
+print(para_dict)
+plt.title("_".join([re.sub('[^A-Za-z0-9.]+', '', x) for x in str(para_dict).split(" ")]))
+plt.savefig("./figures/ferro_mnist_"+"_".join([re.sub('[^A-Za-z0-9.]+', '', x) for x in str(para_dict).split(" ")])+"_"+date_string+".png")
 
 
 plt.clf()
+
 
 
 
