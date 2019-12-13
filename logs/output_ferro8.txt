@@ -1,0 +1,118 @@
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:53: UserWarning: train_data has been renamed data
+  warnings.warn("train_data has been renamed data")
+/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:58: UserWarning: test_data has been renamed data
+  warnings.warn("test_data has been renamed data")
+/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:43: UserWarning: train_labels has been renamed targets
+  warnings.warn("train_labels has been renamed targets")
+/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:48: UserWarning: test_labels has been renamed targets
+  warnings.warn("test_labels has been renamed targets")
+init done
+{'quantization.global_wb': 8, 'inp_mult': 110, 'nb_hidden': 800, 'nb_steps': 150, 'batch_size': 128, 'quantization.global_lr': 0.0004, 'reg_size': 0.001659079761781826, 'mult_eq': 0.12, 'class_method': 'integrate'}
+Epoch 1: loss=1.12128
+Test accuracy: 0.912
+Train accuracy: 0.814
+Epoch 2: loss=0.34801
+Test accuracy: 0.928
+Train accuracy: 0.918
+Epoch 3: loss=0.26745
+Test accuracy: 0.933
+Train accuracy: 0.929
+Epoch 4: loss=0.25053
+Test accuracy: 0.937
+Train accuracy: 0.935
+Epoch 5: loss=0.24690
+Test accuracy: 0.938
+Train accuracy: 0.938
+Epoch 6: loss=0.24703
+Test accuracy: 0.940
+Train accuracy: 0.939
+Epoch 7: loss=0.25299
+Test accuracy: 0.935
+Train accuracy: 0.939
+Epoch 8: loss=0.25244
+Test accuracy: 0.939
+Train accuracy: 0.942
+Epoch 9: loss=0.25724
+Test accuracy: 0.937
+Train accuracy: 0.942
+Epoch 10: loss=0.22855
+Test accuracy: 0.945
+Train accuracy: 0.952
+Epoch 11: loss=0.21999
+Test accuracy: 0.947
+Train accuracy: 0.955
+Epoch 12: loss=0.21827
+Test accuracy: 0.948
+Train accuracy: 0.957
+Epoch 13: loss=0.21683
+Test accuracy: 0.948
+Train accuracy: 0.957
+Epoch 14: loss=0.21717
+Test accuracy: 0.948
+Train accuracy: 0.957
+Epoch 15: loss=0.21654
+Test accuracy: 0.948
+Train accuracy: 0.958
+Epoch 16: loss=0.21701
+Test accuracy: 0.947
+Train accuracy: 0.959
+Epoch 17: loss=0.21612
+Test accuracy: 0.948
+Train accuracy: 0.960
+Epoch 18: loss=0.21712
+Test accuracy: 0.947
+Train accuracy: 0.959
+Epoch 19: loss=0.21289
+Test accuracy: 0.948
+Train accuracy: 0.961
+Epoch 20: loss=0.21249
+Test accuracy: 0.948
+Train accuracy: 0.961
+Epoch 21: loss=0.21230
+Test accuracy: 0.948
+Train accuracy: 0.961
+Epoch 22: loss=0.21205
+Test accuracy: 0.947
+Train accuracy: 0.961
+Epoch 23: loss=0.21258
+Test accuracy: 0.948
+Train accuracy: 0.961
+Epoch 24: loss=0.21234
+Test accuracy: 0.947
+Train accuracy: 0.962
+Epoch 25: loss=0.21239
+Test accuracy: 0.948
+Train accuracy: 0.962
+Epoch 26: loss=0.21238
+Test accuracy: 0.947
+Train accuracy: 0.962
+Epoch 27: loss=0.21223
+Test accuracy: 0.948
+Train accuracy: 0.962
+Epoch 28: loss=0.21172
+Test accuracy: 0.948
+Train accuracy: 0.962
+Epoch 29: loss=0.21163
+Test accuracy: 0.948
+Train accuracy: 0.962
+Epoch 30: loss=0.21165
+Test accuracy: 0.948
+Train accuracy: 0.962
+Epoch 31: loss=0.21159
+Test accuracy: 0.948
+Train accuracy: 0.962
+Epoch 32: loss=0.21164
+Test accuracy: 0.948
+Train accuracy: 0.962
+Epoch 33: loss=0.21164
+Test accuracy: 0.948
+Train accuracy: 0.962
+Epoch 34: loss=0.21182
+Test accuracy: 0.948
+Train accuracy: 0.962
+Epoch 35: loss=0.21152
+Test accuracy: 0.948
+Train accuracy: 0.962
+{'quantization.global_wb': 8, 'inp_mult': 110, 'reg_size': 0.001659079761781826, 'weight_sum': 0.1146141882514887}
