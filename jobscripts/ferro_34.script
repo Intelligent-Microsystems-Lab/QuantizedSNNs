@@ -11,4 +11,4 @@
 module load python       # Required modules
 setenv OMP_NUM_THREADS $NSLOTS
 
-python spytorch_mnist_ferro.py -wb 34 -m 80 -rg 4.073180282999787e-05 -s1 0.05457818488166128 -s2 0.05457818488166128
+python spytorch_mnist_ferro.py -wb 34 -m 80 -rg 0.00004073180282999787 -s1 0.05457818488166128 -s2 0.05457818488166128
