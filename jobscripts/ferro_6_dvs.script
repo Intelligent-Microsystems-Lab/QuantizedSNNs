@@ -11,4 +11,4 @@
 module load python       # Required modules
 setenv OMP_NUM_THREADS $NSLOTS
 
-python spytorch_dvs2_ferrro.py -wb 6 -m 120 -rg 0.005708365988967279 -s1 0.009015994422895851 -s2 0.009015994422895851
+python spytorch_dvs2_ferrro.py -wb 6 -m 120 -rg 0.001 -s1 1.12 -s2 0.982

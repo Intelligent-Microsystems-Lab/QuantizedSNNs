@@ -11,4 +11,4 @@
 module load python       # Required modules
 setenv OMP_NUM_THREADS $NSLOTS
 
-python sweep_sumDVS.py -wb 4 -m 180 -rg 0.001 -s1 2.1 -s2 0.003
+python sweep_sumDVS.py -wb 4 -m 180 -rg 0.001 -s1 1.12 -s2 0.982
