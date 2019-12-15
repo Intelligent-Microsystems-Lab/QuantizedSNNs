@@ -40,7 +40,7 @@ sum2v = args['s2']#*0.003
 if quantization.global_wb == None:
     quantization.global_wb = 33
 if inp_mult == None:
-    inp_mult = 200 # 90 yielded high results for full
+    inp_mult = 80 # 90 yielded high results for full
 
 if sum1v == None:
     sum1v = 2.1
@@ -332,6 +332,10 @@ def train(x_data, y_data, lr, nb_epochs):
             loss_val.backward()
             optimizer.step()
 
+
+            if torch.isnan(spytorch_util.w2.sum()) or  torch.isnan(spytorch_util.w1.sum()):
+                break
+
             # normalize weights, bernarbe trick 2
             # with torch.no_grad():
             #     spytorch_util.w1.data = (spytorch_util.w1.data - spytorch_util.w1.data.min()) / (spytorch_util.w1.data - spytorch_util.w1.data.min()).sum() * first_sum
@@ -341,6 +345,9 @@ def train(x_data, y_data, lr, nb_epochs):
 
 
             local_loss.append(loss_val.item())
+
+        if torch.isnan(spytorch_util.w2.sum()) or  torch.isnan(spytorch_util.w1.sum()):
+            break
 
         scheduler.step()
         mean_loss = np.mean(local_loss)
