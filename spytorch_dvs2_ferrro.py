@@ -118,18 +118,24 @@ else:
     device = torch.device("cpu")
 
 
+print("hello1")
 test_dataset = pd.read_pickle('../DVS/test_complete.pkl')
 y_test = torch.tensor(test_dataset['label'], device=device, dtype=dtype)
+print("hello1")
 train_dataset = pd.read_pickle('../DVS/train_complete.pkl')
 y_train = torch.tensor(train_dataset['label'], device=device, dtype=dtype)
+print("hello1")
 with open('../DVS_prep/full_data_train.pkl', 'rb') as f:
    train_data = pickle.load(f)
 with open('../DVS_prep/full_data_test.pkl', 'rb') as f:
     test_data = pickle.load(f)
+print("hello1")
 x_test = pd.DataFrame({'batch':test_data[0],'ts':test_data[1],'unit':test_data[2]})
 x_test = x_test.drop_duplicates()
+print("hello1")
 x_train = pd.DataFrame({'batch':train_data[0],'ts':train_data[1],'unit':train_data[2]})
 x_train = x_train.drop_duplicates()
+
 
 
 
