@@ -394,7 +394,6 @@ for i in list(np.geomspace(start = 1e-6, stop =  0.8, num = 12, endpoint=True)):
 
     loss_hist, test_acc, train_acc, best = train(x_train, y_train, lr = quantization.global_lr, nb_epochs = 4)
 
-    import pdb; pdb.set_trace()
     if test_acc == []:
         results_sweep.append(-1)
     else:
