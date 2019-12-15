@@ -89,7 +89,7 @@ tau_gi = 2*ms
 
 quantization.global_lr = 4e-4
 batch_size = 128
-nb_hidden  = 2000
+nb_hidden  = 1500
 nb_steps  =  150 # 100 previously, some good results with 150
 
 
