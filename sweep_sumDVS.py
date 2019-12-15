@@ -1,12 +1,14 @@
 import os
 import time
 import argparse
+import re
+import pickle
 
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 import seaborn as sns
-import pickle
 
 import torch
 import torch.nn as nn
@@ -15,7 +17,7 @@ import torchvision
 import quantization
 import spytorch_util
 from quantization import init_layer_weights, clip, quant_w, quant_err, quant_grad
-from spytorch_util import current2firing_time, sparse_data_generator, plot_voltage_traces, SuperSpike
+from spytorch_util import current2firing_time, sparse_data_generator_DVS, plot_voltage_traces, SuperSpike
 
 
 
@@ -31,18 +33,20 @@ args = vars(ap.parse_args())
 quantization.global_wb = args['wb']
 inp_mult = args['m']
 reg_size = args['rg']
-sum1v = args['s1']
-sum2v = args['s2']
+sum1v = args['s1']#*2.1
+sum2v = args['s2']#*0.003
+
 
 if quantization.global_wb == None:
-    quantization.global_wb = 34
+    quantization.global_wb = 33
 if inp_mult == None:
-    inp_mult = 80 # 90 yielded high results for full
+    inp_mult = 200 # 90 yielded high results for full
 
 if sum1v == None:
     sum1v = 2.1
 if sum2v == None:
     sum2v = 0.003
+
 
 
 if reg_size == None:
@@ -53,22 +57,51 @@ else:
     reg2 = reg_size
 
 
+
+# Neuron Parameters
+mV = 1e-3
+ms = 1e-3
+nS = 1e-9
+
+# Neuron parameterss
+v_exc = 0*mV
+v_inh = -100*mV
+v_rest_e = -65*mV
+v_reset_e_mult = -65*mV
+v_thresh_e_mult = -52*mV
+refrac_e = 5*ms
+tau_v = 100*ms
+
+theta = 0
+del_theta_mult = 0.1*mV
+
+
+t_leak = 1
+tau_leak = 100
+
+# Synapse parameters
+ge_max = 8
+gi_max = 5
+tau_ge = 1*ms
+tau_gi = 2*ms
+
+
+
 quantization.global_lr = 4e-4
 batch_size = 128
-nb_hidden  = 800
+nb_hidden  = 2000
 nb_steps  =  150 # 100 previously, some good results with 150
 
 
 #bernarbe tricks
-threshold_saturation = np.inf
+threshold_saturation = del_theta_mult * 7 # the number 7 is the foundation of God's word ... lets hope
 
 mult_eq = .12
 class_method = "integrate"
 
 
-
-nb_inputs  = 28*28
-nb_outputs = 10
+nb_inputs  = 128*128
+nb_outputs = 12
 time_step = 1e-3 
 dtype = torch.float
 stop_quant_level = 32
@@ -85,22 +118,18 @@ else:
     device = torch.device("cpu")
 
 
-# Here we load the Dataset
-train_dataset = torchvision.datasets.MNIST('../data', train=True, transform=None, target_transform=None, download=True)
-test_dataset = torchvision.datasets.MNIST('../data', train=False, transform=None, target_transform=None, download=True)
-
-# Standardize data
-# x_train = torch.tensor(train_dataset.train_data, device=device, dtype=dtype)
-x_train = np.array(train_dataset.train_data, dtype=np.float)
-x_train = x_train.reshape(x_train.shape[0],-1)/255
-# x_test = torch.tensor(test_dataset.test_data, device=device, dtype=dtype)
-x_test = np.array(test_dataset.test_data, dtype=np.float)
-x_test = x_test.reshape(x_test.shape[0],-1)/255
-
-# y_train = torch.tensor(train_dataset.train_labels, device=device, dtype=dtype)
-# y_test  = torch.tensor(test_dataset.test_labels, device=device, dtype=dtype)
-y_train = np.array(train_dataset.train_labels, dtype=np.int)
-y_test  = np.array(test_dataset.test_labels, dtype=np.int)
+test_dataset = pd.read_pickle('../DVS/test_complete.pkl')
+y_test = torch.tensor(test_dataset['label'], device=device, dtype=dtype)
+train_dataset = pd.read_pickle('../DVS/train_complete.pkl')
+y_train = torch.tensor(train_dataset['label'], device=device, dtype=dtype)
+with open('../DVS_prep/full_data_train.pkl', 'rb') as f:
+   train_data = pickle.load(f)
+with open('../DVS_prep/full_data_test.pkl', 'rb') as f:
+    test_data = pickle.load(f)
+x_test = pd.DataFrame({'batch':test_data[0],'ts':test_data[1],'unit':test_data[2]})
+x_test = x_test.drop_duplicates()
+x_train = pd.DataFrame({'batch':train_data[0],'ts':train_data[1],'unit':train_data[2]})
+x_train = x_train.drop_duplicates()
 
 
 
@@ -155,34 +184,6 @@ spike_fn  = SuperSpike.apply
 
 def run_snn(inputs, infer):
 
-
-    mV = 1e-3
-    ms = 1e-3
-    nS = 1e-9
-
-    # Neuron parameterss
-    v_exc = 0*mV
-    v_inh = -100*mV
-    v_rest_e = -65*mV
-    v_reset_e_mult = -65*mV
-    v_thresh_e_mult = -52*mV
-    refrac_e = 5*ms
-    tau_v = 100*ms
-
-    theta = 0
-    del_theta_mult = 0.1*mV
-
-
-    t_leak = 1
-    tau_leak = 100
-
-    # Synapse parameters
-    ge_max = 8
-    gi_max = 5
-    tau_ge = 1*ms
-    tau_gi = 2*ms
-
-
     with torch.no_grad():
         spytorch_util.w1.data = clip(spytorch_util.w1.data, quantization.global_wb)
         spytorch_util.w2.data = clip(spytorch_util.w2.data, quantization.global_wb)
@@ -220,7 +221,7 @@ def run_snn(inputs, infer):
         theta[c] += del_theta[c] 
 
         # neuron threshold saturation, bernarbe trick 3
-        #theta[theta > threshold_saturation] = threshold_saturation
+        theta[theta > threshold_saturation] = threshold_saturation
 
         # lateral inhibition, bernarbe trick 4
 
@@ -271,7 +272,7 @@ def compute_classification_accuracy(x_data, y_data):
     """ Computes classification accuracy on supplied data in batches. """
     accs = []
     with torch.no_grad():
-        for x_local, y_local in sparse_data_generator(x_data, y_data, batch_size, nb_steps, nb_inputs, shuffle=True):
+        for x_local, y_local in sparse_data_generator_DVS(x_data, y_data, batch_size, nb_steps, nb_inputs, shuffle=True, time_step = time_step, device = device):
             output,_ = run_snn(x_local.to_dense(), True)
 
             if class_method == 'integrate':
@@ -305,7 +306,7 @@ def train(x_data, y_data, lr, nb_epochs):
         accs = []
 
         
-        for x_local, y_local in sparse_data_generator(x_data, y_data, batch_size, nb_steps, nb_inputs, shuffle = True):
+        for x_local, y_local in sparse_data_generator_DVS(x_data, y_data, batch_size, nb_steps, nb_inputs, shuffle = True, time_step = time_step, device = device):
 
             output,recs = run_snn(x_local.to_dense(), False)
 
@@ -360,6 +361,8 @@ def train(x_data, y_data, lr, nb_epochs):
         
 
 
+
+
 results_sweep = []
 for i in list(np.geomspace(start = 1e-4, stop =  2, num = 12, endpoint=True)):
 
@@ -372,10 +375,10 @@ for i in list(np.geomspace(start = 1e-4, stop =  2, num = 12, endpoint=True)):
     print(para_dict)
 
     spytorch_util.w1 = torch.empty((nb_inputs, nb_hidden),  device=device, dtype=dtype, requires_grad=True)
-    scale1 = init_layer_weights(spytorch_util.w1, 28*28).to(device)
+    scale1 = init_layer_weights(spytorch_util.w1, 128*128).to(device)
 
     spytorch_util.w2 = torch.empty((nb_hidden, nb_outputs), device=device, dtype=dtype, requires_grad=True)
-    scale2 = init_layer_weights(spytorch_util.w2, 28*28).to(device)
+    scale2 = init_layer_weights(spytorch_util.w2, 2000).to(device)
 
 
     loss_hist, test_acc, train_acc, best = train(x_train, y_train, lr = quantization.global_lr, nb_epochs = 4)
@@ -387,13 +390,9 @@ for i in list(np.geomspace(start = 1e-4, stop =  2, num = 12, endpoint=True)):
     date_string = time.strftime("%Y%m%d%H%M%S")
 
 
-    with open('results/snn_mnist_' + bit_string + '_' + str(inp_mult) + '_' + date_string + '.pkl', 'wb') as f:
+    with open('results/snn_dvs_' + bit_string + '_' + str(inp_mult) + '_' + date_string + '.pkl', 'wb') as f:
         pickle.dump(results, f)
 
-
-
-
-# sweep
 
 
 
@@ -408,12 +407,10 @@ plt.xlabel("Weight Sum")
 plt.ylabel("Test Acc")
 plt.legend()
 plt.title("Sweep Weight Sum")
-plt.savefig("./figures/ferro_mnist_"+date_string+".png")
+plt.savefig("./figures/ferro_dvs_"+date_string+".png")
 
 
 plt.clf()
-
-
 
 
 
