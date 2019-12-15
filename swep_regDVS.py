@@ -395,7 +395,10 @@ for i in list(np.geomspace(start = 1e-6, stop =  0.8, num = 12, endpoint=True)):
     loss_hist, test_acc, train_acc, best = train(x_train, y_train, lr = quantization.global_lr, nb_epochs = 4)
 
     import pdb; pdb.set_trace()
-    results_sweep.append(np.max(test_acc))
+    if test_acc == []:
+        results_sweep.append(-1)
+    else:
+        results_sweep.append(np.max(test_acc))
 
     #results = {'bit_string': bit_string, 'test_acc': test_acc, 'test_loss': loss_hist, 'train_acc': train_acc ,'weight': [spytorch_util.w1, spytorch_util.w2], 'best': best, 'para':para_dict, 'args': args}
     results = {'bit_string': bit_string, 'test_acc': test_acc, 'test_loss': loss_hist, 'train_acc': train_acc, 'best': best, 'para':para_dict, 'args': args}
