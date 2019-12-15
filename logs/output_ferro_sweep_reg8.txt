@@ -11,3 +11,42 @@ Loading python/3.7.3
   Loading requirement: tcl/8.6.8 gcc/8.3.0
 Loading python/3.7.3
   Loading requirement: tcl/8.6.8 gcc/8.3.0
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+No handles with labels found to put in legend.
+hello
+hello
+hello
+hello
+hello
+hello
+hello1
+hello1
+hello1
+hello1
+hello1
+init done
+{'quantization.global_wb': 8, 'inp_mult': 110, 'nb_hidden': 1500, 'nb_steps': 150, 'batch_size': 128, 'quantization.global_lr': 0.0004, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [2.1, 0.003]}
+{'quantization.global_wb': 8, 'inp_mult': 110, 'nb_hidden': 1500, 'nb_steps': 150, 'batch_size': 128, 'quantization.global_lr': 0.0004, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [2.1, 0.003]}
+{'quantization.global_wb': 8, 'inp_mult': 110, 'nb_hidden': 1500, 'nb_steps': 150, 'batch_size': 128, 'quantization.global_lr': 0.0004, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [2.1, 0.003]}
+Epoch 1: loss=29320.57969
+Test accuracy: 0.113
+Train accuracy: 0.152
+{'quantization.global_wb': 8, 'inp_mult': 110, 'nb_hidden': 1500, 'nb_steps': 150, 'batch_size': 128, 'quantization.global_lr': 0.0004, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [2.1, 0.003]}
+{'quantization.global_wb': 8, 'inp_mult': 110, 'nb_hidden': 1500, 'nb_steps': 150, 'batch_size': 128, 'quantization.global_lr': 0.0004, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [2.1, 0.003]}
+{'quantization.global_wb': 8, 'inp_mult': 110, 'nb_hidden': 1500, 'nb_steps': 150, 'batch_size': 128, 'quantization.global_lr': 0.0004, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [2.1, 0.003]}
+Epoch 1: loss=978485354030876348907520.00000
+Test accuracy: 0.137
+Train accuracy: 0.116
+{'quantization.global_wb': 8, 'inp_mult': 110, 'nb_hidden': 1500, 'nb_steps': 150, 'batch_size': 128, 'quantization.global_lr': 0.0004, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [2.1, 0.003]}
+{'quantization.global_wb': 8, 'inp_mult': 110, 'nb_hidden': 1500, 'nb_steps': 150, 'batch_size': 128, 'quantization.global_lr': 0.0004, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [2.1, 0.003]}
+{'quantization.global_wb': 8, 'inp_mult': 110, 'nb_hidden': 1500, 'nb_steps': 150, 'batch_size': 128, 'quantization.global_lr': 0.0004, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [2.1, 0.003]}
+{'quantization.global_wb': 8, 'inp_mult': 110, 'nb_hidden': 1500, 'nb_steps': 150, 'batch_size': 128, 'quantization.global_lr': 0.0004, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [2.1, 0.003]}
+{'quantization.global_wb': 8, 'inp_mult': 110, 'nb_hidden': 1500, 'nb_steps': 150, 'batch_size': 128, 'quantization.global_lr': 0.0004, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [2.1, 0.003]}
+{'quantization.global_wb': 8, 'inp_mult': 110, 'nb_hidden': 1500, 'nb_steps': 150, 'batch_size': 128, 'quantization.global_lr': 0.0004, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [2.1, 0.003]}
+Epoch 1: loss=213047.24624
+Test accuracy: 0.176
+Train accuracy: 0.218
+Epoch 2: loss=148181.10085
+Test accuracy: 0.172
+Train accuracy: 0.249

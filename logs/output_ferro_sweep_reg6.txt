@@ -11,3 +11,174 @@ Loading python/3.7.3
   Loading requirement: tcl/8.6.8 gcc/8.3.0
 Loading python/3.7.3
   Loading requirement: tcl/8.6.8 gcc/8.3.0
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+No handles with labels found to put in legend.
+hello
+hello
+hello
+hello
+hello
+hello
+hello1
+hello1
+hello1
+hello1
+hello1
+init done
+{'quantization.global_wb': 6, 'inp_mult': 120, 'nb_hidden': 1500, 'nb_steps': 150, 'batch_size': 128, 'quantization.global_lr': 0.0004, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [2.1, 0.003]}
+Epoch 1: loss=3.89999
+Test accuracy: 0.289
+Train accuracy: 0.263
+Epoch 2: loss=1.79619
+Test accuracy: 0.348
+Train accuracy: 0.437
+Epoch 3: loss=1.47309
+Test accuracy: 0.406
+Train accuracy: 0.565
+Epoch 4: loss=1.20895
+Test accuracy: 0.371
+Train accuracy: 0.655
+{'quantization.global_wb': 6, 'inp_mult': 120, 'nb_hidden': 1500, 'nb_steps': 150, 'batch_size': 128, 'quantization.global_lr': 0.0004, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [2.1, 0.003]}
+Epoch 1: loss=2.99099
+Test accuracy: 0.344
+Train accuracy: 0.339
+Epoch 2: loss=1.48759
+Test accuracy: 0.398
+Train accuracy: 0.569
+Epoch 3: loss=1.19143
+Test accuracy: 0.422
+Train accuracy: 0.675
+Epoch 4: loss=0.93786
+Test accuracy: 0.480
+Train accuracy: 0.770
+{'quantization.global_wb': 6, 'inp_mult': 120, 'nb_hidden': 1500, 'nb_steps': 150, 'batch_size': 128, 'quantization.global_lr': 0.0004, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [2.1, 0.003]}
+Epoch 1: loss=13.30465
+Test accuracy: 0.098
+Train accuracy: 0.162
+Epoch 2: loss=6.22828
+Test accuracy: 0.109
+Train accuracy: 0.158
+Epoch 3: loss=3.65861
+Test accuracy: 0.105
+Train accuracy: 0.185
+Epoch 4: loss=2.45474
+Test accuracy: 0.121
+Train accuracy: 0.246
+{'quantization.global_wb': 6, 'inp_mult': 120, 'nb_hidden': 1500, 'nb_steps': 150, 'batch_size': 128, 'quantization.global_lr': 0.0004, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [2.1, 0.003]}
+Epoch 1: loss=4.51326
+Test accuracy: 0.348
+Train accuracy: 0.332
+Epoch 2: loss=2.36740
+Test accuracy: 0.379
+Train accuracy: 0.510
+Epoch 3: loss=1.90844
+Test accuracy: 0.402
+Train accuracy: 0.616
+Epoch 4: loss=1.65737
+Test accuracy: 0.434
+Train accuracy: 0.703
+{'quantization.global_wb': 6, 'inp_mult': 120, 'nb_hidden': 1500, 'nb_steps': 150, 'batch_size': 128, 'quantization.global_lr': 0.0004, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [2.1, 0.003]}
+Epoch 1: loss=5.75423
+Test accuracy: 0.316
+Train accuracy: 0.324
+Epoch 2: loss=3.64724
+Test accuracy: 0.344
+Train accuracy: 0.550
+Epoch 3: loss=3.24999
+Test accuracy: 0.426
+Train accuracy: 0.658
+Epoch 4: loss=3.01101
+Test accuracy: 0.441
+Train accuracy: 0.773
+{'quantization.global_wb': 6, 'inp_mult': 120, 'nb_hidden': 1500, 'nb_steps': 150, 'batch_size': 128, 'quantization.global_lr': 0.0004, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [2.1, 0.003]}
+Epoch 1: loss=14.53670
+Test accuracy: 0.176
+Train accuracy: 0.229
+Epoch 2: loss=11.03854
+Test accuracy: 0.227
+Train accuracy: 0.293
+Epoch 3: loss=9.47355
+Test accuracy: 0.273
+Train accuracy: 0.382
+Epoch 4: loss=8.67932
+Test accuracy: 0.305
+Train accuracy: 0.497
+{'quantization.global_wb': 6, 'inp_mult': 120, 'nb_hidden': 1500, 'nb_steps': 150, 'batch_size': 128, 'quantization.global_lr': 0.0004, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [2.1, 0.003]}
+Epoch 1: loss=27.23088
+Test accuracy: 0.426
+Train accuracy: 0.321
+Epoch 2: loss=24.81898
+Test accuracy: 0.344
+Train accuracy: 0.589
+Epoch 3: loss=23.06268
+Test accuracy: 0.453
+Train accuracy: 0.704
+Epoch 4: loss=21.38105
+Test accuracy: 0.465
+Train accuracy: 0.804
+{'quantization.global_wb': 6, 'inp_mult': 120, 'nb_hidden': 1500, 'nb_steps': 150, 'batch_size': 128, 'quantization.global_lr': 0.0004, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [2.1, 0.003]}
+Epoch 1: loss=92.90113
+Test accuracy: 0.133
+Train accuracy: 0.195
+Epoch 2: loss=83.25525
+Test accuracy: 0.219
+Train accuracy: 0.191
+Epoch 3: loss=76.30775
+Test accuracy: 0.297
+Train accuracy: 0.337
+Epoch 4: loss=70.71325
+Test accuracy: 0.336
+Train accuracy: 0.460
+{'quantization.global_wb': 6, 'inp_mult': 120, 'nb_hidden': 1500, 'nb_steps': 150, 'batch_size': 128, 'quantization.global_lr': 0.0004, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [2.1, 0.003]}
+Epoch 1: loss=293.68345
+Test accuracy: 0.180
+Train accuracy: 0.170
+Epoch 2: loss=271.69477
+Test accuracy: 0.316
+Train accuracy: 0.360
+Epoch 3: loss=250.89596
+Test accuracy: 0.340
+Train accuracy: 0.472
+Epoch 4: loss=230.41645
+Test accuracy: 0.383
+Train accuracy: 0.531
+{'quantization.global_wb': 6, 'inp_mult': 120, 'nb_hidden': 1500, 'nb_steps': 150, 'batch_size': 128, 'quantization.global_lr': 0.0004, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [2.1, 0.003]}
+Epoch 1: loss=930.99985
+Test accuracy: 0.324
+Train accuracy: 0.323
+Epoch 2: loss=721.46149
+Test accuracy: 0.410
+Train accuracy: 0.518
+Epoch 3: loss=534.49768
+Test accuracy: 0.395
+Train accuracy: 0.582
+Epoch 4: loss=376.05596
+Test accuracy: 0.426
+Train accuracy: 0.661
+{'quantization.global_wb': 6, 'inp_mult': 120, 'nb_hidden': 1500, 'nb_steps': 150, 'batch_size': 128, 'quantization.global_lr': 0.0004, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [2.1, 0.003]}
+Epoch 1: loss=3151.84736
+Test accuracy: 0.340
+Train accuracy: 0.358
+Epoch 2: loss=2377.74948
+Test accuracy: 0.391
+Train accuracy: 0.488
+Epoch 3: loss=1709.96164
+Test accuracy: 0.391
+Train accuracy: 0.572
+Epoch 4: loss=1160.53059
+Test accuracy: 0.391
+Train accuracy: 0.635
+{'quantization.global_wb': 6, 'inp_mult': 120, 'nb_hidden': 1500, 'nb_steps': 150, 'batch_size': 128, 'quantization.global_lr': 0.0004, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [2.1, 0.003]}
+Epoch 1: loss=10739.18934
+Test accuracy: 0.230
+Train accuracy: 0.226
+Epoch 2: loss=7956.91526
+Test accuracy: 0.367
+Train accuracy: 0.443
+Epoch 3: loss=5621.35493
+Test accuracy: 0.375
+Train accuracy: 0.477
+Epoch 4: loss=3732.29647
+Test accuracy: 0.363
+Train accuracy: 0.519

@@ -15,3 +15,33 @@ Loading python/3.7.3
   Loading requirement: tcl/8.6.8 gcc/8.3.0
 Loading python/3.7.3
   Loading requirement: tcl/8.6.8 gcc/8.3.0
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+hello
+hello
+hello
+hello
+hello
+hello1
+hello1
+hello1
+hello1
+hello1
+Traceback (most recent call last):
+  File "sweep_sumDVS.py", line 137, in <module>
+    x_train = x_train.drop_duplicates()
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/pandas/core/frame.py", line 4630, in drop_duplicates
+    duplicated = self.duplicated(subset, keep=keep)
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/pandas/core/frame.py", line 4687, in duplicated
+    labels, shape = map(list, zip(*map(f, vals)))
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/pandas/core/frame.py", line 4668, in f
+    vals, size_hint=min(len(self), _SIZE_HINT_LIMIT))
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/pandas/util/_decorators.py", line 188, in wrapper
+    return func(*args, **kwargs)
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/pandas/core/algorithms.py", line 613, in factorize
+    na_value=na_value)
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/pandas/core/algorithms.py", line 460, in _factorize_array
+    na_value=na_value)
+  File "pandas/_libs/hashtable_class_helper.pxi", line 1209, in pandas._libs.hashtable.Int64HashTable.factorize
+  File "pandas/_libs/hashtable_class_helper.pxi", line 1104, in pandas._libs.hashtable.Int64HashTable._unique
+numpy.core._exceptions.MemoryError: Unable to allocate array with shape (104249103,) and data type int64

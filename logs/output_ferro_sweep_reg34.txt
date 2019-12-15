@@ -10,3 +10,18 @@ Loading python/3.7.3
   Loading requirement: tcl/8.6.8 gcc/8.3.0
 Loading python/3.7.3
   Loading requirement: tcl/8.6.8 gcc/8.3.0
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+hello
+hello
+hello
+hello
+hello
+hello
+hello1
+hello1
+hello1
+Traceback (most recent call last):
+  File "swep_regDVS.py", line 129, in <module>
+    train_data = pickle.load(f)
+MemoryError
