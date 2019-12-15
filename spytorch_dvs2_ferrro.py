@@ -2,6 +2,7 @@ import os
 import time
 import argparse
 import re
+import gc
 import pickle
 
 import numpy as np
@@ -19,7 +20,6 @@ import spytorch_util
 from quantization import init_layer_weights, clip, quant_w, quant_err, quant_grad
 from spytorch_util import current2firing_time, sparse_data_generator_DVS, plot_voltage_traces, SuperSpike
 
-print("hello")
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-wb", "--wb", type = int, help = "weight bits")
@@ -43,9 +43,9 @@ if inp_mult == None:
     inp_mult = 80 # 90 yielded high results for full
 
 if sum1v == None:
-    sum1v = 2.1
+    sum1v = 1.12
 if sum2v == None:
-    sum2v = 0.003
+    sum2v = 0.982
 
 
 
@@ -56,7 +56,6 @@ else:
     reg1 = reg_size
     reg2 = reg_size
 
-print("hello")print("hello")
 
 # Neuron Parameters
 mV = 1e-3
@@ -87,9 +86,9 @@ tau_gi = 2*ms
 
 
 
-quantization.global_lr = 4e-4
-batch_size = 128
-nb_hidden  = 1500
+quantization.global_lr = 1.5e-5
+batch_size = 64
+nb_hidden  = 4000
 nb_steps  =  150 # 100 previously, some good results with 150
 
 
@@ -101,14 +100,13 @@ class_method = "integrate"
 
 
 nb_inputs  = 128*128
-nb_outputs = 12
+nb_outputs = 11 # 11 hand gestures 0-11
 time_step = 1e-3 
 dtype = torch.float
 stop_quant_level = 32
 quantization.global_gb = 33
 quantization.global_eb = 33
 
-print("hello")
 
 
 # Check whether a GPU is available
@@ -118,26 +116,38 @@ else:
     device = torch.device("cpu")
 
 
-print("hello1")
-test_dataset = pd.read_pickle('../DVS/test_complete.pkl')
-y_test = torch.tensor(test_dataset['label'], device=device, dtype=dtype)
-print("hello1")
-train_dataset = pd.read_pickle('../DVS/train_complete.pkl')
-y_train = torch.tensor(train_dataset['label'], device=device, dtype=dtype)
-print("hello1")
-with open('../DVS_prep/full_data_train.pkl', 'rb') as f:
-   train_data = pickle.load(f)
-with open('../DVS_prep/full_data_test.pkl', 'rb') as f:
-    test_data = pickle.load(f)
-print("hello1")
-x_test = pd.DataFrame({'batch':test_data[0],'ts':test_data[1],'unit':test_data[2]})
-x_test = x_test.drop_duplicates()
-print("hello1")
-x_train = pd.DataFrame({'batch':train_data[0],'ts':train_data[1],'unit':train_data[2]})
-x_train = x_train.drop_duplicates()
+# test_dataset = pd.read_pickle('../DVS/test_complete.pkl')
+# y_test = torch.tensor(test_dataset['label'], device=device, dtype=dtype)
+# del test_dataset
+# gc.collect()
 
+# train_dataset = pd.read_pickle('../DVS/train_complete.pkl')
+# y_train = torch.tensor(train_dataset['label'], device=device, dtype=dtype)
+# del train_dataset
+# gc.collect()
 
+# with open('../DVS_prep/full_data_train.pkl', 'rb') as f:
+#     train_data = pickle.load(f)
+# x_train = pd.DataFrame({'batch':train_data[0],'ts':train_data[1],'unit':train_data[2]})
+# x_train = x_train.drop_duplicates()
+# del train_data
+# gc.collect()
 
+# with open('../DVS_prep/full_data_test.pkl', 'rb') as f:
+#     test_data = pickle.load(f)
+# x_test = pd.DataFrame({'batch':test_data[0],'ts':test_data[1],'unit':test_data[2]})
+# x_test = x_test.drop_duplicates()
+# del test_data
+# gc.collect()
+
+with open('../DVS/x_test.pickle', 'rb') as f:
+    x_test = pickle.load(f)
+with open('../DVS/x_train.pickle', 'rb') as f:
+    x_train = pickle.load(f)
+with open('../DVS/y_test.pickle', 'rb') as f:
+    y_test = pickle.load(f)
+with open('../DVS/y_train.pickle', 'rb') as f:
+    y_train = pickle.load(f)
 
 
 class einsum_linear(torch.autograd.Function):
@@ -383,7 +393,7 @@ spytorch_util.w1 = torch.empty((nb_inputs, nb_hidden),  device=device, dtype=dty
 scale1 = init_layer_weights(spytorch_util.w1, 128*128).to(device)
 
 spytorch_util.w2 = torch.empty((nb_hidden, nb_outputs), device=device, dtype=dtype, requires_grad=True)
-scale2 = init_layer_weights(spytorch_util.w2, 2000).to(device)
+scale2 = init_layer_weights(spytorch_util.w2, 4000).to(device)
 
 
 loss_hist, test_acc, train_acc, best = train(x_train, y_train, lr = quantization.global_lr, nb_epochs = 35)
@@ -416,45 +426,4 @@ plt.savefig("./figures/ferro_dvs_"+"_".join([re.sub('[^A-Za-z0-9.]+', '', x) for
 plt.clf()
 
 
-
-
-# performance quant test
-
-# test1 = pickle.load( open( "./results/snn_mnist_34_85_20191118071540.pkl", "rb" ) )
-
-
-
-# quantization.global_wb = 2
-# inp_mult = 250 # 90 yielded high results for full
-# quantization.global_lr = 4e-4
-# batch_size = 128
-# nb_hidden  = 1050
-# nb_steps  =  150 # 100 previously, some good results with 150
-# reg_size = 0# 5e-5
-# p_drop = 0
-
-
-
-# nb_inputs  = 28*28
-# nb_outputs = 10
-# time_step = 1e-3 
-
-
-
-# spytorch_util.w1 = test1['best']['weights'][0] 
-# scale1 = 1
-
-# spytorch_util.w2 = test1['best']['weights'][1] 
-# scale2 = 1
-
-
-# acc_test = compute_classification_accuracy(x_test,y_test)
-# print(acc_test)
-
-#print('test')
-#for i in test1['test_acc']:
-#    print(i)
-#print("train")
-#for i in test1['test_acc']:
-#    print(i)
 

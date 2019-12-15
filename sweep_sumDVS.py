@@ -2,6 +2,7 @@ import os
 import time
 import argparse
 import re
+import gc
 import pickle
 
 import numpy as np
@@ -19,7 +20,6 @@ import spytorch_util
 from quantization import init_layer_weights, clip, quant_w, quant_err, quant_grad
 from spytorch_util import current2firing_time, sparse_data_generator_DVS, plot_voltage_traces, SuperSpike
 
-print("hello")
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-wb", "--wb", type = int, help = "weight bits")
@@ -29,7 +29,7 @@ ap.add_argument("-s1", "--s1", type = float, help="sum1")
 ap.add_argument("-s2", "--s2", type = float, help="sum2")
 args = vars(ap.parse_args())
 
-print("hello")
+
 quantization.global_wb = args['wb']
 inp_mult = args['m']
 reg_size = args['rg']
@@ -43,10 +43,10 @@ if inp_mult == None:
     inp_mult = 80 # 90 yielded high results for full
 
 if sum1v == None:
-    sum1v = 2.1
+    sum1v = 1.12
 if sum2v == None:
-    sum2v = 0.003
-print("hello")
+    sum2v = 0.982
+
 
 
 if reg_size == None:
@@ -55,7 +55,6 @@ if reg_size == None:
 else:
     reg1 = reg_size
     reg2 = reg_size
-
 
 
 # Neuron Parameters
@@ -85,11 +84,11 @@ gi_max = 5
 tau_ge = 1*ms
 tau_gi = 2*ms
 
-print("hello")
 
-quantization.global_lr = 4e-4
-batch_size = 128
-nb_hidden  = 1500
+
+quantization.global_lr = 1.5e-5
+batch_size = 64
+nb_hidden  = 4000
 nb_steps  =  150 # 100 previously, some good results with 150
 
 
@@ -101,7 +100,7 @@ class_method = "integrate"
 
 
 nb_inputs  = 128*128
-nb_outputs = 12
+nb_outputs = 11 # 11 hand gestures 0-11
 time_step = 1e-3 
 dtype = torch.float
 stop_quant_level = 32
@@ -109,7 +108,6 @@ quantization.global_gb = 33
 quantization.global_eb = 33
 
 
-print("hello")
 
 # Check whether a GPU is available
 if torch.cuda.is_available():
@@ -118,25 +116,38 @@ else:
     device = torch.device("cpu")
 
 
-print("hello1")
-test_dataset = pd.read_pickle('../DVS/test_complete.pkl')
-y_test = torch.tensor(test_dataset['label'], device=device, dtype=dtype)
-print("hello1")
-train_dataset = pd.read_pickle('../DVS/train_complete.pkl')
-y_train = torch.tensor(train_dataset['label'], device=device, dtype=dtype)
-print("hello1")
-with open('../DVS_prep/full_data_train.pkl', 'rb') as f:
-   train_data = pickle.load(f)
-with open('../DVS_prep/full_data_test.pkl', 'rb') as f:
-    test_data = pickle.load(f)
-print("hello1")
-x_test = pd.DataFrame({'batch':test_data[0],'ts':test_data[1],'unit':test_data[2]})
-x_test = x_test.drop_duplicates()
-print("hello1")
-x_train = pd.DataFrame({'batch':train_data[0],'ts':train_data[1],'unit':train_data[2]})
-x_train = x_train.drop_duplicates()
+# test_dataset = pd.read_pickle('../DVS/test_complete.pkl')
+# y_test = torch.tensor(test_dataset['label'], device=device, dtype=dtype)
+# del test_dataset
+# gc.collect()
 
+# train_dataset = pd.read_pickle('../DVS/train_complete.pkl')
+# y_train = torch.tensor(train_dataset['label'], device=device, dtype=dtype)
+# del train_dataset
+# gc.collect()
 
+# with open('../DVS_prep/full_data_train.pkl', 'rb') as f:
+#     train_data = pickle.load(f)
+# x_train = pd.DataFrame({'batch':train_data[0],'ts':train_data[1],'unit':train_data[2]})
+# x_train = x_train.drop_duplicates()
+# del train_data
+# gc.collect()
+
+# with open('../DVS_prep/full_data_test.pkl', 'rb') as f:
+#     test_data = pickle.load(f)
+# x_test = pd.DataFrame({'batch':test_data[0],'ts':test_data[1],'unit':test_data[2]})
+# x_test = x_test.drop_duplicates()
+# del test_data
+# gc.collect()
+
+with open('../DVS/x_test.pickle', 'rb') as f:
+    x_test = pickle.load(f)
+with open('../DVS/x_train.pickle', 'rb') as f:
+    x_train = pickle.load(f)
+with open('../DVS/y_test.pickle', 'rb') as f:
+    y_test = pickle.load(f)
+with open('../DVS/y_train.pickle', 'rb') as f:
+    y_train = pickle.load(f)
 
 
 class einsum_linear(torch.autograd.Function):
@@ -337,7 +348,6 @@ def train(x_data, y_data, lr, nb_epochs):
             loss_val.backward()
             optimizer.step()
 
-
             if torch.isnan(spytorch_util.w2.sum()) or  torch.isnan(spytorch_util.w1.sum()):
                 break
 
@@ -375,11 +385,12 @@ def train(x_data, y_data, lr, nb_epochs):
 
 
 
+
 results_sweep = []
 for i in list(np.geomspace(start = 1e-4, stop =  2, num = 12, endpoint=True)):
 
-    sum1v = 2.1 * i
-    sum2v = 0.003 * i
+    sum1v = 1.12 * i
+    sum2v = 0.982 * i
 
 
     bit_string = str(quantization.global_wb)
