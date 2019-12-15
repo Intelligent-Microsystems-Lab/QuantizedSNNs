@@ -562,3 +562,11 @@ Train accuracy: 0.994
 Epoch 15: loss=0.04043
 Test accuracy: 0.959
 Train accuracy: 0.994
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+Traceback (most recent call last):
+  File "sweep_sumDVS.py", line 126, in <module>
+    train_data = pickle.load(f)
+MemoryError
