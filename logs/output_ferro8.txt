@@ -116,3 +116,6 @@ Epoch 35: loss=0.21152
 Test accuracy: 0.948
 Train accuracy: 0.962
 {'quantization.global_wb': 8, 'inp_mult': 110, 'reg_size': 0.001659079761781826, 'weight_sum': 0.1146141882514887}
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+python: can't open file 'spytorch_dvs2_ferro.py': [Errno 2] No such file or directory
