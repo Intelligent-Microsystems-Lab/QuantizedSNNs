@@ -19,7 +19,7 @@ import spytorch_util
 from quantization import init_layer_weights, clip, quant_w, quant_err, quant_grad
 from spytorch_util import current2firing_time, sparse_data_generator_DVS, plot_voltage_traces, SuperSpike
 
-
+print("hello")
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-wb", "--wb", type = int, help = "weight bits")
@@ -29,7 +29,7 @@ ap.add_argument("-s1", "--s1", type = float, help="sum1")
 ap.add_argument("-s2", "--s2", type = float, help="sum2")
 args = vars(ap.parse_args())
 
-
+print("hello")
 quantization.global_wb = args['wb']
 inp_mult = args['m']
 reg_size = args['rg']
@@ -46,7 +46,7 @@ if sum1v == None:
     sum1v = 2.1
 if sum2v == None:
     sum2v = 0.003
-
+print("hello")
 
 
 if reg_size == None:
@@ -85,7 +85,7 @@ gi_max = 5
 tau_ge = 1*ms
 tau_gi = 2*ms
 
-
+print("hello")
 
 quantization.global_lr = 4e-4
 batch_size = 128
@@ -109,7 +109,7 @@ quantization.global_gb = 33
 quantization.global_eb = 33
 
 
-
+print("hello")
 
 # Check whether a GPU is available
 if torch.cuda.is_available():

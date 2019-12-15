@@ -19,7 +19,7 @@ import spytorch_util
 from quantization import init_layer_weights, clip, quant_w, quant_err, quant_grad
 from spytorch_util import current2firing_time, sparse_data_generator_DVS, plot_voltage_traces, SuperSpike
 
-
+print("hello")
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-wb", "--wb", type = int, help = "weight bits")
@@ -35,7 +35,7 @@ inp_mult = args['m']
 reg_size = args['rg']
 sum1v = args['s1']#*2.1
 sum2v = args['s2']#*0.003
-
+print("hello")
 
 if quantization.global_wb == None:
     quantization.global_wb = 33
@@ -47,7 +47,7 @@ if sum1v == None:
 if sum2v == None:
     sum2v = 0.003
 
-
+print("hello")
 
 if reg_size == None:
     reg1 = 1e-03
@@ -57,7 +57,7 @@ else:
     reg2 = reg_size
 
 
-
+print("hello")
 # Neuron Parameters
 mV = 1e-3
 ms = 1e-3
@@ -85,7 +85,7 @@ gi_max = 5
 tau_ge = 1*ms
 tau_gi = 2*ms
 
-
+print("hello")
 
 quantization.global_lr = 4e-4
 batch_size = 128
@@ -109,7 +109,7 @@ quantization.global_gb = 33
 quantization.global_eb = 33
 
 
-
+print("hello")
 
 # Check whether a GPU is available
 if torch.cuda.is_available():

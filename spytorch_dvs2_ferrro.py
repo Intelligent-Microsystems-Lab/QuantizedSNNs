@@ -19,7 +19,7 @@ import spytorch_util
 from quantization import init_layer_weights, clip, quant_w, quant_err, quant_grad
 from spytorch_util import current2firing_time, sparse_data_generator_DVS, plot_voltage_traces, SuperSpike
 
-
+print("hello")
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-wb", "--wb", type = int, help = "weight bits")
@@ -56,7 +56,7 @@ else:
     reg1 = reg_size
     reg2 = reg_size
 
-
+print("hello")print("hello")
 
 # Neuron Parameters
 mV = 1e-3
@@ -108,7 +108,7 @@ stop_quant_level = 32
 quantization.global_gb = 33
 quantization.global_eb = 33
 
-
+print("hello")
 
 
 # Check whether a GPU is available
