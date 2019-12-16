@@ -33,8 +33,8 @@ args = vars(ap.parse_args())
 quantization.global_wb = args['wb']
 inp_mult = args['m']
 reg_size = args['rg']
-sum1v = args['s1']*1.12
-sum2v = args['s2']*0.982 
+sum1v = args['s1']#*1.12
+sum2v = args['s2']#*0.982 
 
 
 if quantization.global_wb == None:
