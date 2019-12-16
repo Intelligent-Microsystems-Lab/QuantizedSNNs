@@ -86,9 +86,9 @@ tau_gi = 2*ms
 
 
 
-quantization.global_lr = 1.5e-5
+quantization.global_lr = 1e-5
 batch_size = 64
-nb_hidden  = 4000
+nb_hidden  = 2500
 nb_steps  =  100 # 100 previously, some good results with 150
 
 
@@ -351,7 +351,7 @@ def train(x_data, y_data, lr, nb_epochs):
             loss_val.backward()
             optimizer.step()
 
-            if torch.isnan(spytorch_util.w2.sum()) or  torch.isnan(spytorch_util.w1.sum()):
+            if torch.isnan(spytorch_util.w2.sum()) or torch.isnan(spytorch_util.w1.sum()):
                 break
 
             # normalize weights, bernarbe trick 2
