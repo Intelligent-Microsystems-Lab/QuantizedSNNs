@@ -419,6 +419,10 @@ for i in list(np.geomspace(start = 1e-4, stop =  2, num = 12, endpoint=True)):
     with open('results/snn_dvs_' + bit_string + '_' + str(inp_mult) + '_' + date_string + '.pkl', 'wb') as f:
         pickle.dump(results, f)
 
+    del results, loss_hist, test_acc, train_acc, best
+    gc.collect()
+    torch.cuda.empty_cache()
+
 
 
 
