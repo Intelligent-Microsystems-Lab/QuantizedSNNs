@@ -33,8 +33,8 @@ args = vars(ap.parse_args())
 quantization.global_wb = args['wb']
 inp_mult = args['m']
 reg_size = args['rg']
-sum1v = args['s1']#*2.1
-sum2v = args['s2']#*0.003
+sum1v = args['s1']*1.12
+sum2v = args['s2']*0.982 
 
 
 if quantization.global_wb == None:
@@ -43,7 +43,7 @@ if inp_mult == None:
     inp_mult = 80 # 90 yielded high results for full
 
 if sum1v == None:
-    sum1v = 1.12
+    sum1v = 1.12 
 if sum2v == None:
     sum2v = 0.982
 
@@ -89,7 +89,7 @@ tau_gi = 2*ms
 quantization.global_lr = 1.5e-5
 batch_size = 64
 nb_hidden  = 4000
-nb_steps  =  150 # 100 previously, some good results with 150
+nb_steps  =  100 # 100 previously, some good results with 150
 
 
 #bernarbe tricks

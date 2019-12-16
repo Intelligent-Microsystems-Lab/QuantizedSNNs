@@ -89,7 +89,7 @@ tau_gi = 2*ms
 quantization.global_lr = 1.5e-5
 batch_size = 64
 nb_hidden  = 4000
-nb_steps  =  150 # 100 previously, some good results with 150
+nb_steps  =  100 # 100 previously, some good results with 150
 
 
 #bernarbe tricks
