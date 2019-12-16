@@ -88,7 +88,7 @@ tau_gi = 2*ms
 
 quantization.global_lr = 1.5e-5
 batch_size = 64
-nb_hidden  = 4000
+nb_hidden  = 2500
 nb_steps  =  100 # 100 previously, some good results with 150
 
 
@@ -337,9 +337,10 @@ def train(x_data, y_data, lr, nb_epochs):
 
             
             log_p_y = log_softmax_fn(m)
+            loss_val = loss_fn(log_p_y, y_local) + reg1 * ((spytorch_util.w1**2).sum() + (spytorch_util.w2**2).sum())
 
             # bernarbe trick 2 -> l2
-            loss_val = loss_fn(log_p_y, y_local) + reg1 * ((spytorch_util.w1**2).sum(axis=0) - sum1v).abs().sum() + reg2 * ((spytorch_util.w2**2).sum(axis=0) - sum2v).abs().sum()
+            #loss_val = loss_fn(log_p_y, y_local) + reg1 * ((spytorch_util.w1**2).sum(axis=0) - sum1v).abs().sum() + reg2 * ((spytorch_util.w2**2).sum(axis=0) - sum2v).abs().sum()
             # bernarbe trick 2 -> l1
             #loss_val = loss_fn(log_p_y, y_local) + reg1 * ((spytorch_util.w1.abs()).sum(axis=0) - 20).sum() + reg2 * ((spytorch_util.w2.abs()).sum(axis=0) - 12).sum()
             #+ (torch.sum(torch.abs(spytorch_util.w1)) + torch.sum(torch.abs(spytorch_util.w1)))*reg_size
@@ -413,7 +414,8 @@ for i in list(np.geomspace(start = 1e-6, stop =  0.8, num = 12, endpoint=True)):
     date_string = time.strftime("%Y%m%d%H%M%S")
 
 
-    with open('results/snn_dvs_' + bit_string + '_' + str(inp_mult) + '_' + date_string + '.pkl', 'wb') as f:
+    para_dict = {'quantization.global_wb':quantization.global_wb, 'inp_mult':inp_mult, 'reg_size':reg1, 'weight_sum': sum1v }
+    with open('results/snn_dvs_' + "_".join([re.sub('[^A-Za-z0-9.]+', '', x) for x in str(para_dict).split(" ")])+"_" + date_string + '.pkl', 'wb') as f:
         pickle.dump(results, f)
 
     del results, loss_hist, test_acc, train_acc, best
@@ -435,7 +437,7 @@ plt.xlabel("Reg Size")
 plt.ylabel("Test Acc")
 plt.legend()
 plt.title("Sweep Reg Size")
-plt.savefig("./figures/ferro_dvs_"+date_string+".png")
+plt.savefig("./figures/ferro_dvs_" + "_".join([re.sub('[^A-Za-z0-9.]+', '', x) for x in str(para_dict).split(" ")])+"_" + date_string + ".png")
 
 
 plt.clf()

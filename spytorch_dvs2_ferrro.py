@@ -338,8 +338,11 @@ def train(x_data, y_data, lr, nb_epochs):
             
             log_p_y = log_softmax_fn(m)
 
+
+            loss_val = loss_fn(log_p_y, y_local) + reg1 * ((spytorch_util.w1**2).sum() + (spytorch_util.w2**2).sum())
+
             # bernarbe trick 2 -> l2
-            loss_val = loss_fn(log_p_y, y_local) + reg1 * ((spytorch_util.w1**2).sum(axis=0) - sum1v).abs().sum() + reg2 * ((spytorch_util.w2**2).sum(axis=0) - sum2v).abs().sum()
+            #loss_val = loss_fn(log_p_y, y_local) + reg1 * ((spytorch_util.w1**2).sum(axis=0) - sum1v).abs().sum() + reg2 * ((spytorch_util.w2**2).sum(axis=0) - sum2v).abs().sum()
             # bernarbe trick 2 -> l1
             #loss_val = loss_fn(log_p_y, y_local) + reg1 * ((spytorch_util.w1.abs()).sum(axis=0) - 20).sum() + reg2 * ((spytorch_util.w2.abs()).sum(axis=0) - 12).sum()
             #+ (torch.sum(torch.abs(spytorch_util.w1)) + torch.sum(torch.abs(spytorch_util.w1)))*reg_size
@@ -402,7 +405,7 @@ loss_hist, test_acc, train_acc, best = train(x_train, y_train, lr = quantization
 results = {'bit_string': bit_string, 'test_acc': test_acc, 'test_loss': loss_hist, 'train_acc': train_acc ,'weight': [spytorch_util.w1, spytorch_util.w2], 'best': best, 'para':para_dict, 'args': args}
 date_string = time.strftime("%Y%m%d%H%M%S")
 
-
+para_dict = {'quantization.global_wb':quantization.global_wb, 'inp_mult':inp_mult, 'reg_size':reg1, 'weight_sum': sum1v }
 with open('results/snn_dvs_' + "_".join([re.sub('[^A-Za-z0-9.]+', '', x) for x in str(para_dict).split(" ")])+"_"+date_string + '.pkl', 'wb') as f:
     pickle.dump(results, f)
 
