@@ -351,3 +351,9 @@ Epoch 35: loss=75.37028
 Test accuracy: 0.496
 Train accuracy: 0.790
 {'quantization.global_wb': 6, 'inp_mult': 120, 'reg_size': 0.001659079761781826, 'weight_sum': 0.15039723005481556}
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+Traceback (most recent call last):
+  File "spytorch_dvs2_ferrro.py", line 36, in <module>
+    sum1v = args['s1']*1.12
+TypeError: unsupported operand type(s) for *: 'NoneType' and 'float'
