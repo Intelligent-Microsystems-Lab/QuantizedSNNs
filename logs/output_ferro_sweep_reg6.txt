@@ -182,3 +182,95 @@ Train accuracy: 0.477
 Epoch 4: loss=3732.29647
 Test accuracy: 0.363
 Train accuracy: 0.519
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+init done
+{'quantization.global_wb': 6, 'inp_mult': 120, 'nb_hidden': 4000, 'nb_steps': 150, 'batch_size': 64, 'quantization.global_lr': 1.5e-05, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [1.12, 0.982]}
+Epoch 1: loss=17.69120
+Test accuracy: 0.152
+Train accuracy: 0.173
+Epoch 2: loss=4.66764
+Test accuracy: 0.219
+Train accuracy: 0.172
+Epoch 3: loss=3.58678
+Test accuracy: 0.246
+Train accuracy: 0.241
+Epoch 4: loss=2.84440
+Test accuracy: 0.277
+Train accuracy: 0.289
+{'quantization.global_wb': 6, 'inp_mult': 120, 'nb_hidden': 4000, 'nb_steps': 150, 'batch_size': 64, 'quantization.global_lr': 1.5e-05, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [1.12, 0.982]}
+Epoch 1: loss=12.91373
+Test accuracy: 0.156
+Train accuracy: 0.139
+Epoch 2: loss=4.34457
+Test accuracy: 0.246
+Train accuracy: 0.163
+Epoch 3: loss=3.11701
+Test accuracy: 0.262
+Train accuracy: 0.241
+Epoch 4: loss=2.49541
+Test accuracy: 0.309
+Train accuracy: 0.286
+{'quantization.global_wb': 6, 'inp_mult': 120, 'nb_hidden': 4000, 'nb_steps': 150, 'batch_size': 64, 'quantization.global_lr': 1.5e-05, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [1.12, 0.982]}
+Epoch 1: loss=8.34749
+Test accuracy: 0.215
+Train accuracy: 0.202
+Epoch 2: loss=2.83184
+Test accuracy: 0.227
+Train accuracy: 0.362
+Epoch 3: loss=2.36315
+Test accuracy: 0.320
+Train accuracy: 0.414
+Epoch 4: loss=2.09337
+Test accuracy: 0.316
+Train accuracy: 0.478
+{'quantization.global_wb': 6, 'inp_mult': 120, 'nb_hidden': 4000, 'nb_steps': 150, 'batch_size': 64, 'quantization.global_lr': 1.5e-05, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [1.12, 0.982]}
+Epoch 1: loss=8.15532
+Test accuracy: 0.328
+Train accuracy: 0.188
+Epoch 2: loss=4.13186
+Test accuracy: 0.332
+Train accuracy: 0.409
+Epoch 3: loss=3.40105
+Test accuracy: 0.348
+Train accuracy: 0.477
+Epoch 4: loss=3.17124
+Test accuracy: 0.332
+Train accuracy: 0.557
+{'quantization.global_wb': 6, 'inp_mult': 120, 'nb_hidden': 4000, 'nb_steps': 150, 'batch_size': 64, 'quantization.global_lr': 1.5e-05, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [1.12, 0.982]}
+Epoch 1: loss=15.75246
+Test accuracy: 0.293
+Train accuracy: 0.169
+Epoch 2: loss=9.03123
+Test accuracy: 0.234
+Train accuracy: 0.329
+Epoch 3: loss=8.47412
+Test accuracy: 0.293
+Train accuracy: 0.367
+Epoch 4: loss=8.16383
+Test accuracy: 0.266
+Train accuracy: 0.398
+{'quantization.global_wb': 6, 'inp_mult': 120, 'nb_hidden': 4000, 'nb_steps': 150, 'batch_size': 64, 'quantization.global_lr': 1.5e-05, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [1.12, 0.982]}
+Epoch 1: loss=27.81131
+Test accuracy: 0.305
+Train accuracy: 0.166
+Epoch 2: loss=23.64454
+Test accuracy: 0.387
+Train accuracy: 0.394
+Epoch 3: loss=22.92830
+Test accuracy: 0.410
+Train accuracy: 0.445
+Epoch 4: loss=22.61109
+Test accuracy: 0.422
+Train accuracy: 0.546
+{'quantization.global_wb': 6, 'inp_mult': 120, 'nb_hidden': 4000, 'nb_steps': 150, 'batch_size': 64, 'quantization.global_lr': 1.5e-05, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [1.12, 0.982]}
+Traceback (most recent call last):
+  File "swep_regDVS.py", line 403, in <module>
+    loss_hist, test_acc, train_acc, best = train(x_train, y_train, lr = quantization.global_lr, nb_epochs = 4)
+  File "swep_regDVS.py", line 348, in train
+    loss_val.backward()
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torch/tensor.py", line 118, in backward
+    torch.autograd.backward(self, gradient, retain_graph, create_graph)
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torch/autograd/__init__.py", line 93, in backward
+    allow_unreachable=True)  # allow_unreachable flag
+RuntimeError: CUDA out of memory. Tried to allocate 250.00 MiB (GPU 0; 11.75 GiB total capacity; 9.33 GiB already allocated; 73.75 MiB free; 1.21 GiB cached)

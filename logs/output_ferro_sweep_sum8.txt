@@ -45,3 +45,95 @@ Traceback (most recent call last):
   File "pandas/_libs/hashtable_class_helper.pxi", line 1209, in pandas._libs.hashtable.Int64HashTable.factorize
   File "pandas/_libs/hashtable_class_helper.pxi", line 1104, in pandas._libs.hashtable.Int64HashTable._unique
 numpy.core._exceptions.MemoryError: Unable to allocate array with shape (104249103,) and data type int64
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+init done
+{'quantization.global_wb': 8, 'inp_mult': 110, 'nb_hidden': 4000, 'nb_steps': 150, 'batch_size': 64, 'quantization.global_lr': 1.5e-05, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [0.00011200000000000001, 9.82e-05]}
+Epoch 1: loss=363635733.80936
+Test accuracy: 0.223
+Train accuracy: 0.212
+Epoch 2: loss=12.60594
+Test accuracy: 0.168
+Train accuracy: 0.287
+Epoch 3: loss=9341.67198
+Test accuracy: 0.098
+Train accuracy: 0.199
+Epoch 4: loss=2556.14230
+Test accuracy: 0.098
+Train accuracy: 0.198
+{'quantization.global_wb': 8, 'inp_mult': 110, 'nb_hidden': 4000, 'nb_steps': 150, 'batch_size': 64, 'quantization.global_lr': 1.5e-05, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [0.00027556290188270857, 0.00024160961575787483]}
+Epoch 1: loss=148.10071
+Test accuracy: 0.125
+Train accuracy: 0.161
+Epoch 2: loss=10.66550
+Test accuracy: 0.141
+Train accuracy: 0.184
+Epoch 3: loss=9.02608
+Test accuracy: 0.148
+Train accuracy: 0.245
+Epoch 4: loss=8.21543
+Test accuracy: 0.145
+Train accuracy: 0.312
+{'quantization.global_wb': 8, 'inp_mult': 110, 'nb_hidden': 4000, 'nb_steps': 150, 'batch_size': 64, 'quantization.global_lr': 1.5e-05, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [0.0006779902936966005, 0.0005944522039375551]}
+Epoch 1: loss=14.90644
+Test accuracy: 0.223
+Train accuracy: 0.265
+Epoch 2: loss=97083050053.17982
+Test accuracy: 0.324
+Train accuracy: 0.371
+Epoch 3: loss=1398214.90211
+Test accuracy: 0.289
+Train accuracy: 0.399
+Epoch 4: loss=2047479.31582
+Test accuracy: 0.285
+Train accuracy: 0.397
+{'quantization.global_wb': 8, 'inp_mult': 110, 'nb_hidden': 4000, 'nb_steps': 150, 'batch_size': 64, 'quantization.global_lr': 1.5e-05, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [0.001668115828387008, 0.0014625801281036087]}
+Epoch 1: loss=16.17924
+Test accuracy: 0.176
+Train accuracy: 0.194
+Epoch 2: loss=8.41916
+Test accuracy: 0.164
+Train accuracy: 0.258
+Epoch 3: loss=162177.60751
+Test accuracy: 0.238
+Train accuracy: 0.368
+Epoch 4: loss=409.71013
+Test accuracy: 0.152
+Train accuracy: 0.342
+{'quantization.global_wb': 8, 'inp_mult': 110, 'nb_hidden': 4000, 'nb_steps': 150, 'batch_size': 64, 'quantization.global_lr': 1.5e-05, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [0.0041042039138107335, 0.003598507360144768]}
+Epoch 1: loss=12.59441
+Test accuracy: 0.176
+Train accuracy: 0.205
+Epoch 2: loss=9907153588.76394
+Test accuracy: 0.258
+Train accuracy: 0.354
+Epoch 3: loss=60843283863813.71094
+Test accuracy: 0.250
+Train accuracy: 0.461
+Epoch 4: loss=501601161.24557
+Test accuracy: 0.102
+Train accuracy: 0.344
+{'quantization.global_wb': 8, 'inp_mult': 110, 'nb_hidden': 4000, 'nb_steps': 150, 'batch_size': 64, 'quantization.global_lr': 1.5e-05, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [0.010097913753643354, 0.008853706523283726]}
+Epoch 1: loss=9.79936
+Test accuracy: 0.215
+Train accuracy: 0.260
+Epoch 2: loss=6.43443
+Test accuracy: 0.258
+Train accuracy: 0.424
+Epoch 3: loss=5.73886
+Test accuracy: 0.262
+Train accuracy: 0.609
+Epoch 4: loss=5.34006
+Test accuracy: 0.277
+Train accuracy: 0.740
+{'quantization.global_wb': 8, 'inp_mult': 110, 'nb_hidden': 4000, 'nb_steps': 150, 'batch_size': 64, 'quantization.global_lr': 1.5e-05, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [0.024844735865314944, 0.021783509481910067]}
+Traceback (most recent call last):
+  File "sweep_sumDVS.py", line 407, in <module>
+    loss_hist, test_acc, train_acc, best = train(x_train, y_train, lr = quantization.global_lr, nb_epochs = 4)
+  File "sweep_sumDVS.py", line 348, in train
+    loss_val.backward()
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torch/tensor.py", line 118, in backward
+    torch.autograd.backward(self, gradient, retain_graph, create_graph)
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torch/autograd/__init__.py", line 93, in backward
+    allow_unreachable=True)  # allow_unreachable flag
+RuntimeError: CUDA out of memory. Tried to allocate 250.00 MiB (GPU 0; 11.75 GiB total capacity; 9.33 GiB already allocated; 73.75 MiB free; 1.21 GiB cached)

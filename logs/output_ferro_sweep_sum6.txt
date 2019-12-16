@@ -36,3 +36,82 @@ Traceback (most recent call last):
   File "sweep_sumDVS.py", line 129, in <module>
     train_data = pickle.load(f)
 MemoryError
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+init done
+{'quantization.global_wb': 6, 'inp_mult': 120, 'nb_hidden': 4000, 'nb_steps': 150, 'batch_size': 64, 'quantization.global_lr': 1.5e-05, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [0.00011200000000000001, 9.82e-05]}
+Epoch 1: loss=312.63865
+Test accuracy: 0.297
+Train accuracy: 0.199
+Epoch 2: loss=51.39209
+Test accuracy: 0.262
+Train accuracy: 0.328
+Epoch 3: loss=51.13516
+Test accuracy: 0.301
+Train accuracy: 0.346
+Epoch 4: loss=50.62601
+Test accuracy: 0.309
+Train accuracy: 0.396
+{'quantization.global_wb': 6, 'inp_mult': 120, 'nb_hidden': 4000, 'nb_steps': 150, 'batch_size': 64, 'quantization.global_lr': 1.5e-05, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [0.00027556290188270857, 0.00024160961575787483]}
+Epoch 1: loss=55.37598
+Test accuracy: 0.383
+Train accuracy: 0.181
+Epoch 2: loss=50.96391
+Test accuracy: 0.273
+Train accuracy: 0.431
+Epoch 3: loss=50.13759
+Test accuracy: 0.355
+Train accuracy: 0.482
+Epoch 4: loss=49.79368
+Test accuracy: 0.352
+Train accuracy: 0.572
+{'quantization.global_wb': 6, 'inp_mult': 120, 'nb_hidden': 4000, 'nb_steps': 150, 'batch_size': 64, 'quantization.global_lr': 1.5e-05, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [0.0006779902936966005, 0.0005944522039375551]}
+Epoch 1: loss=55.50334
+Test accuracy: 0.332
+Train accuracy: 0.196
+Epoch 2: loss=51.23817
+Test accuracy: 0.379
+Train accuracy: 0.404
+Epoch 3: loss=50.17153
+Test accuracy: 0.410
+Train accuracy: 0.508
+Epoch 4: loss=49.88719
+Test accuracy: 0.426
+Train accuracy: 0.568
+{'quantization.global_wb': 6, 'inp_mult': 120, 'nb_hidden': 4000, 'nb_steps': 150, 'batch_size': 64, 'quantization.global_lr': 1.5e-05, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [0.001668115828387008, 0.0014625801281036087]}
+Epoch 1: loss=55.26054
+Test accuracy: 0.266
+Train accuracy: 0.166
+Epoch 2: loss=50.79121
+Test accuracy: 0.336
+Train accuracy: 0.405
+Epoch 3: loss=50.38430
+Test accuracy: 0.320
+Train accuracy: 0.420
+Epoch 4: loss=50.06588
+Test accuracy: 0.348
+Train accuracy: 0.473
+{'quantization.global_wb': 6, 'inp_mult': 120, 'nb_hidden': 4000, 'nb_steps': 150, 'batch_size': 64, 'quantization.global_lr': 1.5e-05, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [0.0041042039138107335, 0.003598507360144768]}
+Epoch 1: loss=54.74228
+Test accuracy: 0.297
+Train accuracy: 0.216
+Epoch 2: loss=50.75335
+Test accuracy: 0.340
+Train accuracy: 0.425
+Epoch 3: loss=50.05441
+Test accuracy: 0.371
+Train accuracy: 0.503
+Epoch 4: loss=49.74811
+Test accuracy: 0.398
+Train accuracy: 0.563
+{'quantization.global_wb': 6, 'inp_mult': 120, 'nb_hidden': 4000, 'nb_steps': 150, 'batch_size': 64, 'quantization.global_lr': 1.5e-05, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [0.010097913753643354, 0.008853706523283726]}
+Traceback (most recent call last):
+  File "sweep_sumDVS.py", line 407, in <module>
+    loss_hist, test_acc, train_acc, best = train(x_train, y_train, lr = quantization.global_lr, nb_epochs = 4)
+  File "sweep_sumDVS.py", line 348, in train
+    loss_val.backward()
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torch/tensor.py", line 118, in backward
+    torch.autograd.backward(self, gradient, retain_graph, create_graph)
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torch/autograd/__init__.py", line 93, in backward
+    allow_unreachable=True)  # allow_unreachable flag
+RuntimeError: CUDA out of memory. Tried to allocate 250.00 MiB (GPU 0; 10.73 GiB total capacity; 8.60 GiB already allocated; 129.56 MiB free; 1.08 GiB cached)
