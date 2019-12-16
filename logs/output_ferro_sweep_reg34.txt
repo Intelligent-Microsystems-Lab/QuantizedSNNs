@@ -92,3 +92,136 @@ Traceback (most recent call last):
   File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torch/autograd/__init__.py", line 93, in backward
     allow_unreachable=True)  # allow_unreachable flag
 RuntimeError: CUDA out of memory. Tried to allocate 250.00 MiB (GPU 0; 10.73 GiB total capacity; 8.60 GiB already allocated; 127.56 MiB free; 1.09 GiB cached)
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+No handles with labels found to put in legend.
+init done
+{'quantization.global_wb': 34, 'inp_mult': 80, 'nb_hidden': 4000, 'nb_steps': 150, 'batch_size': 64, 'quantization.global_lr': 1.5e-05, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [1.12, 0.982]}
+Epoch 1: loss=16.50833
+Test accuracy: 0.074
+Train accuracy: 0.101
+Epoch 2: loss=27.98613
+Test accuracy: 0.121
+Train accuracy: 0.154
+Epoch 3: loss=340767735.54372
+Test accuracy: 0.145
+Train accuracy: 0.212
+{'quantization.global_wb': 34, 'inp_mult': 80, 'nb_hidden': 4000, 'nb_steps': 150, 'batch_size': 64, 'quantization.global_lr': 1.5e-05, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [1.12, 0.982]}
+Epoch 1: loss=12.22762
+Test accuracy: 0.223
+Train accuracy: 0.207
+Epoch 2: loss=13.62153
+Test accuracy: 0.223
+Train accuracy: 0.308
+Epoch 3: loss=16.09027
+Test accuracy: 0.273
+Train accuracy: 0.391
+Epoch 4: loss=137228460.99997
+Test accuracy: 0.242
+Train accuracy: 0.468
+{'quantization.global_wb': 34, 'inp_mult': 80, 'nb_hidden': 4000, 'nb_steps': 150, 'batch_size': 64, 'quantization.global_lr': 1.5e-05, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [1.12, 0.982]}
+Epoch 1: loss=239.98261
+Test accuracy: 0.105
+Train accuracy: 0.089
+Epoch 2: loss=215448719011193061376.00000
+Test accuracy: 0.102
+Train accuracy: 0.168
+Epoch 3: loss=500.12897
+Test accuracy: 0.145
+Train accuracy: 0.211
+Epoch 4: loss=1627653.88249
+Test accuracy: 0.129
+Train accuracy: 0.245
+{'quantization.global_wb': 34, 'inp_mult': 80, 'nb_hidden': 4000, 'nb_steps': 150, 'batch_size': 64, 'quantization.global_lr': 1.5e-05, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [1.12, 0.982]}
+Epoch 1: loss=4503.07175
+Test accuracy: 0.066
+Train accuracy: 0.106
+Epoch 2: loss=7096157.63466
+Test accuracy: 0.078
+Train accuracy: 0.089
+Epoch 3: loss=12566582.74619
+Test accuracy: 0.055
+Train accuracy: 0.086
+Epoch 4: loss=1540.37749
+Test accuracy: 0.066
+Train accuracy: 0.074
+{'quantization.global_wb': 34, 'inp_mult': 80, 'nb_hidden': 4000, 'nb_steps': 150, 'batch_size': 64, 'quantization.global_lr': 1.5e-05, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [1.12, 0.982]}
+Epoch 1: loss=105553274892.47838
+Test accuracy: 0.168
+Train accuracy: 0.190
+Epoch 2: loss=2425575970508.58350
+Test accuracy: 0.125
+Train accuracy: 0.144
+{'quantization.global_wb': 34, 'inp_mult': 80, 'nb_hidden': 4000, 'nb_steps': 150, 'batch_size': 64, 'quantization.global_lr': 1.5e-05, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [1.12, 0.982]}
+Epoch 1: loss=4273540.31848
+Test accuracy: 0.113
+Train accuracy: 0.094
+Epoch 2: loss=960266.39526
+Test accuracy: 0.168
+Train accuracy: 0.217
+Epoch 3: loss=4.42845
+Test accuracy: 0.191
+Train accuracy: 0.249
+Epoch 4: loss=3.88034
+Test accuracy: 0.188
+Train accuracy: 0.275
+{'quantization.global_wb': 34, 'inp_mult': 80, 'nb_hidden': 4000, 'nb_steps': 150, 'batch_size': 64, 'quantization.global_lr': 1.5e-05, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [1.12, 0.982]}
+Epoch 1: loss=1994.66436
+Test accuracy: 0.133
+Train accuracy: 0.113
+Epoch 2: loss=39215.57151
+Test accuracy: 0.117
+Train accuracy: 0.162
+{'quantization.global_wb': 34, 'inp_mult': 80, 'nb_hidden': 4000, 'nb_steps': 150, 'batch_size': 64, 'quantization.global_lr': 1.5e-05, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [1.12, 0.982]}
+Epoch 1: loss=15.06946
+Test accuracy: 0.129
+Train accuracy: 0.133
+Epoch 2: loss=590188302538761.50000
+Test accuracy: 0.152
+Train accuracy: 0.247
+Epoch 3: loss=219521114625138720768.00000
+Test accuracy: 0.137
+Train accuracy: 0.244
+Epoch 4: loss=988356.87359
+Test accuracy: 0.113
+Train accuracy: 0.228
+{'quantization.global_wb': 34, 'inp_mult': 80, 'nb_hidden': 4000, 'nb_steps': 150, 'batch_size': 64, 'quantization.global_lr': 1.5e-05, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [1.12, 0.982]}
+Epoch 1: loss=1246479.51158
+Test accuracy: 0.133
+Train accuracy: 0.115
+Epoch 2: loss=395727013.01393
+Test accuracy: 0.070
+Train accuracy: 0.169
+Epoch 3: loss=70753279694.36610
+Test accuracy: 0.059
+Train accuracy: 0.103
+{'quantization.global_wb': 34, 'inp_mult': 80, 'nb_hidden': 4000, 'nb_steps': 150, 'batch_size': 64, 'quantization.global_lr': 1.5e-05, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [1.12, 0.982]}
+Epoch 1: loss=3131255088149.74121
+Test accuracy: 0.176
+Train accuracy: 0.128
+{'quantization.global_wb': 34, 'inp_mult': 80, 'nb_hidden': 4000, 'nb_steps': 150, 'batch_size': 64, 'quantization.global_lr': 1.5e-05, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [1.12, 0.982]}
+Epoch 1: loss=4594.18504
+Test accuracy: 0.098
+Train accuracy: 0.115
+Epoch 2: loss=16.61210
+Test accuracy: 0.113
+Train accuracy: 0.122
+Epoch 3: loss=10.60271
+Test accuracy: 0.129
+Train accuracy: 0.133
+Epoch 4: loss=9.52420
+Test accuracy: 0.117
+Train accuracy: 0.154
+{'quantization.global_wb': 34, 'inp_mult': 80, 'nb_hidden': 4000, 'nb_steps': 150, 'batch_size': 64, 'quantization.global_lr': 1.5e-05, 'reg_size': 0.001, 'mult_eq': 0.12, 'class_method': 'integrate', 'weight_sum': [1.12, 0.982]}
+Epoch 1: loss=50.89933
+Test accuracy: 0.176
+Train accuracy: 0.143
+Epoch 2: loss=42.80258
+Test accuracy: 0.191
+Train accuracy: 0.204
+Epoch 3: loss=7.13666
+Test accuracy: 0.188
+Train accuracy: 0.234
+Epoch 4: loss=11.56501
+Test accuracy: 0.199
+Train accuracy: 0.276
