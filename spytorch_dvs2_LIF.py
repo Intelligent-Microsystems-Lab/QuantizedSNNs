@@ -337,7 +337,7 @@ def run_snn_lif(inputs, infer):
     #h2b = np.ceil(np.log2((2**quantization.global_wb-1)*nb_hidden))
 
     flt = torch.zeros((batch_size,nb_outputs), device=device, dtype=dtype)
-    out = torch.zeros((batch_size,nb_outputs), device=device, dtype=dtype)
+    out = torch.ones((batch_size,nb_outputs), device=device, dtype=dtype) * v_rest_e
     out_rec = [out]
     for t in range(nb_steps):
 
@@ -480,7 +480,7 @@ results = {'bit_string': bit_string, 'test_acc': test_acc, 'test_loss': loss_his
 date_string = time.strftime("%Y%m%d%H%M%S")
 
 para_dict = {'quantization.global_wb':quantization.global_wb, 'inp_mult':inp_mult, 'reg_size':reg1, 'weight_sum': sum1v }
-with open('results/snn_dvs_' + "_".join([re.sub('[^A-Za-z0-9.]+', '', x) for x in str(para_dict).split(" ")])+"_"+date_string + '.pkl', 'wb') as f:
+with open('results/snn_dvs_lif_' + "_".join([re.sub('[^A-Za-z0-9.]+', '', x) for x in str(para_dict).split(" ")])+"_"+date_string + '.pkl', 'wb') as f:
     pickle.dump(results, f)
 
 
@@ -496,8 +496,8 @@ plt.plot(train_acc, label= "train")
 plt.legend()
 para_dict = {'quantization.global_wb':quantization.global_wb, 'inp_mult':inp_mult, 'reg_size':reg1, 'weight_sum': sum1v }
 print(para_dict)
-plt.title("_".join([re.sub('[^A-Za-z0-9.]+', '', x) for x in str(para_dict).split(" ")]))
-plt.savefig("./figures/ferro_dvs_"+"_".join([re.sub('[^A-Za-z0-9.]+', '', x) for x in str(para_dict).split(" ")])+"_"+date_string+".png")
+plt.title("lif "+"_".join([re.sub('[^A-Za-z0-9.]+', '', x) for x in str(para_dict).split(" ")]))
+plt.savefig("./figures/ferro_dvs_lif_"+"_".join([re.sub('[^A-Za-z0-9.]+', '', x) for x in str(para_dict).split(" ")])+"_"+date_string+".png")
 
 
 plt.clf()
