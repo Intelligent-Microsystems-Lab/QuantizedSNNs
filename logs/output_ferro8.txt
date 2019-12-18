@@ -479,3 +479,19 @@ Epoch 35: loss=134.00067
 Test accuracy: 0.434
 Train accuracy: 0.914
 {'quantization.global_wb': 8, 'inp_mult': 110, 'reg_size': 0.0675773097361373, 'weight_sum': 1.12}
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+init done
+{'quantization.global_wb': 8, 'inp_mult': 110, 'nb_hidden': 2500, 'nb_steps': 100, 'batch_size': 64, 'quantization.global_lr': 1e-05, 'reg_size': 0.0675773097361373, 'mult_eq': 0.12, 'class_method': 'integrate'}
+Traceback (most recent call last):
+  File "spytorch_dvs2_LIF.py", line 476, in <module>
+    loss_hist, test_acc, train_acc, best = train(x_train, y_train, lr = quantization.global_lr, nb_epochs = 35)
+  File "spytorch_dvs2_LIF.py", line 425, in train
+    loss_val.backward()
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torch/tensor.py", line 118, in backward
+    torch.autograd.backward(self, gradient, retain_graph, create_graph)
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torch/autograd/__init__.py", line 93, in backward
+    allow_unreachable=True)  # allow_unreachable flag
+RuntimeError: CUDA out of memory. Tried to allocate 158.00 MiB (GPU 0; 10.73 GiB total capacity; 2.52 GiB already allocated; 120.56 MiB free; 378.85 MiB cached)
