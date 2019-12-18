@@ -467,3 +467,6 @@ Epoch 35: loss=1.48708
 Test accuracy: 0.363
 Train accuracy: 0.967
 {'quantization.global_wb': 34, 'inp_mult': 80, 'reg_size': 0.00048219502065459076, 'weight_sum': 1.12}
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+python: can't open file 'spytorch_dvs2_lif.py': [Errno 2] No such file or directory
