@@ -361,8 +361,8 @@ def compute_classification_accuracy(x_data, y_data):
     accs = []
     with torch.no_grad():
         for x_local, y_local in sparse_data_generator_DVS(x_data, y_data, batch_size, nb_steps, nb_inputs, shuffle=True, time_step = time_step, device = device):
-            #output,_ = run_snn_ferro(x_local.to_dense(), True)
-            output,_ = run_snn_lif(x_local.to_dense(), True)
+            output,_ = run_snn_ferro(x_local.to_dense(), True)
+            #output,_ = run_snn_lif(x_local.to_dense(), True)
 
             if class_method == 'integrate':
                 m = output.sum(axis = 1) # integrate
@@ -397,8 +397,8 @@ def train(x_data, y_data, lr, nb_epochs):
         
         for x_local, y_local in sparse_data_generator_DVS(x_data, y_data, batch_size, nb_steps, nb_inputs, shuffle = True, time_step = time_step, device = device):
 
-            #output,recs = run_snn_ferro(x_local.to_dense(), False)
-            output,recs = run_snn_lif(x_local.to_dense(), False)
+            output,recs = run_snn_ferro(x_local.to_dense(), False)
+            #output,recs = run_snn_lif(x_local.to_dense(), False)
 
             if class_method == 'integrate':
                 m = output.sum(axis = 1) # integrate
