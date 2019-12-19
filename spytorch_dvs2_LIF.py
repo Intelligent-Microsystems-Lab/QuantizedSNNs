@@ -283,6 +283,7 @@ def run_snn_ferro(inputs, infer):
     other_recs = [mem_rec, spk_rec]
     return out_rec, other_recs
 
+# LIF MNIST + DVS + Poker
 
 def run_snn_lif(inputs, infer):
     tau_mem = 2*ms#10e-3
