@@ -505,3 +505,7 @@ plt.clf()
 
 
 
+
+with open(r"/afs/crc.nd.edu/user/c/cschaef6/QuantizedSNN/results/snn_mnist_lifquantization.globalwb_3_inpmult_200_nbhidden_800_nbsteps_150_batchsize_128_quantization.globallr_0.0004_regsize_0.005708365988967279_multeq_0.12_classmethod_integrate_20191218230154.pkl", "rb") as input_file:
+    results = pickle.load(input_file)
+

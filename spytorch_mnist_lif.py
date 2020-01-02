@@ -36,7 +36,7 @@ sum1v = args['s1']#*2.1
 sum2v = args['s2']#*0.003
 
 if quantization.global_wb == None:
-    quantization.global_wb = 33
+    quantization.global_wb = 3
 if inp_mult == None:
     inp_mult = 200 # 90 yielded high results for full
 
@@ -86,7 +86,7 @@ tau_gi = 2*ms
 
 quantization.global_lr = 4e-4
 batch_size = 128
-nb_hidden  = 800
+nb_hidden  = 6000
 nb_steps  =  150 # 100 previously, some good results with 150
 
 
