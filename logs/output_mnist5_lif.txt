@@ -1,124 +1,36 @@
-Loading python/3.7.3
-  Loading requirement: tcl/8.6.8 gcc/8.3.0
-Traceback (most recent call last):
-  File "spytorch_mnist_lif.py", line 35, in <module>
-    sum1v = args['s1']*2.1
-TypeError: unsupported operand type(s) for *: 'NoneType' and 'float'
-Loading python/3.7.3
-  Loading requirement: tcl/8.6.8 gcc/8.3.0
-/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:53: UserWarning: train_data has been renamed data
-  warnings.warn("train_data has been renamed data")
-/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:58: UserWarning: test_data has been renamed data
-  warnings.warn("test_data has been renamed data")
-/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:43: UserWarning: train_labels has been renamed targets
-  warnings.warn("train_labels has been renamed targets")
-/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:48: UserWarning: test_labels has been renamed targets
-  warnings.warn("test_labels has been renamed targets")
-init done
-{'quantization.global_wb': 5, 'inp_mult': 150, 'nb_hidden': 800, 'nb_steps': 150, 'batch_size': 128, 'quantization.global_lr': 0.0004, 'reg_size': 0.00165907976178182, 'mult_eq': 0.12, 'class_method': 'integrate'}
-Epoch 1: loss=161.50272
-Test accuracy: 0.689
-Train accuracy: 0.535
-Epoch 2: loss=52.92085
-Test accuracy: 0.703
-Train accuracy: 0.699
-Epoch 3: loss=45.54718
-Test accuracy: 0.706
-Train accuracy: 0.729
-Epoch 4: loss=44.75317
-Test accuracy: 0.726
-Train accuracy: 0.739
-Epoch 5: loss=44.31805
-Test accuracy: 0.748
-Train accuracy: 0.744
-Epoch 6: loss=43.85993
-Test accuracy: 0.707
-Train accuracy: 0.753
-Epoch 7: loss=43.25369
-Test accuracy: 0.767
-Train accuracy: 0.759
-Epoch 8: loss=41.38579
-Test accuracy: 0.761
-Train accuracy: 0.767
-Epoch 9: loss=40.16509
-Test accuracy: 0.770
-Train accuracy: 0.773
-Epoch 10: loss=24.76621
-Test accuracy: 0.793
-Train accuracy: 0.840
-Epoch 11: loss=21.34181
-Test accuracy: 0.795
-Train accuracy: 0.851
-Epoch 12: loss=19.43050
-Test accuracy: 0.778
-Train accuracy: 0.857
-Epoch 13: loss=17.98808
-Test accuracy: 0.784
-Train accuracy: 0.860
-Epoch 14: loss=16.70334
-Test accuracy: 0.790
-Train accuracy: 0.866
-Epoch 15: loss=16.20501
-Test accuracy: 0.780
-Train accuracy: 0.866
-Epoch 16: loss=15.17688
-Test accuracy: 0.780
-Train accuracy: 0.870
-Epoch 17: loss=14.46978
-Test accuracy: 0.791
-Train accuracy: 0.874
-Epoch 18: loss=13.67109
-Test accuracy: 0.792
-Train accuracy: 0.877
-Epoch 19: loss=10.92990
-Test accuracy: 0.789
-Train accuracy: 0.902
-Epoch 20: loss=10.59888
-Test accuracy: 0.791
-Train accuracy: 0.905
-Epoch 21: loss=10.43846
-Test accuracy: 0.786
-Train accuracy: 0.905
-Epoch 22: loss=10.20318
-Test accuracy: 0.790
-Train accuracy: 0.906
-Epoch 23: loss=10.10369
-Test accuracy: 0.786
-Train accuracy: 0.906
-Epoch 24: loss=9.98026
-Test accuracy: 0.787
-Train accuracy: 0.907
-Epoch 25: loss=9.79417
-Test accuracy: 0.790
-Train accuracy: 0.908
-Epoch 26: loss=9.79557
-Test accuracy: 0.790
-Train accuracy: 0.908
-Epoch 27: loss=9.62138
-Test accuracy: 0.791
-Train accuracy: 0.910
-Epoch 28: loss=9.10690
-Test accuracy: 0.790
-Train accuracy: 0.916
-Epoch 29: loss=9.06164
-Test accuracy: 0.790
-Train accuracy: 0.917
-Epoch 30: loss=9.05189
-Test accuracy: 0.790
-Train accuracy: 0.917
-Epoch 31: loss=9.04061
-Test accuracy: 0.790
-Train accuracy: 0.917
-Epoch 32: loss=9.00953
-Test accuracy: 0.791
-Train accuracy: 0.916
-Epoch 33: loss=9.01181
-Test accuracy: 0.791
-Train accuracy: 0.916
-Epoch 34: loss=9.00229
-Test accuracy: 0.789
-Train accuracy: 0.917
-Epoch 35: loss=8.99455
-Test accuracy: 0.790
-Train accuracy: 0.916
-{'quantization.global_wb': 5, 'inp_mult': 150, 'reg_size': 0.00165907976178182, 'weight_sum': 2.1}
+0.689 0.535
+0.703 0.699
+0.706 0.729
+0.726 0.739
+0.748 0.744
+0.707 0.753
+0.767 0.759
+0.761 0.767
+0.770 0.773
+0.793 0.840
+0.795 0.851
+0.778 0.857
+0.784 0.860
+0.790 0.866
+0.780 0.866
+0.780 0.870
+0.791 0.874
+0.792 0.877
+0.789 0.902
+0.791 0.905
+0.786 0.905
+0.790 0.906
+0.786 0.906
+0.787 0.907
+0.790 0.908
+0.790 0.908
+0.791 0.910
+0.790 0.916
+0.790 0.917
+0.790 0.917
+0.790 0.917
+0.791 0.916
+0.791 0.916
+0.789 0.917
+0.790 0.916
+
