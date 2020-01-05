@@ -11,4 +11,4 @@
 module load python       # Required modules
 setenv OMP_NUM_THREADS $NSLOTS
 
-python spytorch_mnist_lif.py -wb 3 -m 200 -rg 0.001
+python spytorch_mnist_lif.py -wb 3 -m 200 -rg 0.01
