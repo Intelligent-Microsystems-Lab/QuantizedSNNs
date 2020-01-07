@@ -36,9 +36,9 @@ sum1v = args['s1']#*2.1
 sum2v = args['s2']#*0.003
 
 if quantization.global_wb == None:
-    quantization.global_wb = 3
+    quantization.global_wb = 34
 if inp_mult == None:
-    inp_mult = 200 # 90 yielded high results for full
+    inp_mult = 85 # 90 yielded high results for full
 
 if sum1v == None:
     sum1v = 2.1
@@ -47,7 +47,7 @@ if sum2v == None:
 
 
 if reg_size == None:
-    reg1 = 1e-03
+    reg1 = 1e-01
     reg2 = reg1
 else:
     reg1 = reg_size
