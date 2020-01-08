@@ -16,98 +16,12 @@ import torchvision
 # once you are back to a model -> use apex to speed things up
 #from apex import amp, optimizers
 
+from hyperopt import hp, fmin, tpe, space_eval
+
 import quantization
 import spytorch_util
 from quantization import init_layer_weights, clip, quant_w, quant_err, quant_grad
 from spytorch_util import current2firing_time, sparse_data_generator, plot_voltage_traces, SuperSpike
-
-
-
-ap = argparse.ArgumentParser()
-ap.add_argument("-wb", "--wb", type = int, help = "weight bits")
-ap.add_argument("-m", "--m", type = int, help="multiplier")
-ap.add_argument("-rg", "--rg", type = float, help="reg")
-ap.add_argument("-s1", "--s1", type = float, help="sum1")
-ap.add_argument("-s2", "--s2", type = float, help="sum2")
-args = vars(ap.parse_args())
-
-
-quantization.global_wb = args['wb']
-inp_mult = args['m']
-reg_size = args['rg']
-sum1v = args['s1']#*2.1
-sum2v = args['s2']#*0.003
-
-if quantization.global_wb == None:
-    quantization.global_wb = 34
-if inp_mult == None:
-    inp_mult = 85 # 90 yielded high results for full
-
-if sum1v == None:
-    sum1v = 2.1
-if sum2v == None:
-    sum2v = 0.003
-
-
-if reg_size == None:
-    reg1 = 1e-01
-    reg2 = reg1
-else:
-    reg1 = reg_size
-    reg2 = reg_size
-
-
-
-# Neuron Parameters
-mV = 1e-3
-ms = 1e-3
-nS = 1e-9
-
-# Neuron parameterss
-v_exc = 0*mV
-v_inh = -100*mV
-v_rest_e = -65*mV
-v_reset_e_mult = -65*mV
-v_thresh_e_mult = -52*mV
-refrac_e = 5*ms
-tau_v = 100*ms
-
-theta = 0
-del_theta_mult = 0.1*mV
-
-
-t_leak = 1
-tau_leak = 100
-
-# Synapse parameters
-ge_max = 8
-gi_max = 5
-tau_ge = 1*ms
-tau_gi = 2*ms
-
-
-
-quantization.global_lr = 4e-4
-batch_size = 128
-nb_hidden  = 6000
-nb_steps  =  150 # 100 previously, some good results with 150
-
-
-#bernarbe tricks
-threshold_saturation = del_theta_mult * 7 # the number 7 is the foundation of God's word ... lets hope
-
-mult_eq = .12
-class_method = "integrate"
-
-
-nb_inputs  = 28*28
-nb_outputs = 10
-time_step = 1e-3 
-dtype = torch.float
-stop_quant_level = 32
-quantization.global_gb = 33
-quantization.global_eb = 33
-
 
 
 
@@ -181,82 +95,8 @@ class einsum_linear(torch.autograd.Function):
 
 
 print("init done")
-    
 # here we overwrite our naive spike function by the "SuperSpike" nonlinearity which implements a surrogate gradient
 spike_fn  = SuperSpike.apply
-
-def run_snn_lif(inputs, infer):
-    tau_mem = 2*ms#10e-3
-    tau_syn = 1*ms#5e-3
-    alpha   = float(np.exp(-time_step/tau_syn))
-    beta    = float(np.exp(-time_step/tau_mem))
-
-
-    with torch.no_grad():
-        spytorch_util.w1.data = clip(spytorch_util.w1.data, quantization.global_wb)
-        spytorch_util.w2.data = clip(spytorch_util.w2.data, quantization.global_wb)
-
-
-    #h1 = torch.einsum("abc,cd->abd", (inputs, w1))
-    h1 = einsum_linear.apply(inputs, spytorch_util.w1*inp_mult, scale1)
-    #h1b = np.ceil(np.log2((2**quantization.global_wb-1)*nb_inputs))
-
-    syn = torch.zeros((batch_size,nb_hidden), device=device, dtype=dtype)
-    mem = torch.ones((batch_size,nb_hidden), device=device, dtype=dtype) * v_rest_e
-    reset_mem = torch.ones((batch_size,nb_hidden), device=device, dtype=dtype)*v_reset_e_mult
-
-    mem_rec = [mem]
-    spk_rec = [mem]
-
-    # Compute hidden layer activity
-    for t in range(nb_steps):
-        mthr = mem-v_thresh_e_mult
-        out = spike_fn(mthr)
-
-        #rst = torch.zeros_like(mem)
-        c   = (mthr > 0)
-        #rst[c] = torch.ones_like(mem)[c]
-
-        new_syn = alpha*syn +h1[:,t]
-        new_mem = beta*mem +syn #-rst
-
-        new_mem[c] = reset_mem[c]
-
-        syn = new_syn
-        mem = new_mem
-
-        mem_rec.append(mem)
-        spk_rec.append(out)
-
-    mem_rec = torch.stack(mem_rec,dim=1)
-    spk_rec = torch.stack(spk_rec,dim=1)
-
-
-    #Readout layer
-    #h2 = torch.einsum("abc,cd->abd", (spk_rec, w2))
-    h2 = einsum_linear.apply(spk_rec, spytorch_util.w2*inp_mult, scale2)
-    #h2b = np.ceil(np.log2((2**quantization.global_wb-1)*nb_hidden))
-
-    flt = torch.zeros((batch_size,nb_outputs), device=device, dtype=dtype)
-    out = torch.ones((batch_size,nb_outputs), device=device, dtype=dtype) * v_rest_e
-    out_rec = [out]
-    for t in range(nb_steps):
-
-
-        new_flt = alpha*flt +h2[:,t]
-        new_out = beta*out +flt
-
-        flt = new_flt 
-        out = new_out 
-
-        out_rec.append(out)
-
-    out_rec = torch.stack(out_rec,dim=1)
-
-
-    other_recs = [mem_rec, spk_rec]
-    return out_rec, other_recs
-
 
 
 def run_snn(inputs, infer):
@@ -267,7 +107,6 @@ def run_snn(inputs, infer):
 
     
     h1 = einsum_linear.apply(inputs, spytorch_util.w1*inp_mult, scale1)
-
     g_e = torch.zeros((batch_size,nb_hidden), device=device, dtype=dtype)
     v = torch.ones((batch_size,nb_hidden), device=device, dtype=dtype) * v_rest_e
     alpha = torch.zeros((batch_size,nb_hidden), device=device, dtype=dtype)
@@ -281,6 +120,7 @@ def run_snn(inputs, infer):
     spk_rec = [g_e]
     
     for t in range(nb_steps-1):
+
         dge_dt = -g_e/tau_ge
 
 
@@ -298,7 +138,7 @@ def run_snn(inputs, infer):
         theta[c] += del_theta[c] 
 
         # neuron threshold saturation, bernarbe trick 3
-        theta[theta > threshold_saturation] = threshold_saturation
+        # theta[theta > threshold_saturation] = threshold_saturation
 
         # lateral inhibition, bernarbe trick 4
 
@@ -308,6 +148,10 @@ def run_snn(inputs, infer):
         mem_rec.append(v)
         spk_rec.append(out)
 
+
+        if torch.isnan(v).sum() != 0:
+            return torch.ones((batch_size, nb_steps, nb_outputs), device=device, dtype=dtype) * -666, None
+
     mem_rec = torch.stack(mem_rec,dim=1)
     spk_rec = torch.stack(spk_rec,dim=1)
 
@@ -315,8 +159,6 @@ def run_snn(inputs, infer):
 
     #Readout layer #infer is fine
     h2 = einsum_linear.apply(spk_rec, spytorch_util.w2*inp_mult, scale2)
-
-
     g_e = torch.zeros((batch_size,nb_outputs), device=device, dtype=dtype)
     v = torch.ones((batch_size,nb_outputs), device=device, dtype=dtype) * v_rest_e
     alpha = torch.zeros((batch_size,nb_outputs), device=device, dtype=dtype)
@@ -339,6 +181,10 @@ def run_snn(inputs, infer):
 
         out_rec.append(v)
 
+
+        if torch.isnan(v).sum() != 0:
+            return torch.ones((batch_size, nb_steps, nb_outputs), device=device, dtype=dtype) * -666, None
+
     out_rec = torch.stack(out_rec,dim=1)
 
     other_recs = [mem_rec, spk_rec]
@@ -350,7 +196,7 @@ def compute_classification_accuracy(x_data, y_data):
     accs = []
     with torch.no_grad():
         for x_local, y_local in sparse_data_generator(x_data, y_data, batch_size, nb_steps, nb_inputs, shuffle=True):
-            output,_ = run_snn_lif(x_local.to_dense(), True)
+            output,_ = run_snn(x_local.to_dense(), True)
 
             if class_method == 'integrate':
                 m = output.sum(axis = 1) # integrate
@@ -367,10 +213,7 @@ def compute_classification_accuracy(x_data, y_data):
 def train(x_data, y_data, lr, nb_epochs):
     params = [spytorch_util.w1,spytorch_util.w2]
 
-
-    #
     optimizer = torch.optim.Adam(params, lr=lr, betas=(0.9,0.999))
-
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=9, gamma=0.1)
 
     log_softmax_fn = nn.LogSoftmax(dim=1)
@@ -380,7 +223,6 @@ def train(x_data, y_data, lr, nb_epochs):
     acc_hist = []
     acc_train = []
 
-    best = {'weights': [spytorch_util.w1, spytorch_util.w2], 'test_acc':0}
     for e in range(nb_epochs):
         local_loss = []
         accs = []
@@ -388,7 +230,10 @@ def train(x_data, y_data, lr, nb_epochs):
         
         for x_local, y_local in sparse_data_generator(x_data, y_data, batch_size, nb_steps, nb_inputs, shuffle = True):
 
-            output,recs = run_snn_lif(x_local.to_dense(), False)
+            output,recs = run_snn(x_local.to_dense(), False)
+
+            if output[0][0][0] == -666:
+                return [-666], [-666], [-666]
 
             if class_method == 'integrate':
                 m = output.sum(axis = 1) # integrate
@@ -405,16 +250,17 @@ def train(x_data, y_data, lr, nb_epochs):
             loss_val = loss_fn(log_p_y, y_local) + reg1 * ((spytorch_util.w1**2).sum() + (spytorch_util.w2**2).sum())
 
 
+            optimizer.zero_grad()
+            loss_val.backward()
+            optimizer.step()
+
             # bernarbe trick 2 -> l2
             #loss_val = loss_fn(log_p_y, y_local) + reg1 * ((spytorch_util.w1**2).sum(axis=0) - sum1v).abs().sum() + reg2 * ((spytorch_util.w2**2).sum(axis=0) - sum2v).abs().sum()
             # bernarbe trick 2 -> l1
             #loss_val = loss_fn(log_p_y, y_local) + reg1 * ((spytorch_util.w1.abs()).sum(axis=0) - 20).sum() + reg2 * ((spytorch_util.w2.abs()).sum(axis=0) - 12).sum()
             #+ (torch.sum(torch.abs(spytorch_util.w1)) + torch.sum(torch.abs(spytorch_util.w1)))*reg_size
 
-            optimizer.zero_grad()
-            loss_val.backward()
-            optimizer.step()
-
+            
             # normalize weights, bernarbe trick 2
             # with torch.no_grad():
             #     spytorch_util.w1.data = (spytorch_util.w1.data - spytorch_util.w1.data.min()) / (spytorch_util.w1.data - spytorch_util.w1.data.min()).sum() * first_sum
@@ -432,111 +278,118 @@ def train(x_data, y_data, lr, nb_epochs):
         print("Test accuracy: %.3f"%(acc_test))
         print("Train accuracy: %.3f"%(np.mean(accs)))
 
-        if best['test_acc'] < acc_test:
-            best['test_acc'] = acc_test
-            best['weights'] = [spytorch_util.w1, spytorch_util.w2]
+
         loss_hist.append(mean_loss)
         acc_hist.append(acc_test)
         acc_train.append(np.mean(accs))
 
         
-    return loss_hist, acc_hist, acc_train, best
+    return loss_hist, acc_hist, acc_train
         
 
 
+def objective(args):
+    quantization.global_lr = np.abs(args['lr'])
+    global inp_mult; inp_mult = args['inp_mult']
+    global mult_eq; mult_eq = args['mult_eq']
+    global reg1; reg1 = args['reg1']
+    global batch_size; batch_size = int(args['batch_size'])
+    global nb_hidden; nb_hidden  = int(args['nb_hidden'])
+    global nb_steps; nb_steps  =  int(args['nb_steps'])
+    global time_step; time_step = args['time_step']
+
+    spytorch_util.w1 = torch.empty((nb_inputs, nb_hidden),  device=device, dtype=dtype, requires_grad=True)
+    global scale1; scale1 = init_layer_weights(spytorch_util.w1, 28*28).to(device)
+
+    spytorch_util.w2 = torch.empty((nb_hidden, nb_outputs), device=device, dtype=dtype, requires_grad=True)
+    global scale2; scale2 = init_layer_weights(spytorch_util.w2, 28*28).to(device)
+
+    loss_hist, test_acc, train_acc = train(x_train, y_train, lr = quantization.global_lr, nb_epochs = 5)
+
+    hist_record.append( {'loss': loss_hist, 'test': test_acc, 'train': train_acc, 'args':args} )
+    return 1-max(test_acc)
 
 
-bit_string = str(quantization.global_wb)
-para_dict = {'quantization.global_wb':quantization.global_wb, 'inp_mult':inp_mult, 'nb_hidden':nb_hidden, 'nb_steps':nb_steps, 'batch_size': batch_size, 'quantization.global_lr':quantization.global_lr, 'reg_size':reg1, 'mult_eq':mult_eq, 'class_method':class_method}
-print(para_dict)
-
-spytorch_util.w1 = torch.empty((nb_inputs, nb_hidden),  device=device, dtype=dtype, requires_grad=True)
-scale1 = init_layer_weights(spytorch_util.w1, 28*28).to(device)
-
-spytorch_util.w2 = torch.empty((nb_hidden, nb_outputs), device=device, dtype=dtype, requires_grad=True)
-scale2 = init_layer_weights(spytorch_util.w2, 28*28).to(device)
-
-
-
-# with torch.no_grad():
-#     spytorch_util.w1.data = (spytorch_util.w1.data - spytorch_util.w1.data.min()) / (spytorch_util.w1.data - spytorch_util.w1.data.min()).sum() * first_sum
-#     spytorch_util.w2.data = (spytorch_util.w2.data - spytorch_util.w2.data.min()) / (spytorch_util.w2.data - spytorch_util.w2.data.min()).sum() * second_sum
-
-#     #spytorch_util.w1.data = spytorch_util.w1.data / spytorch_util.w1.data.sum() * first_sum
-#     #spytorch_util.w2.data = spytorch_util.w2.data / spytorch_util.w2.data.sum() * second_sum
-#     spytorch_util.w1.data = clip(spytorch_util.w1.data, quantization.global_wb)
-#     spytorch_util.w2.data = clip(spytorch_util.w2.data, quantization.global_wb)
+# Neuron Parameters - for Sourav no variation
+mV = 1e-3
+ms = 1e-3
+nS = 1e-9
+v_exc = 0*mV
+v_inh = -100*mV
+v_rest_e = -65*mV
+v_reset_e_mult = -65*mV
+v_thresh_e_mult = -52*mV
+refrac_e = 5*ms
+tau_v = 100*ms
+theta = 0
+del_theta_mult = 0.1*mV
+t_leak = 1
+tau_leak = 100
+# Synapse parameters
+tau_ge = 1*ms
 
 
-loss_hist, test_acc, train_acc, best = train(x_train, y_train, lr = quantization.global_lr, nb_epochs = 35)
+
+ap = argparse.ArgumentParser()
+ap.add_argument("-wb", "--wb", type = int, help = "weight bits")
+arg_wb = vars(ap.parse_args())
 
 
-results = {'bit_string': bit_string, 'test_acc': test_acc, 'test_loss': loss_hist, 'train_acc': train_acc ,'weight': [spytorch_util.w1, spytorch_util.w2], 'best': best, 'para':para_dict, 'args': args}
+quantization.global_wb = arg_wb['wb']
+stop_quant_level = 32
+if quantization.global_wb == None: 
+    quantization.global_wb = 34
+quantization.global_gb = 33
+quantization.global_eb = 33
+
+#bernarbe tricks
+#threshold_saturation = del_theta_mult * 7 # the number 7 is the foundation of God's word ... lets hope
+
+class_method = "integrate"
+nb_inputs  = 28*28
+nb_outputs = 10
+dtype = torch.float
+
+
+hist_record = []
+
+
+space = {
+    'lr' : hp.normal('lr', 1e-5, 5e-4), 
+    'inp_mult' : hp.uniform('inp_mult', 65, 210), 
+    'mult_eq' : hp.uniform('mult_eq', 0.06, 0.15), 
+    'reg1' : hp.loguniform('reg1', 1e-10, 2), 
+    'batch_size' : hp.quniform('batch_size', 64, 512, 1), 
+    'nb_hidden' : hp.quniform('nb_hidden', 800, 8000, 1), 
+    'nb_steps' : 75, #hp.quniform('nb_steps', 20, 210, 1), 
+    'time_step' : 1e-3#hp.loguniform('time_step', 1e-6, 1e-1)
+}
+
+
+best = fmin(objective, space, algo=tpe.suggest, max_evals=75)
+
+
 date_string = time.strftime("%Y%m%d%H%M%S")
-
-
-with open('results/snn_mnist_lif' + "_".join([re.sub('[^A-Za-z0-9.]+', '', x) for x in str(para_dict).split(" ")])+"_"+date_string + '.pkl', 'wb') as f:
-    pickle.dump(results, f)
-
-
-
-import numpy as np
-import matplotlib.mlab as mlab
-import matplotlib.pyplot as plt
-
-
-plt.clf()
-plt.plot(test_acc, label="test")
-plt.plot(train_acc, label= "train")
-plt.legend()
-para_dict = {'quantization.global_wb':quantization.global_wb, 'inp_mult':inp_mult, 'reg_size':reg1, 'weight_sum': sum1v }
-print(para_dict)
-plt.title("_".join([re.sub('[^A-Za-z0-9.]+', '', x) for x in str(para_dict).split(" ")]))
-plt.savefig("./figures/ferro_mnist_lif"+"_".join([re.sub('[^A-Za-z0-9.]+', '', x) for x in str(para_dict).split(" ")])+"_"+date_string+".png")
-
-
-plt.clf()
+with open('results/hyp_search_results' + "_"+date_string + '.pkl', 'wb') as f:
+    pickle.dump({'results_hyp' : hist_record, 'best': best, 'quantization.global_wb':quantization.global_wb, 'class_method':class_method}, f)
 
 
 
 
-# performance quant test
-
-# test1 = pickle.load( open( "./results/snn_mnist_34_85_20191118071540.pkl", "rb" ) )
-
-
-
-# quantization.global_wb = 2
-# inp_mult = 250 # 90 yielded high results for full
-# quantization.global_lr = 4e-4
-# batch_size = 128
-# nb_hidden  = 1050
-# nb_steps  =  150 # 100 previously, some good results with 150
-# reg_size = 0# 5e-5
-# p_drop = 0
+# import numpy as np
+# import matplotlib.mlab as mlab
+# import matplotlib.pyplot as plt
 
 
-
-# nb_inputs  = 28*28
-# nb_outputs = 10
-# time_step = 1e-3 
-
-
-
-# spytorch_util.w1 = test1['best']['weights'][0] 
-# scale1 = 1
-
-# spytorch_util.w2 = test1['best']['weights'][1] 
-# scale2 = 1
+# plt.clf()
+# plt.plot(test_acc, label="test")
+# plt.plot(train_acc, label= "train")
+# plt.legend()
+# para_dict = {'quantization.global_wb':quantization.global_wb, 'inp_mult':inp_mult, 'reg_size':reg1, 'weight_sum': sum1v }
+# print(para_dict)
+# plt.title("_".join([re.sub('[^A-Za-z0-9.]+', '', x) for x in str(para_dict).split(" ")]))
+# plt.savefig("./figures/ferro_mnist_lif"+"_".join([re.sub('[^A-Za-z0-9.]+', '', x) for x in str(para_dict).split(" ")])+"_"+date_string+".png")
 
 
-# acc_test = compute_classification_accuracy(x_test,y_test)
-# print(acc_test)
-
-#print('test')
-#for i in test1['test_acc']:
-#    print(i)
-#print("train")
-#for i in test1['test_acc']:
-#    print(i)
+# plt.clf()
 
