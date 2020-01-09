@@ -360,8 +360,8 @@ space = {
     'mult_eq' : hp.uniform('mult_eq', 0.06, 0.15), 
     'reg1' : hp.loguniform('reg1', 1e-10, 2), 
     'batch_size' : hp.quniform('batch_size', 64, 512, 1), 
-    'nb_hidden' : hp.quniform('nb_hidden', 800, 8000, 1), 
-    'nb_steps' : 75, #hp.quniform('nb_steps', 20, 210, 1), 
+    'nb_hidden' : hp.quniform('nb_hidden', 800, 6500, 1), 
+    'nb_steps' : 85, #hp.quniform('nb_steps', 20, 210, 1), 
     'time_step' : 1e-3#hp.loguniform('time_step', 1e-6, 1e-1)
 }
 
@@ -373,7 +373,7 @@ date_string = time.strftime("%Y%m%d%H%M%S")
 with open('results/hyp_search_results' + "_"+date_string + '.pkl', 'wb') as f:
     pickle.dump({'results_hyp' : hist_record, 'best': best, 'quantization.global_wb':quantization.global_wb, 'class_method':class_method}, f)
 
-
+print(best)
 
 
 # import numpy as np
