@@ -1,0 +1,184 @@
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+init done
+  0%|          | 0/75 [00:00<?, ?it/s, best loss: ?]                                                    Epoch 1: loss=17887.63598
+  0%|          | 0/75 [03:14<?, ?it/s, best loss: ?]                                                    Test accuracy: 0.107
+  0%|          | 0/75 [03:14<?, ?it/s, best loss: ?]                                                    Train accuracy: 0.116
+  0%|          | 0/75 [03:14<?, ?it/s, best loss: ?]                                                    Epoch 2: loss=1655.85887
+  0%|          | 0/75 [06:19<?, ?it/s, best loss: ?]                                                    Test accuracy: 0.101
+  0%|          | 0/75 [06:19<?, ?it/s, best loss: ?]                                                    Train accuracy: 0.104
+  0%|          | 0/75 [06:19<?, ?it/s, best loss: ?]                                                    Epoch 3: loss=90.76462
+  0%|          | 0/75 [09:19<?, ?it/s, best loss: ?]                                                    Test accuracy: 0.101
+  0%|          | 0/75 [09:19<?, ?it/s, best loss: ?]                                                    Train accuracy: 0.101
+  0%|          | 0/75 [09:19<?, ?it/s, best loss: ?]                                                    Epoch 4: loss=5.87094
+  0%|          | 0/75 [12:20<?, ?it/s, best loss: ?]                                                    Test accuracy: 0.103
+  0%|          | 0/75 [12:20<?, ?it/s, best loss: ?]                                                    Train accuracy: 0.099
+  0%|          | 0/75 [12:20<?, ?it/s, best loss: ?]                                                    Epoch 5: loss=3.79692
+  0%|          | 0/75 [15:22<?, ?it/s, best loss: ?]                                                    Test accuracy: 0.099
+  0%|          | 0/75 [15:22<?, ?it/s, best loss: ?]                                                    Train accuracy: 0.098
+  0%|          | 0/75 [15:22<?, ?it/s, best loss: ?]  1%|▏         | 1/75 [15:22<18:57:16, 922.11s/it, best loss: 0.8930016181229774]                                                                                 Epoch 1: loss=5615.61894
+  1%|▏         | 1/75 [18:26<18:57:16, 922.11s/it, best loss: 0.8930016181229774]                                                                                 Test accuracy: 0.160
+  1%|▏         | 1/75 [18:26<18:57:16, 922.11s/it, best loss: 0.8930016181229774]                                                                                 Train accuracy: 0.161
+  1%|▏         | 1/75 [18:26<18:57:16, 922.11s/it, best loss: 0.8930016181229774]                                                                                 Epoch 2: loss=812.44299
+  1%|▏         | 1/75 [21:25<18:57:16, 922.11s/it, best loss: 0.8930016181229774]                                                                                 Test accuracy: 0.115
+  1%|▏         | 1/75 [21:25<18:57:16, 922.11s/it, best loss: 0.8930016181229774]                                                                                 Train accuracy: 0.161
+  1%|▏         | 1/75 [21:25<18:57:16, 922.11s/it, best loss: 0.8930016181229774]                                                                                 Epoch 3: loss=84.86075
+  1%|▏         | 1/75 [24:20<18:57:16, 922.11s/it, best loss: 0.8930016181229774]                                                                                 Test accuracy: 0.101
+  1%|▏         | 1/75 [24:20<18:57:16, 922.11s/it, best loss: 0.8930016181229774]                                                                                 Train accuracy: 0.107
+  1%|▏         | 1/75 [24:20<18:57:16, 922.11s/it, best loss: 0.8930016181229774]                                                                                 Epoch 4: loss=8.86431
+  1%|▏         | 1/75 [27:13<18:57:16, 922.11s/it, best loss: 0.8930016181229774]                                                                                 Test accuracy: 0.098
+  1%|▏         | 1/75 [27:13<18:57:16, 922.11s/it, best loss: 0.8930016181229774]                                                                                 Train accuracy: 0.101
+  1%|▏         | 1/75 [27:13<18:57:16, 922.11s/it, best loss: 0.8930016181229774]                                                                                 Epoch 5: loss=3.24803
+  1%|▏         | 1/75 [30:05<18:57:16, 922.11s/it, best loss: 0.8930016181229774]                                                                                 Test accuracy: 0.103
+  1%|▏         | 1/75 [30:05<18:57:16, 922.11s/it, best loss: 0.8930016181229774]                                                                                 Train accuracy: 0.101
+  1%|▏         | 1/75 [30:05<18:57:16, 922.11s/it, best loss: 0.8930016181229774]  3%|▎         | 2/75 [30:05<18:27:38, 910.39s/it, best loss: 0.8403293834103234]                                                                                 Epoch 1: loss=2357.86737
+  3%|▎         | 2/75 [33:40<18:27:38, 910.39s/it, best loss: 0.8403293834103234]                                                                                 Test accuracy: 0.103
+  3%|▎         | 2/75 [33:40<18:27:38, 910.39s/it, best loss: 0.8403293834103234]                                                                                 Train accuracy: 0.117
+  3%|▎         | 2/75 [33:40<18:27:38, 910.39s/it, best loss: 0.8403293834103234]                                                                                 Epoch 2: loss=24.21456
+  3%|▎         | 2/75 [37:08<18:27:38, 910.39s/it, best loss: 0.8403293834103234]                                                                                 Test accuracy: 0.113
+  3%|▎         | 2/75 [37:08<18:27:38, 910.39s/it, best loss: 0.8403293834103234]                                                                                 Train accuracy: 0.103
+  3%|▎         | 2/75 [37:08<18:27:38, 910.39s/it, best loss: 0.8403293834103234]                                                                                 Epoch 3: loss=5.41429
+  3%|▎         | 2/75 [40:35<18:27:38, 910.39s/it, best loss: 0.8403293834103234]                                                                                 Test accuracy: 0.102
+  3%|▎         | 2/75 [40:35<18:27:38, 910.39s/it, best loss: 0.8403293834103234]                                                                                 Train accuracy: 0.100
+  3%|▎         | 2/75 [40:35<18:27:38, 910.39s/it, best loss: 0.8403293834103234]                                                                                 Epoch 4: loss=3.54703
+  3%|▎         | 2/75 [44:01<18:27:38, 910.39s/it, best loss: 0.8403293834103234]                                                                                 Test accuracy: 0.102
+  3%|▎         | 2/75 [44:01<18:27:38, 910.39s/it, best loss: 0.8403293834103234]                                                                                 Train accuracy: 0.097
+  3%|▎         | 2/75 [44:01<18:27:38, 910.39s/it, best loss: 0.8403293834103234]                                                                                 Epoch 5: loss=3.38260
+  3%|▎         | 2/75 [47:28<18:27:38, 910.39s/it, best loss: 0.8403293834103234]                                                                                 Test accuracy: 0.104
+  3%|▎         | 2/75 [47:28<18:27:38, 910.39s/it, best loss: 0.8403293834103234]                                                                                 Train accuracy: 0.097
+  3%|▎         | 2/75 [47:28<18:27:38, 910.39s/it, best loss: 0.8403293834103234]  4%|▍         | 3/75 [47:28<19:00:23, 950.32s/it, best loss: 0.8403293834103234]                                                                                 Epoch 1: loss=1277.48430
+  4%|▍         | 3/75 [49:43<19:00:23, 950.32s/it, best loss: 0.8403293834103234]                                                                                 Test accuracy: 0.097
+  4%|▍         | 3/75 [49:43<19:00:23, 950.32s/it, best loss: 0.8403293834103234]                                                                                 Train accuracy: 0.103
+  4%|▍         | 3/75 [49:43<19:00:23, 950.32s/it, best loss: 0.8403293834103234]                                                                                 Epoch 2: loss=2.54184
+  4%|▍         | 3/75 [51:59<19:00:23, 950.32s/it, best loss: 0.8403293834103234]                                                                                 Test accuracy: 0.103
+  4%|▍         | 3/75 [51:59<19:00:23, 950.32s/it, best loss: 0.8403293834103234]                                                                                 Train accuracy: 0.100
+  4%|▍         | 3/75 [51:59<19:00:23, 950.32s/it, best loss: 0.8403293834103234]                                                                                 Epoch 3: loss=2.57079
+  4%|▍         | 3/75 [54:17<19:00:23, 950.32s/it, best loss: 0.8403293834103234]                                                                                 Test accuracy: 0.097
+  4%|▍         | 3/75 [54:17<19:00:23, 950.32s/it, best loss: 0.8403293834103234]                                                                                 Train accuracy: 0.101
+  4%|▍         | 3/75 [54:17<19:00:23, 950.32s/it, best loss: 0.8403293834103234]                                                                                 Epoch 4: loss=2.55863
+  4%|▍         | 3/75 [56:36<19:00:23, 950.32s/it, best loss: 0.8403293834103234]                                                                                 Test accuracy: 0.098
+  4%|▍         | 3/75 [56:36<19:00:23, 950.32s/it, best loss: 0.8403293834103234]                                                                                 Train accuracy: 0.101
+  4%|▍         | 3/75 [56:36<19:00:23, 950.32s/it, best loss: 0.8403293834103234]                                                                                 Epoch 5: loss=2.56882
+  4%|▍         | 3/75 [58:50<19:00:23, 950.32s/it, best loss: 0.8403293834103234]                                                                                 Test accuracy: 0.113
+  4%|▍         | 3/75 [58:50<19:00:23, 950.32s/it, best loss: 0.8403293834103234]                                                                                 Train accuracy: 0.097
+  4%|▍         | 3/75 [58:50<19:00:23, 950.32s/it, best loss: 0.8403293834103234]  5%|▌         | 4/75 [58:50<17:09:06, 869.67s/it, best loss: 0.8403293834103234]                                                                                 Epoch 1: loss=4807.93385
+  5%|▌         | 4/75 [1:00:08<17:09:06, 869.67s/it, best loss: 0.8403293834103234]                                                                                   Test accuracy: 0.136
+  5%|▌         | 4/75 [1:00:08<17:09:06, 869.67s/it, best loss: 0.8403293834103234]                                                                                   Train accuracy: 0.106
+  5%|▌         | 4/75 [1:00:08<17:09:06, 869.67s/it, best loss: 0.8403293834103234]                                                                                   Epoch 2: loss=681.21730
+  5%|▌         | 4/75 [1:01:26<17:09:06, 869.67s/it, best loss: 0.8403293834103234]                                                                                   Test accuracy: 0.124
+  5%|▌         | 4/75 [1:01:26<17:09:06, 869.67s/it, best loss: 0.8403293834103234]                                                                                   Train accuracy: 0.110
+  5%|▌         | 4/75 [1:01:26<17:09:06, 869.67s/it, best loss: 0.8403293834103234]                                                                                   Epoch 3: loss=66.95091
+  5%|▌         | 4/75 [1:02:43<17:09:06, 869.67s/it, best loss: 0.8403293834103234]                                                                                   Test accuracy: 0.096
+  5%|▌         | 4/75 [1:02:43<17:09:06, 869.67s/it, best loss: 0.8403293834103234]                                                                                   Train accuracy: 0.100
+  5%|▌         | 4/75 [1:02:43<17:09:06, 869.67s/it, best loss: 0.8403293834103234]                                                                                   Epoch 4: loss=6.25040
+  5%|▌         | 4/75 [1:04:00<17:09:06, 869.67s/it, best loss: 0.8403293834103234]                                                                                   Test accuracy: 0.103
+  5%|▌         | 4/75 [1:04:00<17:09:06, 869.67s/it, best loss: 0.8403293834103234]                                                                                   Train accuracy: 0.101
+  5%|▌         | 4/75 [1:04:00<17:09:06, 869.67s/it, best loss: 0.8403293834103234]                                                                                   Epoch 5: loss=2.48932
+  5%|▌         | 4/75 [1:05:18<17:09:06, 869.67s/it, best loss: 0.8403293834103234]                                                                                   Test accuracy: 0.103
+  5%|▌         | 4/75 [1:05:18<17:09:06, 869.67s/it, best loss: 0.8403293834103234]                                                                                   Train accuracy: 0.104
+  5%|▌         | 4/75 [1:05:18<17:09:06, 869.67s/it, best loss: 0.8403293834103234]  7%|▋         | 5/75 [1:05:18<14:06:03, 725.19s/it, best loss: 0.8403293834103234]                                                                                   Epoch 1: loss=4259.10520
+  7%|▋         | 5/75 [1:07:59<14:06:03, 725.19s/it, best loss: 0.8403293834103234]                                                                                   Test accuracy: 0.231
+  7%|▋         | 5/75 [1:07:59<14:06:03, 725.19s/it, best loss: 0.8403293834103234]                                                                                   Train accuracy: 0.163
+  7%|▋         | 5/75 [1:07:59<14:06:03, 725.19s/it, best loss: 0.8403293834103234]                                                                                   Epoch 2: loss=470.88067
+  7%|▋         | 5/75 [1:10:36<14:06:03, 725.19s/it, best loss: 0.8403293834103234]                                                                                   Test accuracy: 0.133
+  7%|▋         | 5/75 [1:10:36<14:06:03, 725.19s/it, best loss: 0.8403293834103234]                                                                                   Train accuracy: 0.157
+  7%|▋         | 5/75 [1:10:36<14:06:03, 725.19s/it, best loss: 0.8403293834103234]                                                                                   Epoch 3: loss=37.75016
+  7%|▋         | 5/75 [1:13:12<14:06:03, 725.19s/it, best loss: 0.8403293834103234]                                                                                   Test accuracy: 0.123
+  7%|▋         | 5/75 [1:13:12<14:06:03, 725.19s/it, best loss: 0.8403293834103234]                                                                                   Train accuracy: 0.116
+  7%|▋         | 5/75 [1:13:12<14:06:03, 725.19s/it, best loss: 0.8403293834103234]                                                                                   Epoch 4: loss=5.85644
+  7%|▋         | 5/75 [1:15:47<14:06:03, 725.19s/it, best loss: 0.8403293834103234]                                                                                   Test accuracy: 0.104
+  7%|▋         | 5/75 [1:15:47<14:06:03, 725.19s/it, best loss: 0.8403293834103234]                                                                                   Train accuracy: 0.102
+  7%|▋         | 5/75 [1:15:47<14:06:03, 725.19s/it, best loss: 0.8403293834103234]                                                                                   Epoch 5: loss=3.69120
+  7%|▋         | 5/75 [1:18:20<14:06:03, 725.19s/it, best loss: 0.8403293834103234]                                                                                   Test accuracy: 0.099
+  7%|▋         | 5/75 [1:18:20<14:06:03, 725.19s/it, best loss: 0.8403293834103234]                                                                                   Train accuracy: 0.100
+  7%|▋         | 5/75 [1:18:20<14:06:03, 725.19s/it, best loss: 0.8403293834103234]  8%|▊         | 6/75 [1:18:20<14:13:31, 742.19s/it, best loss: 0.7693034982666246]                                                                                   Epoch 1: loss=10729.64231
+  8%|▊         | 6/75 [1:22:26<14:13:31, 742.19s/it, best loss: 0.7693034982666246]                                                                                   Test accuracy: 0.124
+  8%|▊         | 6/75 [1:22:26<14:13:31, 742.19s/it, best loss: 0.7693034982666246]                                                                                   Train accuracy: 0.152
+  8%|▊         | 6/75 [1:22:26<14:13:31, 742.19s/it, best loss: 0.7693034982666246]                                                                                   Epoch 2: loss=1904.91076
+  8%|▊         | 6/75 [1:26:29<14:13:31, 742.19s/it, best loss: 0.7693034982666246]                                                                                   Test accuracy: 0.124
+  8%|▊         | 6/75 [1:26:29<14:13:31, 742.19s/it, best loss: 0.7693034982666246]                                                                                   Train accuracy: 0.139
+  8%|▊         | 6/75 [1:26:29<14:13:31, 742.19s/it, best loss: 0.7693034982666246]                                                                                   Epoch 3: loss=242.44328
+  8%|▊         | 6/75 [1:30:28<14:13:31, 742.19s/it, best loss: 0.7693034982666246]                                                                                   Test accuracy: 0.103
+  8%|▊         | 6/75 [1:30:28<14:13:31, 742.19s/it, best loss: 0.7693034982666246]                                                                                   Train accuracy: 0.107
+  8%|▊         | 6/75 [1:30:28<14:13:31, 742.19s/it, best loss: 0.7693034982666246]                                                                                   Epoch 4: loss=22.71407
+  8%|▊         | 6/75 [1:34:24<14:13:31, 742.19s/it, best loss: 0.7693034982666246]                                                                                   Test accuracy: 0.103
+  8%|▊         | 6/75 [1:34:24<14:13:31, 742.19s/it, best loss: 0.7693034982666246]                                                                                   Train accuracy: 0.102
+  8%|▊         | 6/75 [1:34:24<14:13:31, 742.19s/it, best loss: 0.7693034982666246]                                                                                   Epoch 5: loss=3.68674
+  8%|▊         | 6/75 [1:38:20<14:13:31, 742.19s/it, best loss: 0.7693034982666246]                                                                                   Test accuracy: 0.101
+  8%|▊         | 6/75 [1:38:20<14:13:31, 742.19s/it, best loss: 0.7693034982666246]                                                                                   Train accuracy: 0.100
+  8%|▊         | 6/75 [1:38:20<14:13:31, 742.19s/it, best loss: 0.7693034982666246]  9%|▉         | 7/75 [1:38:20<16:36:52, 879.59s/it, best loss: 0.7693034982666246]                                                                                   Epoch 1: loss=1094.93634
+  9%|▉         | 7/75 [1:40:25<16:36:52, 879.59s/it, best loss: 0.7693034982666246]                                                                                   Test accuracy: 0.098
+  9%|▉         | 7/75 [1:40:25<16:36:52, 879.59s/it, best loss: 0.7693034982666246]                                                                                   Train accuracy: 0.106
+  9%|▉         | 7/75 [1:40:25<16:36:52, 879.59s/it, best loss: 0.7693034982666246]                                                                                   Epoch 2: loss=2.78554
+  9%|▉         | 7/75 [1:42:28<16:36:52, 879.59s/it, best loss: 0.7693034982666246]                                                                                   Test accuracy: 0.098
+  9%|▉         | 7/75 [1:42:28<16:36:52, 879.59s/it, best loss: 0.7693034982666246]                                                                                   Train accuracy: 0.100
+  9%|▉         | 7/75 [1:42:28<16:36:52, 879.59s/it, best loss: 0.7693034982666246]                                                                                   Epoch 3: loss=2.88076
+  9%|▉         | 7/75 [1:44:32<16:36:52, 879.59s/it, best loss: 0.7693034982666246]                                                                                   Test accuracy: 0.103
+  9%|▉         | 7/75 [1:44:32<16:36:52, 879.59s/it, best loss: 0.7693034982666246]                                                                                   Train accuracy: 0.101
+  9%|▉         | 7/75 [1:44:32<16:36:52, 879.59s/it, best loss: 0.7693034982666246]                                                                                   Epoch 4: loss=3.97994
+  9%|▉         | 7/75 [1:46:37<16:36:52, 879.59s/it, best loss: 0.7693034982666246]                                                                                   Test accuracy: 0.097
+  9%|▉         | 7/75 [1:46:37<16:36:52, 879.59s/it, best loss: 0.7693034982666246]                                                                                   Train accuracy: 0.099
+  9%|▉         | 7/75 [1:46:37<16:36:52, 879.59s/it, best loss: 0.7693034982666246]                                                                                   Epoch 5: loss=4.66641
+  9%|▉         | 7/75 [1:48:41<16:36:52, 879.59s/it, best loss: 0.7693034982666246]                                                                                   Test accuracy: 0.096
+  9%|▉         | 7/75 [1:48:41<16:36:52, 879.59s/it, best loss: 0.7693034982666246]                                                                                   Train accuracy: 0.098
+  9%|▉         | 7/75 [1:48:41<16:36:52, 879.59s/it, best loss: 0.7693034982666246] 11%|█         | 8/75 [1:48:41<14:55:49, 802.23s/it, best loss: 0.7693034982666246]                                                                                   Epoch 1: loss=13535.82036
+ 11%|█         | 8/75 [1:50:53<14:55:49, 802.23s/it, best loss: 0.7693034982666246]                                                                                   Test accuracy: 0.097
+ 11%|█         | 8/75 [1:50:53<14:55:49, 802.23s/it, best loss: 0.7693034982666246]                                                                                   Train accuracy: 0.105
+ 11%|█         | 8/75 [1:50:53<14:55:49, 802.23s/it, best loss: 0.7693034982666246]                                                                                   Epoch 2: loss=7026.40577
+ 11%|█         | 8/75 [1:52:59<14:55:49, 802.23s/it, best loss: 0.7693034982666246]                                                                                   Test accuracy: 0.081
+ 11%|█         | 8/75 [1:52:59<14:55:49, 802.23s/it, best loss: 0.7693034982666246]                                                                                   Train accuracy: 0.107
+ 11%|█         | 8/75 [1:52:59<14:55:49, 802.23s/it, best loss: 0.7693034982666246]                                                                                   Epoch 3: loss=3482.94838
+ 11%|█         | 8/75 [1:55:06<14:55:49, 802.23s/it, best loss: 0.7693034982666246]                                                                                   Test accuracy: 0.095
+ 11%|█         | 8/75 [1:55:06<14:55:49, 802.23s/it, best loss: 0.7693034982666246]                                                                                   Train accuracy: 0.102
+ 11%|█         | 8/75 [1:55:06<14:55:49, 802.23s/it, best loss: 0.7693034982666246]                                                                                   Epoch 4: loss=1626.69185
+ 11%|█         | 8/75 [1:57:12<14:55:49, 802.23s/it, best loss: 0.7693034982666246]                                                                                   Test accuracy: 0.103
+ 11%|█         | 8/75 [1:57:12<14:55:49, 802.23s/it, best loss: 0.7693034982666246]                                                                                   Train accuracy: 0.102
+ 11%|█         | 8/75 [1:57:12<14:55:49, 802.23s/it, best loss: 0.7693034982666246]                                                                                   Epoch 5: loss=707.97789
+ 11%|█         | 8/75 [1:59:17<14:55:49, 802.23s/it, best loss: 0.7693034982666246]                                                                                   Test accuracy: 0.098
+ 11%|█         | 8/75 [1:59:17<14:55:49, 802.23s/it, best loss: 0.7693034982666246]                                                                                   Train accuracy: 0.102
+ 11%|█         | 8/75 [1:59:17<14:55:49, 802.23s/it, best loss: 0.7693034982666246] 12%|█▏        | 9/75 [1:59:17<13:47:33, 752.33s/it, best loss: 0.7693034982666246]                                                                                   Epoch 1: loss=106.81484
+ 12%|█▏        | 9/75 [2:01:35<13:47:33, 752.33s/it, best loss: 0.7693034982666246]                                                                                   Test accuracy: 0.098
+ 12%|█▏        | 9/75 [2:01:35<13:47:33, 752.33s/it, best loss: 0.7693034982666246]                                                                                   Train accuracy: 0.100
+ 12%|█▏        | 9/75 [2:01:35<13:47:33, 752.33s/it, best loss: 0.7693034982666246]                                                                                   Epoch 2: loss=2.75490
+ 12%|█▏        | 9/75 [2:03:53<13:47:33, 752.33s/it, best loss: 0.7693034982666246]                                                                                   Test accuracy: 0.101
+ 12%|█▏        | 9/75 [2:03:53<13:47:33, 752.33s/it, best loss: 0.7693034982666246]                                                                                   Train accuracy: 0.102
+ 12%|█▏        | 9/75 [2:03:53<13:47:33, 752.33s/it, best loss: 0.7693034982666246]                                                                                   Epoch 3: loss=2.76561
+ 12%|█▏        | 9/75 [2:06:10<13:47:33, 752.33s/it, best loss: 0.7693034982666246]                                                                                   Test accuracy: 0.098
+ 12%|█▏        | 9/75 [2:06:10<13:47:33, 752.33s/it, best loss: 0.7693034982666246]                                                                                   Train accuracy: 0.100
+ 12%|█▏        | 9/75 [2:06:10<13:47:33, 752.33s/it, best loss: 0.7693034982666246]                                                                                   Epoch 4: loss=2.76906
+ 12%|█▏        | 9/75 [2:08:28<13:47:33, 752.33s/it, best loss: 0.7693034982666246]                                                                                   Test accuracy: 0.097
+ 12%|█▏        | 9/75 [2:08:28<13:47:33, 752.33s/it, best loss: 0.7693034982666246]                                                                                   Train accuracy: 0.101
+ 12%|█▏        | 9/75 [2:08:28<13:47:33, 752.33s/it, best loss: 0.7693034982666246]                                                                                   Epoch 5: loss=2.75746
+ 12%|█▏        | 9/75 [2:10:47<13:47:33, 752.33s/it, best loss: 0.7693034982666246]                                                                                   Test accuracy: 0.113
+ 12%|█▏        | 9/75 [2:10:47<13:47:33, 752.33s/it, best loss: 0.7693034982666246]                                                                                   Train accuracy: 0.101
+ 12%|█▏        | 9/75 [2:10:47<13:47:33, 752.33s/it, best loss: 0.7693034982666246] 13%|█▎        | 10/75 [2:10:47<13:14:41, 733.56s/it, best loss: 0.7693034982666246] 13%|█▎        | 10/75 [2:10:52<14:10:44, 785.30s/it, best loss: 0.7693034982666246]/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:53: UserWarning: train_data has been renamed data
+  warnings.warn("train_data has been renamed data")
+/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:58: UserWarning: test_data has been renamed data
+  warnings.warn("test_data has been renamed data")
+/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:43: UserWarning: train_labels has been renamed targets
+  warnings.warn("train_labels has been renamed targets")
+/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:48: UserWarning: test_labels has been renamed targets
+  warnings.warn("test_labels has been renamed targets")
+
+Traceback (most recent call last):
+  File "spytorch_mnist_ferro_hyperopt.py", line 369, in <module>
+    best = fmin(objective, space, algo=tpe.suggest, max_evals=75)
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/hyperopt/fmin.py", line 422, in fmin
+    rval.exhaust()
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/hyperopt/fmin.py", line 276, in exhaust
+    self.run(self.max_evals - n_done, block_until_done=self.asynchronous)
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/hyperopt/fmin.py", line 241, in run
+    self.serial_evaluate()
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/hyperopt/fmin.py", line 141, in serial_evaluate
+    result = self.domain.evaluate(spec, ctrl)
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/hyperopt/base.py", line 856, in evaluate
+    rval = self.fn(pyll_rval)
+  File "spytorch_mnist_ferro_hyperopt.py", line 307, in objective
+    loss_hist, test_acc, train_acc = train(x_train, y_train, lr = quantization.global_lr, nb_epochs = 5)
+  File "spytorch_mnist_ferro_hyperopt.py", line 254, in train
+    loss_val.backward()
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torch/tensor.py", line 118, in backward
+    torch.autograd.backward(self, gradient, retain_graph, create_graph)
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torch/autograd/__init__.py", line 93, in backward
+    allow_unreachable=True)  # allow_unreachable flag
+RuntimeError: CUDA out of memory. Tried to allocate 950.00 MiB (GPU 0; 10.76 GiB total capacity; 7.71 GiB already allocated; 815.12 MiB free; 1.33 GiB cached)
