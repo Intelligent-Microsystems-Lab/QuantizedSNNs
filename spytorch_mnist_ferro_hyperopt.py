@@ -373,7 +373,7 @@ space = {
     'reg1' : hp.uniform('reg1', -3 ,1), 
     'batch_size' : hp.quniform('batch_size', 64, 512, 1), 
     'nb_hidden' : hp.quniform('nb_hidden', 800, 7500, 1), 
-    'nb_steps' : 100, #hp.quniform('nb_steps', 20, 210, 1), 
+    'nb_steps' : 80, #hp.quniform('nb_steps', 20, 210, 1), 
     'time_step' : 1e-3#hp.loguniform('time_step', 1e-6, 1e-1)
 }
 
