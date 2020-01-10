@@ -137,3 +137,37 @@ Traceback (most recent call last):
   File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torch/autograd/__init__.py", line 93, in backward
     allow_unreachable=True)  # allow_unreachable flag
 RuntimeError: CUDA out of memory. Tried to allocate 1.08 GiB (GPU 0; 11.78 GiB total capacity; 8.88 GiB already allocated; 465.38 MiB free; 1.31 GiB cached)
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+init done
+  0%|          | 0/75 [00:00<?, ?it/s, best loss: ?]  0%|          | 0/75 [00:08<?, ?it/s, best loss: ?]/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:53: UserWarning: train_data has been renamed data
+  warnings.warn("train_data has been renamed data")
+/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:58: UserWarning: test_data has been renamed data
+  warnings.warn("test_data has been renamed data")
+/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:43: UserWarning: train_labels has been renamed targets
+  warnings.warn("train_labels has been renamed targets")
+/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:48: UserWarning: test_labels has been renamed targets
+  warnings.warn("test_labels has been renamed targets")
+
+Traceback (most recent call last):
+  File "spytorch_mnist_ferro_hyperopt.py", line 369, in <module>
+    best = fmin(objective, space, algo=tpe.suggest, max_evals=75)
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/hyperopt/fmin.py", line 422, in fmin
+    rval.exhaust()
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/hyperopt/fmin.py", line 276, in exhaust
+    self.run(self.max_evals - n_done, block_until_done=self.asynchronous)
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/hyperopt/fmin.py", line 241, in run
+    self.serial_evaluate()
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/hyperopt/fmin.py", line 141, in serial_evaluate
+    result = self.domain.evaluate(spec, ctrl)
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/hyperopt/base.py", line 856, in evaluate
+    rval = self.fn(pyll_rval)
+  File "spytorch_mnist_ferro_hyperopt.py", line 307, in objective
+    loss_hist, test_acc, train_acc = train(x_train, y_train, lr = quantization.global_lr, nb_epochs = 5)
+  File "spytorch_mnist_ferro_hyperopt.py", line 254, in train
+    loss_val.backward()
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torch/tensor.py", line 118, in backward
+    torch.autograd.backward(self, gradient, retain_graph, create_graph)
+  File "/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torch/autograd/__init__.py", line 93, in backward
+    allow_unreachable=True)  # allow_unreachable flag
+RuntimeError: CUDA out of memory. Tried to allocate 940.00 MiB (GPU 0; 10.76 GiB total capacity; 7.67 GiB already allocated; 307.12 MiB free; 1.87 GiB cached)
