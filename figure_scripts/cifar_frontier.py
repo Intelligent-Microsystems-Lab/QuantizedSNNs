@@ -48,7 +48,7 @@ def quant_w(x, global_wb, scale):
     return (x + diff)/scale
 
 
-global_wb_list = [2,3,4,5]
+global_wb_list = [2,3,4,5,6 ]
 global_ab_list = [6,7,8,10,12]
 global_gb_list = [8,9,10,11,12]
 
@@ -169,7 +169,7 @@ plt.savefig('./figures/tuesday.png')
 
 
 
-data = pd.read_csv('/Users/clemens/Documents/Spiking Neural Networks/QuantizedSNN/iscas_figs/frontier.csv')
+data = pd.read_csv('/Users/clemens/Documents/Spiking Neural Networks/QuantizedSNN/figure_scripts/iscas_figs/frontier.csv')
 test = data[data['Layer'] == "FullyConnected"]
 test = test[test['Channels'] == 1]
 test = test[test['Filter Size'] == 1]
@@ -195,7 +195,7 @@ for i in global_wb_list:
 
 	# only best!
 	for j in global_gb_list:
-		with open("/Users/clemens/mnt/crc/QuantizedSNN/results/snn_smile_precise_"+str(i)+"12"+str(j)+"12_1.0.pkl", 'rb') as f:
+		with open("/Users/clemens/Documents/Spiking Neural Networks/QuantizedSNN/results/snn_smile_precise_"+str(i)+"12"+str(j)+"12_1.0.pkl", 'rb') as f:
 			results = pickle.load(f)
 
 		qw1 = quant_w(results['w1'], i, scale1[i])
@@ -249,7 +249,7 @@ for i in global_wb_list:
 
 	# only best!
 	for j in global_ab_list:
-		with open("/Users/clemens/mnt/crc/QuantizedSNN/results/snn_smile_precise_"+str(i)+str(j)+"8"+str(j)+"_1.0.pkl", 'rb') as f:
+		with open("/Users/clemens/Documents/Spiking Neural Networks/QuantizedSNN/results/snn_smile_precise_"+str(i)+str(j)+"8"+str(j)+"_1.0.pkl", 'rb') as f:
 			results = pickle.load(f)
 
 
@@ -324,13 +324,22 @@ for axis in ['top','right']:
 axes.xaxis.set_tick_params(width=2)
 axes.yaxis.set_tick_params(width=2)
 axes.set_xscale('log')
+axes.set_xlim(1.6e-05, 6e-05)
 
 axes.scatter(fin_ds1_x, fin_ds1_y,  linewidth=2.5, label="Crossbar", marker = "x", color=crossbar_color)
 axes.scatter(fin_ds2_x, fin_ds1_y,  linewidth=2.5, label="PB-BMP", marker = "s", color=pb_bmp_color)
 axes.scatter(fin_ds3_x, fin_ds1_y, linewidth=2.5, label="PB-CSR", color=pb_csr_color)
+
+for i in fin_ds1_y:
+	axes.axhline(y = i, c='grey', lw=1, linestyle='--')
+
+
 axes.legend(loc='upper center', bbox_to_anchor=(0.5, 1.17), ncol=3, frameon=False)
 axes.set_xlabel("Energy (J)", fontweight='bold') #, fontsize=14, fontweight='bold'
 axes.set_ylabel("Van Rossum Distance", fontweight='bold')
+
+
+
 
 plt.tight_layout()
 plt.savefig('/Users/clemens/Desktop/cloud.png')
