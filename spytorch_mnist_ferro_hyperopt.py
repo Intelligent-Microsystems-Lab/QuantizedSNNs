@@ -3,6 +3,7 @@ import time
 import argparse
 import re
 import pickle
+import gc
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -30,6 +31,9 @@ if torch.cuda.is_available():
     device = torch.device("cuda")     
 else:
     device = torch.device("cpu")
+
+
+
 
 
 # Here we load the Dataset
@@ -233,7 +237,7 @@ def train(x_data, y_data, lr, nb_epochs):
             output,recs = run_snn(x_local.to_dense(), False)
 
             if output[0][0][0] == -666:
-                return [-666], [-666], [-666]
+                return [-.51], [-.51], [-.51]
 
             if class_method == 'integrate':
                 m = output.sum(axis = 1) # integrate
@@ -289,25 +293,32 @@ def train(x_data, y_data, lr, nb_epochs):
 
 
 def objective(args):
-    quantization.global_lr = np.abs(args['lr'])
-    global inp_mult; inp_mult = args['inp_mult']
-    global mult_eq; mult_eq = args['mult_eq']
-    global reg1; reg1 = args['reg1']
-    global batch_size; batch_size = int(args['batch_size'])
-    global nb_hidden; nb_hidden  = int(args['nb_hidden'])
-    global nb_steps; nb_steps  =  int(args['nb_steps'])
-    global time_step; time_step = args['time_step']
+    try:
+        quantization.global_lr = 10**args['lr']
+        global inp_mult; inp_mult = args['inp_mult']
+        global mult_eq; mult_eq = args['mult_eq']
+        global reg1; reg1 = 10**args['reg1']
+        global batch_size; batch_size = int(args['batch_size'])
+        global nb_hidden; nb_hidden  = int(args['nb_hidden'])
+        global nb_steps; nb_steps  =  int(args['nb_steps'])
+        global time_step; time_step = args['time_step']
 
-    spytorch_util.w1 = torch.empty((nb_inputs, nb_hidden),  device=device, dtype=dtype, requires_grad=True)
-    global scale1; scale1 = init_layer_weights(spytorch_util.w1, 28*28).to(device)
+        spytorch_util.w1 = torch.empty((nb_inputs, nb_hidden),  device=device, dtype=dtype, requires_grad=True)
+        global scale1; scale1 = init_layer_weights(spytorch_util.w1, 28*28).to(device)
 
-    spytorch_util.w2 = torch.empty((nb_hidden, nb_outputs), device=device, dtype=dtype, requires_grad=True)
-    global scale2; scale2 = init_layer_weights(spytorch_util.w2, 28*28).to(device)
+        spytorch_util.w2 = torch.empty((nb_hidden, nb_outputs), device=device, dtype=dtype, requires_grad=True)
+        global scale2; scale2 = init_layer_weights(spytorch_util.w2, 28*28).to(device)
 
-    loss_hist, test_acc, train_acc = train(x_train, y_train, lr = quantization.global_lr, nb_epochs = 5)
+        loss_hist, test_acc, train_acc = train(x_train, y_train, lr = quantization.global_lr, nb_epochs = 6)
 
-    hist_record.append( {'loss': loss_hist, 'test': test_acc, 'train': train_acc, 'args':args} )
-    return 1-max(test_acc)
+        hist_record.append( {'loss': loss_hist, 'test': test_acc, 'train': train_acc, 'args':args} )
+        return 1-max(test_acc)
+    except:
+        #import pdb; pdb.set_trace()
+        # to prevent cuda errors... ig model too big its bad.
+        gc.collect()
+        torch.cuda.empty_cache()
+        return 1.52
 
 
 # Neuron Parameters - for Sourav no variation
@@ -355,13 +366,14 @@ hist_record = []
 
 
 space = {
-    'lr' : hp.normal('lr', 1e-5, 5e-4), 
+    'wb' : quantization.global_wb,
+    'lr' : hp.uniform('lr', -8, -2),
     'inp_mult' : hp.uniform('inp_mult', 65, 210), 
     'mult_eq' : hp.uniform('mult_eq', 0.06, 0.15), 
-    'reg1' : hp.loguniform('reg1', 1e-10, 2), 
+    'reg1' : hp.uniform('reg1', -3 ,1), 
     'batch_size' : hp.quniform('batch_size', 64, 512, 1), 
-    'nb_hidden' : hp.quniform('nb_hidden', 800, 6500, 1), 
-    'nb_steps' : 85, #hp.quniform('nb_steps', 20, 210, 1), 
+    'nb_hidden' : hp.quniform('nb_hidden', 800, 7500, 1), 
+    'nb_steps' : 100, #hp.quniform('nb_steps', 20, 210, 1), 
     'time_step' : 1e-3#hp.loguniform('time_step', 1e-6, 1e-1)
 }
 
