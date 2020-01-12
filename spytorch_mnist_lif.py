@@ -25,7 +25,7 @@ from spytorch_util import current2firing_time, sparse_data_generator, plot_volta
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-wb", "--wb", type = int, help = "weight bits")
-ap.add_argument("-m", "--m", type = int, help="multiplier")
+ap.add_argument("-m", "--m", type = float, help="multiplier")
 ap.add_argument("-rg", "--rg", type = float, help="reg")
 ap.add_argument("-ba", "--ba", type = int, help="batch")
 ap.add_argument("-lr", "--lr", type = float, help="lr")
