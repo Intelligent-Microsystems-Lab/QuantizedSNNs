@@ -491,7 +491,7 @@ plt.clf()
 plt.plot(test_acc, label="test")
 plt.plot(train_acc, label= "train")
 plt.legend()
-para_dict = {'quantization.global_wb':quantization.global_wb, 'inp_mult':inp_mult, 'reg_size':reg1, 'weight_sum': sum1v }
+para_dict = {'quantization.global_wb':quantization.global_wb, 'inp_mult':inp_mult, 'reg_size':reg1 }
 print(para_dict)
 plt.title("_".join([re.sub('[^A-Za-z0-9.]+', '', x) for x in str(para_dict).split(" ")]))
 plt.savefig("./figures/ferro_mnist_lif"+"_".join([re.sub('[^A-Za-z0-9.]+', '', x) for x in str(para_dict).split(" ")])+"_"+date_string+".png")
