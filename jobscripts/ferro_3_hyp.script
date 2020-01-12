@@ -12,4 +12,4 @@ module load python       # Required modules
 setenv OMP_NUM_THREADS $NSLOTS
 
 #python spytorch_mnist_ferro_hyperopt.py -wb 3 
-echo "hello"
+python spytorch_mnist_lif.py -wb 3 -ba 335 -m 99.990342740805 -lr 5.964343060205805e-05 -me 0.07465844138851893 -hi 3035 -rg 0.029966538246518293

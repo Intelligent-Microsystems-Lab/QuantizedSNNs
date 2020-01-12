@@ -27,34 +27,40 @@ ap = argparse.ArgumentParser()
 ap.add_argument("-wb", "--wb", type = int, help = "weight bits")
 ap.add_argument("-m", "--m", type = int, help="multiplier")
 ap.add_argument("-rg", "--rg", type = float, help="reg")
-ap.add_argument("-s1", "--s1", type = float, help="sum1")
-ap.add_argument("-s2", "--s2", type = float, help="sum2")
+ap.add_argument("-ba", "--ba", type = int, help="batch")
+ap.add_argument("-lr", "--lr", type = float, help="lr")
+ap.add_argument("-me", "--me", type = float, help="mult_eq")
+ap.add_argument("-hi", "--hi", type = int, help="hidden")
 args = vars(ap.parse_args())
 
 
 quantization.global_wb = args['wb']
 inp_mult = args['m']
 reg_size = args['rg']
-sum1v = args['s1']#*2.1
-sum2v = args['s2']#*0.003
+quantization.global_lr = args['lr']
+batch_size = args['ba']
+nb_hidden  = args['hi']
+mult_eq = args['me']
 
-if quantization.global_wb == None:
-    quantization.global_wb = 34
-if inp_mult == None:
-    inp_mult = 85 # 90 yielded high results for full
+nb_steps  =  80 # 100 previously, some good results with 150
 
-if sum1v == None:
-    sum1v = 2.1
-if sum2v == None:
-    sum2v = 0.003
+# if quantization.global_wb == None:
+#     quantization.global_wb = 34
+# if inp_mult == None:
+#     inp_mult = 85 # 90 yielded high results for full
+
+# if sum1v == None:
+#     sum1v = 2.1
+# if sum2v == None:
+#     sum2v = 0.003
 
 
-if reg_size == None:
-    reg1 = 1e-01
-    reg2 = reg1
-else:
-    reg1 = reg_size
-    reg2 = reg_size
+# if reg_size == None:
+#     reg1 = 1e-01
+#     reg2 = reg1
+# else:
+#     reg1 = reg_size
+#     reg2 = reg_size
 
 
 
@@ -87,16 +93,12 @@ tau_gi = 2*ms
 
 
 
-quantization.global_lr = 4e-4
-batch_size = 128
-nb_hidden  = 6000
-nb_steps  =  150 # 100 previously, some good results with 150
 
 
 #bernarbe tricks
 threshold_saturation = del_theta_mult * 7 # the number 7 is the foundation of God's word ... lets hope
 
-mult_eq = .12
+
 class_method = "integrate"
 
 
@@ -298,7 +300,7 @@ def run_snn(inputs, infer):
         theta[c] += del_theta[c] 
 
         # neuron threshold saturation, bernarbe trick 3
-        theta[theta > threshold_saturation] = threshold_saturation
+        #theta[theta > threshold_saturation] = threshold_saturation
 
         # lateral inhibition, bernarbe trick 4
 
@@ -350,7 +352,7 @@ def compute_classification_accuracy(x_data, y_data):
     accs = []
     with torch.no_grad():
         for x_local, y_local in sparse_data_generator(x_data, y_data, batch_size, nb_steps, nb_inputs, shuffle=True):
-            output,_ = run_snn_lif(x_local.to_dense(), True)
+            output,_ = run_snn(x_local.to_dense(), True)
 
             if class_method == 'integrate':
                 m = output.sum(axis = 1) # integrate
@@ -388,7 +390,7 @@ def train(x_data, y_data, lr, nb_epochs):
         
         for x_local, y_local in sparse_data_generator(x_data, y_data, batch_size, nb_steps, nb_inputs, shuffle = True):
 
-            output,recs = run_snn_lif(x_local.to_dense(), False)
+            output,recs = run_snn(x_local.to_dense(), False)
 
             if class_method == 'integrate':
                 m = output.sum(axis = 1) # integrate
@@ -468,7 +470,7 @@ scale2 = init_layer_weights(spytorch_util.w2, 28*28).to(device)
 #     spytorch_util.w2.data = clip(spytorch_util.w2.data, quantization.global_wb)
 
 
-loss_hist, test_acc, train_acc, best = train(x_train, y_train, lr = quantization.global_lr, nb_epochs = 35)
+loss_hist, test_acc, train_acc, best = train(x_train, y_train, lr = quantization.global_lr, nb_epochs = 50)
 
 
 results = {'bit_string': bit_string, 'test_acc': test_acc, 'test_loss': loss_hist, 'train_acc': train_acc ,'weight': [spytorch_util.w1, spytorch_util.w2], 'best': best, 'para':para_dict, 'args': args}
