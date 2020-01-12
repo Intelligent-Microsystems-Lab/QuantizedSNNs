@@ -3,3 +3,22 @@ Loading python/3.7.3
 usage: spytorch_mnist_lif.py [-h] [-wb WB] [-m M] [-rg RG] [-ba BA] [-lr LR]
                              [-me ME] [-hi HI]
 spytorch_mnist_lif.py: error: argument -m/--m: invalid int value: '99.990342740805'
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:53: UserWarning: train_data has been renamed data
+  warnings.warn("train_data has been renamed data")
+/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:58: UserWarning: test_data has been renamed data
+  warnings.warn("test_data has been renamed data")
+/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:43: UserWarning: train_labels has been renamed targets
+  warnings.warn("train_labels has been renamed targets")
+/afs/crc.nd.edu/user/c/cschaef6/.local/lib/python3.7/site-packages/torchvision/datasets/mnist.py:48: UserWarning: test_labels has been renamed targets
+  warnings.warn("test_labels has been renamed targets")
+init done
+Traceback (most recent call last):
+  File "spytorch_mnist_lif.py", line 452, in <module>
+    para_dict = {'quantization.global_wb':quantization.global_wb, 'inp_mult':inp_mult, 'nb_hidden':nb_hidden, 'nb_steps':nb_steps, 'batch_size': batch_size, 'quantization.global_lr':quantization.global_lr, 'reg_size':reg1, 'mult_eq':mult_eq, 'class_method':class_method}
+NameError: name 'reg1' is not defined
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
