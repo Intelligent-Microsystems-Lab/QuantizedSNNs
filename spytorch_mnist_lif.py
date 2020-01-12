@@ -36,7 +36,7 @@ args = vars(ap.parse_args())
 
 quantization.global_wb = args['wb']
 inp_mult = args['m']
-reg_size = args['rg']
+reg1 = args['rg']
 quantization.global_lr = args['lr']
 batch_size = args['ba']
 nb_hidden  = args['hi']
