@@ -1,0 +1,5 @@
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+usage: spytorch_mnist_lif.py [-h] [-wb WB] [-m M] [-rg RG] [-ba BA] [-lr LR]
+                             [-me ME] [-hi HI]
+spytorch_mnist_lif.py: error: argument -m/--m: invalid int value: '99.990342740805'
