@@ -4,12 +4,12 @@
 #$ -m abe
 #$ -q gpu@@joshi  # Specify queue (use ‘debug’ for development) // gpu@qa-2080ti-001.crc.nd.edu , qa-2080ti-002.crc.nd.edu , ta-titanv-001.crc.nd.edu, qa-titanx-001.crc.nd.edu, qa-1080ti-001.crc.nd.edu, da-1080-001.crc.nd.edu
 #$ -l gpu_card=1 
-#$ -N hyp_8l_mnist     # Specify job name
-#$ -o ./logs/output_8l_hyp_mnist.txt
-#$ -e ./logs/error_8l_hyp_mnist.txt
+#$ -N hyp_8ll_mnist     # Specify job name
+#$ -o ./logs/output_8ll_hyp_mnist.txt
+#$ -e ./logs/error_8ll_hyp_mnist.txt
 
 module load python       # Required modules
 setenv OMP_NUM_THREADS $NSLOTS
 
-#python spytorch_mnist_ferro_hyperopt.py -wb 8 
-python spytorch_mnist_lif.py -wb 8 -ba 397 -m 167.1668678738894 -lr 9.53153171027933e-05 -me 0.14004659661021038 -hi 5795 -rg 0.0032072330401843254
+python spytorch_mnist_ferro_hyperopt.py -wb 8 
+#python spytorch_mnist_lif.py -wb 8 -ba 397 -m 167.1668678738894 -lr 9.53153171027933e-05 -me 0.14004659661021038 -hi 5795 -rg 0.0032072330401843254

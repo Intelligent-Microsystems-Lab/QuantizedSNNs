@@ -142,7 +142,7 @@ def run_snn(inputs, infer):
         theta[c] += del_theta[c] 
 
         # neuron threshold saturation, bernarbe trick 3
-        # theta[theta > threshold_saturation] = threshold_saturation
+        theta[theta > threshold_saturation] = threshold_saturation
 
         # lateral inhibition, bernarbe trick 4
 
@@ -303,13 +303,15 @@ def objective(args):
         global nb_steps; nb_steps  =  int(args['nb_steps'])
         global time_step; time_step = args['time_step']
 
+        global threshold_saturation; threshold_saturation = del_theta_mult * args['stat_thres']
+
         spytorch_util.w1 = torch.empty((nb_inputs, nb_hidden),  device=device, dtype=dtype, requires_grad=True)
         global scale1; scale1 = init_layer_weights(spytorch_util.w1, 28*28).to(device)
 
         spytorch_util.w2 = torch.empty((nb_hidden, nb_outputs), device=device, dtype=dtype, requires_grad=True)
         global scale2; scale2 = init_layer_weights(spytorch_util.w2, 28*28).to(device)
 
-        loss_hist, test_acc, train_acc = train(x_train, y_train, lr = quantization.global_lr, nb_epochs = 6)
+        loss_hist, test_acc, train_acc = train(x_train, y_train, lr = quantization.global_lr, nb_epochs = 12)
 
         hist_record.append( {'loss': loss_hist, 'test': test_acc, 'train': train_acc, 'args':args} )
         return 1-max(test_acc)
@@ -373,6 +375,7 @@ space = {
     'reg1' : hp.uniform('reg1', -3 ,1), 
     'batch_size' : hp.quniform('batch_size', 64, 512, 1), 
     'nb_hidden' : hp.quniform('nb_hidden', 800, 7500, 1), 
+    'stat_thres' : hp.uniform('stat_thres', 1, 20),
     'nb_steps' : 80, #hp.quniform('nb_steps', 20, 210, 1), 
     'time_step' : 1e-3#hp.loguniform('time_step', 1e-6, 1e-1)
 }
