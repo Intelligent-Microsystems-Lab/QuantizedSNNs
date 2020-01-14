@@ -46,8 +46,6 @@ mult_thresh_sat = args['th']
 
 nb_steps  =  80 # 100 previously, some good results with 150
 
-#bernarbe tricks
-threshold_saturation = del_theta_mult * mult_thresh_sat # the number 7 is the foundation of God's word ... lets hope
 
 
 # if quantization.global_wb == None:
@@ -98,8 +96,8 @@ tau_ge = 1*ms
 tau_gi = 2*ms
 
 
-
-
+#bernarbe tricks
+threshold_saturation = del_theta_mult * mult_thresh_sat # the number 7 is the foundation of God's word ... lets hope
 
 
 
