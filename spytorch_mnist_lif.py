@@ -31,6 +31,7 @@ ap.add_argument("-ba", "--ba", type = int, help="batch")
 ap.add_argument("-lr", "--lr", type = float, help="lr")
 ap.add_argument("-me", "--me", type = float, help="mult_eq")
 ap.add_argument("-hi", "--hi", type = int, help="hidden")
+ap.add_argument("-th", "--th", type = float, help="threshold")
 args = vars(ap.parse_args())
 
 
@@ -41,8 +42,13 @@ quantization.global_lr = args['lr']
 batch_size = args['ba']
 nb_hidden  = args['hi']
 mult_eq = args['me']
+mult_thresh_sat = args['th']
 
 nb_steps  =  80 # 100 previously, some good results with 150
+
+#bernarbe tricks
+threshold_saturation = del_theta_mult * mult_thresh_sat # the number 7 is the foundation of God's word ... lets hope
+
 
 # if quantization.global_wb == None:
 #     quantization.global_wb = 34
@@ -95,8 +101,6 @@ tau_gi = 2*ms
 
 
 
-#bernarbe tricks
-threshold_saturation = del_theta_mult * 7 # the number 7 is the foundation of God's word ... lets hope
 
 
 class_method = "integrate"
@@ -187,79 +191,6 @@ print("init done")
 # here we overwrite our naive spike function by the "SuperSpike" nonlinearity which implements a surrogate gradient
 spike_fn  = SuperSpike.apply
 
-def run_snn_lif(inputs, infer):
-    tau_mem = 2*ms#10e-3
-    tau_syn = 1*ms#5e-3
-    alpha   = float(np.exp(-time_step/tau_syn))
-    beta    = float(np.exp(-time_step/tau_mem))
-
-
-    with torch.no_grad():
-        spytorch_util.w1.data = clip(spytorch_util.w1.data, quantization.global_wb)
-        spytorch_util.w2.data = clip(spytorch_util.w2.data, quantization.global_wb)
-
-
-    #h1 = torch.einsum("abc,cd->abd", (inputs, w1))
-    h1 = einsum_linear.apply(inputs, spytorch_util.w1*inp_mult, scale1)
-    #h1b = np.ceil(np.log2((2**quantization.global_wb-1)*nb_inputs))
-
-    syn = torch.zeros((batch_size,nb_hidden), device=device, dtype=dtype)
-    mem = torch.ones((batch_size,nb_hidden), device=device, dtype=dtype) * v_rest_e
-    reset_mem = torch.ones((batch_size,nb_hidden), device=device, dtype=dtype)*v_reset_e_mult
-
-    mem_rec = [mem]
-    spk_rec = [mem]
-
-    # Compute hidden layer activity
-    for t in range(nb_steps):
-        mthr = mem-v_thresh_e_mult
-        out = spike_fn(mthr)
-
-        #rst = torch.zeros_like(mem)
-        c   = (mthr > 0)
-        #rst[c] = torch.ones_like(mem)[c]
-
-        new_syn = alpha*syn +h1[:,t]
-        new_mem = beta*mem +syn #-rst
-
-        new_mem[c] = reset_mem[c]
-
-        syn = new_syn
-        mem = new_mem
-
-        mem_rec.append(mem)
-        spk_rec.append(out)
-
-    mem_rec = torch.stack(mem_rec,dim=1)
-    spk_rec = torch.stack(spk_rec,dim=1)
-
-
-    #Readout layer
-    #h2 = torch.einsum("abc,cd->abd", (spk_rec, w2))
-    h2 = einsum_linear.apply(spk_rec, spytorch_util.w2*inp_mult, scale2)
-    #h2b = np.ceil(np.log2((2**quantization.global_wb-1)*nb_hidden))
-
-    flt = torch.zeros((batch_size,nb_outputs), device=device, dtype=dtype)
-    out = torch.ones((batch_size,nb_outputs), device=device, dtype=dtype) * v_rest_e
-    out_rec = [out]
-    for t in range(nb_steps):
-
-
-        new_flt = alpha*flt +h2[:,t]
-        new_out = beta*out +flt
-
-        flt = new_flt 
-        out = new_out 
-
-        out_rec.append(out)
-
-    out_rec = torch.stack(out_rec,dim=1)
-
-
-    other_recs = [mem_rec, spk_rec]
-    return out_rec, other_recs
-
-
 
 def run_snn(inputs, infer):
 
@@ -300,7 +231,7 @@ def run_snn(inputs, infer):
         theta[c] += del_theta[c] 
 
         # neuron threshold saturation, bernarbe trick 3
-        #theta[theta > threshold_saturation] = threshold_saturation
+        theta[theta > threshold_saturation] = threshold_saturation
 
         # lateral inhibition, bernarbe trick 4
 
