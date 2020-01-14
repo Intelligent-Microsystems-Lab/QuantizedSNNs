@@ -12,7 +12,7 @@ module load python       # Required modules
 setenv OMP_NUM_THREADS $NSLOTS
 
 #python spytorch_mnist_ferro_hyperopt.py -wb 34
-python spytorch_mnist_lif.py -wb 34 -ba 402 -m 198.57944264716147 -lr 0.0008552696123059746 -me 0.14868056709905056 -hi 1863 -rg 0.003219471220286935 -th 17.2820127230656
+python spytorch_mnist_lif.py -wb 34 -ba 448 -m 169.26574335446952 -lr 0.0035372006656794156 -me 0.09331100957741036 -hi 1236 -rg 0.0034247844131927744 -th 4.305897217971605
 
 
-#{'batch_size': 402.0, 'inp_mult': 198.57944264716147, 'lr': -3.0678969581617794, 'mult_eq': 0.14868056709905056, 'nb_hidden': 1863.0, 'reg1': -2.492215452828866, 'stat_thres': 17.2820127230656}
+#{'batch_size': 448.0, 'inp_mult': 169.26574335446952, 'lr': -2.451340301925346, 'mult_eq': 0.09331100957741036, 'nb_hidden': 1236.0, 'reg1': -2.4653667617212163, 'stat_thres': 4.305897217971605}
