@@ -704,3 +704,5 @@ Epoch 35: loss=1.53977
 Test accuracy: 0.406
 Train accuracy: 0.967
 {'quantization.global_wb': 34, 'inp_mult': 80, 'reg_size': 0.00048219502065459076, 'weight_sum': 1.12}
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
