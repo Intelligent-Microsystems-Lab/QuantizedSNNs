@@ -4,12 +4,14 @@
 #$ -m abe
 #$ -q gpu@@joshi  # Specify queue (use ‘debug’ for development) // gpu@qa-2080ti-001.crc.nd.edu , qa-2080ti-002.crc.nd.edu , ta-titanv-001.crc.nd.edu, qa-titanx-001.crc.nd.edu, qa-1080ti-001.crc.nd.edu, da-1080-001.crc.nd.edu
 #$ -l gpu_card=1 
-#$ -N hyp_3ll_mnist     # Specify job name
-#$ -o ./logs/output_3ll_hyp_mnist.txt
-#$ -e ./logs/error_3ll_hyp_mnist.txt
+#$ -N hyp_3lll_mnist     # Specify job name
+#$ -o ./logs/output_3lll_hyp_mnist.txt
+#$ -e ./logs/error_3lll_hyp_mnist.txt
 
 module load python       # Required modules
 setenv OMP_NUM_THREADS $NSLOTS
 
-python spytorch_mnist_ferro_hyperopt.py -wb 3 
-#python spytorch_mnist_lif.py -wb 3 -ba 335 -m 99.990342740805 -lr 5.964343060205805e-05 -me 0.07465844138851893 -hi 3035 -rg 0.029966538246518293
+#python spytorch_mnist_ferro_hyperopt.py -wb 3 
+python spytorch_mnist_lif.py -wb 3 -ba 425 -m 197.17391690690621 -lr 0.00014819981748893354 -me 0.08643615967703495 -hi 7035 -rg 0.7223683365520929 -th 9.889243130464106
+
+#{'batch_size': 425.0, 'inp_mult': 197.17391690690621, 'lr': -3.8291523311987814, 'mult_eq': 0.08643615967703495, 'nb_hidden': 930.0, 'reg1': -0.14124129863319684, 'stat_thres': 9.889243130464106}
