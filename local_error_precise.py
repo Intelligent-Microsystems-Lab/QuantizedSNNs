@@ -408,59 +408,60 @@ aux_plot_i_u_s(spike_input, rec_u.detach(), rec_s, 1, filename = "figures/simple
 
 
 
-# # learning a spatio temporal pattern multi layer
-# with open("./data/nd70.pkl", 'rb') as f:
-#     y_train = torch.tensor(pickle.load(f)).to(device)
-# y_train = y_train.reshape([1,250,250])
-# y_train = y_train.type(dtype)
+# learning a spatio temporal pattern multi layer
+with open("./data/nd70.pkl", 'rb') as f:
+    y_train = torch.tensor(pickle.load(f)).to(device)
+y_train = y_train.reshape([1,250,250])
+y_train = y_train.type(dtype)
 
-# T = 250
-# input_neurons = 1000
-# hidden_neurons = 500
-# output_neurons = 250
-# batch_size = 1
+T = 250
+input_neurons = 1000
+hidden_neurons = 500
+output_neurons = 250
+batch_size = 1
 
-# spike_input = spike_trains(np.ones([input_neurons])*30, T)
-# layer1 = LIFDenseLayer(in_channels = input_neurons, out_channels = hidden_neurons, batch_size = batch_size, device = device).to(device)
-# random_readout1 = nn.Linear(hidden_neurons, output_neurons).to(device)
-# layer2 = LIFDenseLayer(in_channels = hidden_neurons, out_channels = output_neurons, batch_size = batch_size, device = device).to(device)
+spike_input = spike_trains(np.ones([input_neurons])*30, T)
+layer1 = LIFDenseLayer(in_channels = input_neurons, out_channels = hidden_neurons, batch_size = batch_size, device = device).to(device)
+random_readout1 = FALinear(hidden_neurons, output_neurons).to(device)
+layer2 = LIFDenseLayer(in_channels = hidden_neurons, out_channels = output_neurons, batch_size = batch_size, device = device).to(device)
 
-# mse_loss = torch.nn.MSELoss()
-# opt1 = torch.optim.Adam([layer1.weights, layer1.bias], lr=1e-5, betas=[0., .95])
+mse_loss = torch.nn.MSELoss()
+opt1 = torch.optim.Adam([layer1.weights, layer1.bias], lr=1e-5, betas=[0., .95])
 
-# for e in range(100):
-#     loss_hist = 0
-#     for t in range(T):
-#         # run network and random readouts
-#         out_spikes = layer1.forward(spike_input[:,:,t])
-#         loss_t1 = mse_loss(random_readout1(superspike(layer1.U)), y_train[:,t])
-#         out_spikes = layer2.forward(out_spikes)
-#         loss_t2 = mse_loss((superspike(layer2.U)), y_train[:,t])
+for e in range(100):
+    loss_hist = 0
+    for t in range(T):
+        # run network and random readouts
+        out_spikes = layer1.forward(spike_input[:,:,t])
+        import pdb; pdb.set_trace()
+        loss_t1 = mse_loss(random_readout1(superspike(layer1.U)), y_train[:,t])
+        out_spikes = layer2.forward(out_spikes)
+        loss_t2 = mse_loss((superspike(layer2.U)), y_train[:,t])
 
-#         # update weights
-#         loss_t1.backward()
-#         opt1.step()
-#         opt1.zero_grad()
+        # update weights
+        loss_t1.backward()
+        opt1.step()
+        opt1.zero_grad()
 
-#         loss_t1.backward()
-#         opt2.step()
-#         opt2.zero_grad()
-#         loss_hist += loss_t
-#     print('Epoch '+str(e)+': '+str(loss_hist))
+        loss_t1.backward()
+        opt2.step()
+        opt2.zero_grad()
+        loss_hist += loss_t
+    print('Epoch '+str(e)+': '+str(loss_hist))
 
 
-# # show results
-# rec_s = torch.zeros(batch_size, output_neurons, T)
-# rec_hidden = torch.zeros(batch_size, output_neurons, T)
-# for t in range(T):
-#     temp_spikes = layer1.forward(spike_input[:,:,t])
-#     rec_hidden[:,:,t] = random_readout1(superspike(layer1.U))
-#     rec_s[:,:,t] = layer2.forward(temp_spikes)
+# show results
+rec_s = torch.zeros(batch_size, output_neurons, T)
+rec_hidden = torch.zeros(batch_size, output_neurons, T)
+for t in range(T):
+    temp_spikes = layer1.forward(spike_input[:,:,t])
+    rec_hidden[:,:,t] = random_readout1(superspike(layer1.U))
+    rec_s[:,:,t] = layer2.forward(temp_spikes)
 
-# plt.clf()
-# figure, axes = plt.subplots(nrows=3, ncols=1)
-# axes[0].imshow(y_train[0,:,:])
-# axes[1].imshow(rec_hidden[0,:,:].detach().numpy())
-# axes[2].imshow(rec_s[0,:,:])
-# plt.show()
+plt.clf()
+figure, axes = plt.subplots(nrows=3, ncols=1)
+axes[0].imshow(y_train[0,:,:])
+axes[1].imshow(rec_hidden[0,:,:].detach().numpy())
+axes[2].imshow(rec_s[0,:,:])
+plt.show()
 
