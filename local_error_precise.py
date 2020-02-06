@@ -420,7 +420,7 @@ hidden_neurons = 500
 output_neurons = 250
 batch_size = 1
 
-spike_input = spike_trains(np.ones([input_neurons])*30, T)
+spike_input = spike_trains(np.ones([input_neurons])*30, T).to(device)
 layer1 = LIFDenseLayer(in_channels = input_neurons, out_channels = hidden_neurons, batch_size = batch_size, device = device).to(device)
 random_readout1 = FALinear(hidden_neurons, output_neurons).to(device)
 layer2 = LIFDenseLayer(in_channels = hidden_neurons, out_channels = output_neurons, batch_size = batch_size, device = device).to(device)
