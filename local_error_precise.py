@@ -369,7 +369,7 @@ input_neurons = 1000
 output_neurons = 30
 batch_size = 1
 
-spike_input = spike_trains(np.ones([input_neurons])*20, T)
+spike_input = spike_trains(np.ones([input_neurons])*20, T).to(device)
 layer1 = LIFDenseLayer(in_channels = input_neurons, out_channels = output_neurons, batch_size = batch_size, device = device).to(device).to(device)
 random_readout = nn.Linear(output_neurons,1).to(device) # random read outs
 
