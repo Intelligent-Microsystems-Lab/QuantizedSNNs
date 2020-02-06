@@ -208,9 +208,6 @@ class SuperSpike(torch.autograd.Function):
 superspike = SuperSpike().apply
 
 
-
-
-
 class LIFDenseLayer(nn.Module):
     def __init__(self, in_channels, out_channels, batch_size, bias=True, alpha = .9, beta=.85, firing_threshold = 1, device=torch.device("cpu"), dtype = torch.float):
         super(LIFDenseLayer, self).__init__()        
@@ -235,16 +232,9 @@ class LIFDenseLayer(nn.Module):
     
     
     def forward(self, input_t):
-        
         self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.alpha * self.R - self.S, self.beta * self.Q + input_t
         self.U = torch.einsum("ab,bc->ac", (self.P, self.weights)) + self.bias + self.R
         self.S = (self.U>self.firing_threshold).float()
-        # maybe the reset value needs to be more than 1
-        # is that part really necessary ?
-        # self.P.detach()
-        # self.Q.detach()
-        # self.R.detach()
-        # self.S.detach()
 
         return self.S
 
@@ -338,12 +328,14 @@ y_test  = np.array(test_dataset.test_labels, dtype=np.int)
 #x_train = x_train[:1000, :]
 #y_train = y_train[:1000]
 
-T = 150
+T = 500
+T_test = 1000
 input_neurons = 28*28
 hidden1_neurons = 500
 hidden2_neurons = 300
 output_neurons = 10
-batch_size = 1024
+batch_size = 64
+burnin = 50
 
 layer1 = LIFDenseLayer(in_channels = input_neurons, out_channels = hidden1_neurons, batch_size = batch_size, device = device).to(device)
 random_readout1 = FALinear(hidden1_neurons, output_neurons).to(device)
@@ -353,7 +345,7 @@ layer3 = LIFDenseLayer(in_channels = hidden2_neurons, out_channels = output_neur
 
 log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
 nll_loss = torch.nn.NLLLoss()
-opt = torch.optim.Adam([layer1.weights, layer1.bias, layer2.weights, layer2.bias, layer3.weights, layer3.bias], lr=1e-5, betas=[0., .95])
+opt = torch.optim.Adam([layer1.weights, layer1.bias, layer2.weights, layer2.bias, layer3.weights, layer3.bias], lr=1e-9, betas=[0., .95])
 
 for e in range(300):
     correct = 0
@@ -364,23 +356,25 @@ for e in range(300):
         for t in range(T):
             # run network and random readouts
             out_spikes1 = layer1.forward(x_local[:,t,:])
-            rreadout1 = random_readout1(superspike(layer1.U))
-            y_log_p1 = log_softmax_fn(rreadout1)
-            loss_t = nll_loss(y_log_p1, y_local)
-
             out_spikes2 = layer2.forward(out_spikes1)
-            rreadout2 = random_readout2(superspike(layer2.U))
-            y_log_p2 = log_softmax_fn(rreadout2)
-            loss_t += nll_loss(y_log_p2, y_local)
-
             out_spikes3 = layer3.forward(out_spikes2)
-            y_log_p3 = log_softmax_fn(superspike(layer3.U))
-            loss_t += nll_loss(y_log_p3, y_local)
- 
-            loss_t.backward()
-            opt.step()
-            opt.zero_grad()
-            loss_hist += loss_t
+
+            if t > burnin:
+                rreadout1 = random_readout1(superspike(layer1.U))
+                y_log_p1 = log_softmax_fn(rreadout1)
+                loss_t = nll_loss(y_log_p1, y_local)
+
+                rreadout2 = random_readout2(superspike(layer2.U))
+                y_log_p2 = log_softmax_fn(rreadout2)
+                loss_t += nll_loss(y_log_p2, y_local)
+
+                y_log_p3 = log_softmax_fn(superspike(layer3.U))
+                loss_t += nll_loss(y_log_p3, y_local)
+     
+                loss_t.backward()
+                opt.step()
+                opt.zero_grad()
+                loss_hist += loss_t
 
             class_rec += out_spikes3
         correct += (torch.max(class_rec, dim = 1).indices == y_local).sum() 
@@ -389,9 +383,9 @@ for e in range(300):
     # compute test accuracy
     tcorrect = 0
     ttotal = 0
-    for x_local, y_local in sparse_data_generator(x_test, y_test, batch_size, T, shuffle = True, device = device):
+    for x_local, y_local in sparse_data_generator(x_test, y_test, batch_size, T_test, shuffle = True, device = device):
         class_rec = torch.zeros([batch_size, output_neurons]).to(device)
-        for t in range(T):
+        for t in range(T_test):
             out_spikes1 = layer1.forward(x_local[:,t,:])
             out_spikes2 = layer2.forward(out_spikes1)
             out_spikes3 = layer3.forward(out_spikes2)
