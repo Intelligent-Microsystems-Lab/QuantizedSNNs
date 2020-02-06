@@ -364,6 +364,8 @@ aux_plot_i_u_s(spike_input, rec_u.detach(), rec_s, 3, filename = "figures/dense_
 
 
 # simple learning task
+epochs = 0
+
 T = 200
 input_neurons = 1000
 output_neurons = 30
@@ -383,7 +385,7 @@ mse_loss = torch.nn.MSELoss()
 opt = torch.optim.Adam([layer1.weights, layer1.bias], lr=1e-4, betas=[0., .95]) #lr is the learning rate
 
 # really just short and quick training
-for e in range(10):
+for e in range(epochs):
     loss_hist = 0
     for t in range(T):
         out_spikes = layer1.forward(spike_input[:,:,t])
@@ -392,8 +394,8 @@ for e in range(10):
         opt.step()
         opt.zero_grad()
         loss_hist += loss_t
-    #if (e%20) == 0:
-    print('Epoch '+str(e)+': '+str(loss_hist))
+    if (e%20) == 0:
+        print('Epoch '+str(e)+': '+str(loss_hist))
 
 
 rec_u = torch.zeros(batch_size, output_neurons, T)
