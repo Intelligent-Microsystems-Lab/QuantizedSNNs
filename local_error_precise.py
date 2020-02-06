@@ -348,7 +348,7 @@ hidden_neurons = 7
 output_neurons = 4
 batch_size = 64
 
-spike_input = spike_trains(torch.cumsum(torch.tensor([5]*input_neurons), dim = 0), T, batches = batch_size)
+spike_input = spike_trains(torch.cumsum(torch.tensor([5]*input_neurons), dim = 0), T, batches = batch_size).to(device)
 layer1 = LIFDenseLayer(in_channels = input_neurons, out_channels = hidden_neurons, batch_size = batch_size, device = device).to(device)
 layer2 = LIFDenseLayer(in_channels = hidden_neurons, out_channels = output_neurons, batch_size = batch_size, device = device).to(device)
 
@@ -370,7 +370,7 @@ output_neurons = 30
 batch_size = 1
 
 spike_input = spike_trains(np.ones([input_neurons])*20, T)
-layer1 = LIFDenseLayer(in_channels = input_neurons, out_channels = output_neurons, batch_size = batch_size, device = device).to(device)
+layer1 = LIFDenseLayer(in_channels = input_neurons, out_channels = output_neurons, batch_size = batch_size, device = device).to(device).to(device)
 random_readout = nn.Linear(output_neurons,1).to(device) # random read outs
 
 # target
