@@ -371,7 +371,7 @@ batch_size = 1
 
 spike_input = spike_trains(np.ones([input_neurons])*20, T).to(device)
 layer1 = LIFDenseLayer(in_channels = input_neurons, out_channels = output_neurons, batch_size = batch_size, device = device).to(device).to(device)
-random_readout = nn.Linear(output_neurons,1).to(device) # random read outs
+random_readout = FALinear(output_neurons,1).to(device) # random read outs
 
 # target
 yhat = np.zeros(T)
@@ -382,7 +382,8 @@ yhat_t = torch.FloatTensor(yhat).to(device)
 mse_loss = torch.nn.MSELoss()
 opt = torch.optim.Adam([layer1.weights, layer1.bias], lr=1e-4, betas=[0., .95]) #lr is the learning rate
 
-for e in range(500):
+# really just short and quick training
+for e in range(10):
     loss_hist = 0
     for t in range(T):
         out_spikes = layer1.forward(spike_input[:,:,t])
@@ -391,8 +392,8 @@ for e in range(500):
         opt.step()
         opt.zero_grad()
         loss_hist += loss_t
-    if (e%20) == 0:
-        print('Epoch '+str(e)+': '+str(loss_hist))
+    #if (e%20) == 0:
+    print('Epoch '+str(e)+': '+str(loss_hist))
 
 
 rec_u = torch.zeros(batch_size, output_neurons, T)
