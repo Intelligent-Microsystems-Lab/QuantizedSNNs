@@ -3,6 +3,7 @@ import torch.nn as nn
 import torchvision
 import numpy as np
 import pickle
+import time
 
 import matplotlib.pyplot as plt
 
@@ -348,6 +349,7 @@ nll_loss = torch.nn.NLLLoss()
 opt = torch.optim.Adam([layer1.weights, layer1.bias, layer2.weights, layer2.bias, layer3.weights, layer3.bias], lr=1e-7, betas=[0., .95])
 
 for e in range(300):
+    start_time = time.time()
     correct = 0
     total = 0
     for x_local, y_local in sparse_data_generator(x_train, y_train, batch_size, T, shuffle = True, device = device):
@@ -379,6 +381,8 @@ for e in range(300):
             class_rec += out_spikes3
         correct += (torch.max(class_rec, dim = 1).indices == y_local).sum() 
         total += len(y_local)
+    train_time = time.time()
+
 
     # compute test accuracy
     tcorrect = 0
@@ -393,7 +397,9 @@ for e in range(300):
         tcorrect += (torch.max(class_rec, dim = 1).indices == y_local).sum() 
         ttotal += len(y_local)
 
-    print("Epoch "+str(e)+": "+str(loss_hist.item()) + " Train Acc: "+str(correct.item()/total) + " Test Acc: "+str(tcorrect.item()/ttotal))
+    inf_time = time.time()
+
+    print("Epoch "+str(e)+": "+str(np.round(loss_hist.item(),4)) + " Train Acc: "+str(np.round(correct.item()/total, 4)) + " Test Acc: "+str(np.round(tcorrect.item()/ttotal, 4)) + "Train Time: "+str(np.round(start_time-train_time, 4))+"s Inference Time: "+str(np.round(train_time - inf_time, 4) +"s") )
 
 
 
