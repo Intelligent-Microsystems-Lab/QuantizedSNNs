@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import torchvision
-import numpy as np
 import pickle
 import time
 
@@ -80,7 +79,7 @@ def sparse_data_generator(X, y, batch_size, nb_steps, samples, tau_eff, thr, shu
             coo[2].extend(units)
 
         i = torch.LongTensor(coo).to(device)
-        v = torch.FloatTensor(np.ones(len(coo[0]))).to(device)
+        v = torch.FloatTensor(torch.ones(len(coo[0]))).to(device)
     
         X_batch = torch.sparse.FloatTensor(i, v, torch.Size([batch_size, int(nb_steps), nb_units])).to(device)
         y_batch = torch.tensor(labels_[batch_index],device=device)
@@ -352,13 +351,13 @@ test_dataset = torchvision.datasets.MNIST('../data', train=False, transform=None
 # dont use full set
 
 # Standardize data
-x_train = torch.Tensor(train_dataset.train_data)
+x_train = train_dataset.data.type(dtype)
 x_train = x_train.reshape(x_train.shape[0],-1)/255
-x_test = torch.Tensor(test_dataset.test_data)
+x_test = test_dataset.data.type(dtype)
 x_test = x_test.reshape(x_test.shape[0],-1)/255
 
-y_train = torch.Tensor(train_dataset.train_labels)
-y_test  = torch.Tensor(test_dataset.test_labels)
+y_train = train_dataset.targets
+y_test  = test_dataset.targets
 
 
 ms = torch.Tensor([1e-3]).to(device)
@@ -444,7 +443,7 @@ for e in range(300):
     inf_time = time.time()
 
 
-    print("Epoch "+str(e)+" | Loss: "+str(np.round(loss_hist.item(),4)) + " Train Acc: "+str(np.round(correct.item()/total, 4)) + " Test Acc: "+str(np.round(tcorrect.item()/ttotal, 4)) + " Train Time: "+str(np.round(train_time-start_time, 4))+"s Inference Time: "+str(np.round(inf_time - train_time, 4)) +"s") 
+    print("Epoch "+str(e)+" | Loss: "+str(torch.round(loss_hist.item(),4)) + " Train Acc: "+str(torch.round(correct.item()/total, 4)) + " Test Acc: "+str(torch.round(tcorrect.item()/ttotal, 4)) + " Train Time: "+str(torch.round(train_time-start_time, 4))+"s Inference Time: "+str(torch.round(inf_time - train_time, 4)) +"s") 
 
 
 
