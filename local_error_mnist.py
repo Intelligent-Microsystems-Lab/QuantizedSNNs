@@ -352,13 +352,13 @@ test_dataset = torchvision.datasets.MNIST('../data', train=False, transform=None
 # dont use full set
 
 # Standardize data
-x_train = np.array(train_dataset.train_data, dtype=np.float)
+x_train = torch.Tensor(train_dataset.train_data)
 x_train = x_train.reshape(x_train.shape[0],-1)/255
-x_test = np.array(test_dataset.test_data, dtype=np.float)
+x_test = torch.Tensor(test_dataset.test_data)
 x_test = x_test.reshape(x_test.shape[0],-1)/255
 
-y_train = np.array(train_dataset.train_labels, dtype=np.int)
-y_test  = np.array(test_dataset.test_labels, dtype=np.int)
+y_train = torch.Tensor(train_dataset.train_labels)
+y_test  = torch.Tensor(test_dataset.test_labels)
 
 
 ms = torch.Tensor([1e-3]).to(device)
