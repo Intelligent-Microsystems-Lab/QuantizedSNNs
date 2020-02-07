@@ -294,15 +294,16 @@ class LIFConvLayer(nn.Module):
         if type(tau_syn) == list:
             self.beta = torch.exp( -delta_t / torch.FloatTensor(self.in_channels).uniform_(tau_syn[0], tau_syn[0])).to(device)
         else:
-            self.beta = torch.FloatTensor(np.exp( - delta_t / tau_syn)).to(device)
+            self.beta = torch.FloatTensor([np.exp( - delta_t / tau_syn)]).to(device)
         if type(tau_mem) == list:
             self.alpha = torch.exp( -delta_t / torch.FloatTensor(self.in_channels).uniform_(tau_mem[0], tau_mem[0]))
         else:
-            self.alpha = torch.FloatTensor(np.exp( - delta_t / tau_mem))
+            self.alpha = torch.FloatTensor([np.exp( - delta_t / tau_mem)]).to(device)
+
         if type(tau_ref) == list:
             self.gamma = torch.exp( -delta_t / torch.FloatTensor(self.in_channels).uniform_(tau_ref[0], tau_ref[0]))
         else:
-            self.gamma = torch.FloatTensor(np.exp( - delta_t / tau_ref))
+            self.gamma = torch.FloatTensor([np.exp( - delta_t / tau_ref)]).to(device)
 
 
         self.weights = nn.Parameter(torch.empty((in_channels, out_channels),  device=device, dtype=dtype, requires_grad=True))
