@@ -297,35 +297,35 @@ class LIFConvLayer(nn.Module):
         import pdb; pdb.set_trace()
 
         if tau_syn.shape[0] == 2:
-            self.beta = torch.exp( -delta_t / torch.FloatTensor(self.in_channels).uniform_(tau_syn[0], tau_syn[0])).to(device)
+            self.beta = torch.exp( -delta_t / torch.Tensor(int(self.in_channels)).uniform_(tau_syn[0], tau_syn[0])).to(device)
         else:
-            self.beta = torch.FloatTensor([np.exp( - delta_t / tau_syn)]).to(device)
+            self.beta = torch.Tensor([np.exp( - delta_t / tau_syn)]).to(device)
         if tau_mem.shape[0] == 2:
-            self.alpha = torch.exp( -delta_t / torch.FloatTensor(self.in_channels).uniform_(tau_mem[0], tau_mem[0]))
+            self.alpha = torch.exp( -delta_t / torch.Tensor(int(self.in_channels)).uniform_(tau_mem[0], tau_mem[0]))
         else:
-            self.alpha = torch.FloatTensor([np.exp( - delta_t / tau_mem)]).to(device)
+            self.alpha = torch.Tensor([np.exp( - delta_t / tau_mem)]).to(device)
 
         if tau_ref.shape[0] == 2:
-            self.gamma = torch.exp( -delta_t / torch.FloatTensor(self.in_channels).uniform_(tau_ref[0], tau_ref[0]))
+            self.gamma = torch.exp( -delta_t / torch.Tensor(int(self.in_channels)).uniform_(tau_ref[0], tau_ref[0]))
         else:
-            self.gamma = torch.FloatTensor([np.exp( - delta_t / tau_ref)]).to(device)
+            self.gamma = torch.Tensor([np.exp( - delta_t / tau_ref)]).to(device)
 
 
-        self.weights = nn.Parameter(torch.empty((in_channels, out_channels),  device=device, dtype=dtype, requires_grad=True))
+        self.weights = nn.Parameter(torch.empty((int(self.in_channels), int(self.out_channels)),  device=device, dtype=dtype, requires_grad=True))
         torch.nn.init.uniform_(self.weights, a = -.3, b = .3)
 
         if bias:
-            self.bias = nn.Parameter(torch.empty((out_channels),  device=device, dtype=dtype, requires_grad=True))
+            self.bias = nn.Parameter(torch.empty((int(out_channels)),  device=device, dtype=dtype, requires_grad=True))
             torch.nn.init.uniform_(self.bias, a = -.01, b = .01)
         else:
             self.register_parameter('bias', None)
 
 
-        self.P = torch.zeros(self.batch_size, self.in_channels).detach().to(device)
-        self.Q = torch.zeros(self.batch_size, self.in_channels).detach().to(device)
-        self.R = torch.zeros(self.batch_size, self.out_channels).detach().to(device)
-        self.S = torch.zeros(self.batch_size, self.out_channels).detach().to(device)
-        self.U = torch.zeros(self.batch_size, self.out_channels).detach().to(device)
+        self.P = torch.zeros(int(self.batch_size), int(self.in_channels)).detach().to(device)
+        self.Q = torch.zeros(int(self.batch_size), int(self.in_channels)).detach().to(device)
+        self.R = torch.zeros(int(self.batch_size), int(self.out_channels)).detach().to(device)
+        self.S = torch.zeros(int(self.batch_size), int(self.out_channels)).detach().to(device)
+        self.U = torch.zeros(int(self.batch_size), int(self.out_channels)).detach().to(device)
     
     
     def forward(self, input_t):
