@@ -359,23 +359,23 @@ y_train = np.array(train_dataset.train_labels, dtype=np.int)
 y_test  = np.array(test_dataset.test_labels, dtype=np.int)
 
 
-ms = 1e-3
-delta_t = 1*ms
+ms = torch.Tensor([1e-3]).to(device)
+delta_t = torch.Tensor([1*ms]).to(device)
 
-T = 1000*ms
-T_test = 1000*ms
-burnin = 50*ms
+T = torch.Tensor([1000*ms]).to(device)
+T_test = torch.Tensor([1000*ms]).to(device)
+burnin = torch.Tensor([50*ms]).to(device)
 
 tau_mem = torch.Tensor([5*ms, 35*ms])
 tau_syn = torch.Tensor([5*ms, 10*ms])
 tau_ref = torch.Tensor([2.86*ms])
-thr = 1
+thr = torch.Tensor([1.]).to(device)
 
-input_neurons = 28*28
-hidden1_neurons = 500
-hidden2_neurons = 300
-output_neurons = 10
-batch_size = 64
+input_neurons = torch.Tensor([28*28]).to(device)
+hidden1_neurons = torch.Tensor([500]).to(device)
+hidden2_neurons = torch.Tensor([300]).to(device)
+output_neurons = torch.Tensor([10]).to(device)
+batch_size = torch.Tensor([64]).to(device)
 
 
 layer1 = LIFConvLayer(in_channels = input_neurons, out_channels = hidden1_neurons, kernel_size = 7, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, batch_size = batch_size, device = device).to(device)
