@@ -362,7 +362,6 @@ for e in range(300):
             out_spikes3 = layer3.forward(out_spikes2)
 
             if t > burnin:
-                import pdb; pdb.set_trace()
                 rreadout1 = random_readout1(superspike(layer1.U))
                 y_log_p1 = log_softmax_fn(rreadout1)
                 loss_t = nll_loss(y_log_p1, y_local)
