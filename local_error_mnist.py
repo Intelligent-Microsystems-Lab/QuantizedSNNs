@@ -48,6 +48,7 @@ def sparse_data_generator(X, y, batch_size, nb_steps, samples, tau_eff, thr, shu
         X: The data ( sample x event x 2 ) the last dim holds (time,neuron) tuples
         y: The labels
     """
+    import pdb; pdb.set_trace()
     labels_ = torch.Tensor(y, dtype=np.int)
     number_of_batches = len(X)//batch_size
     sample_index = torch.arange(len(X))
