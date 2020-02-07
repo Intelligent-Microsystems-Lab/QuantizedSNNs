@@ -345,7 +345,7 @@ layer3 = LIFDenseLayer(in_channels = hidden2_neurons, out_channels = output_neur
 
 log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
 nll_loss = torch.nn.NLLLoss()
-opt = torch.optim.Adam([layer1.weights, layer1.bias, layer2.weights, layer2.bias, layer3.weights, layer3.bias], lr=1e-9, betas=[0., .95])
+opt = torch.optim.Adam([layer1.weights, layer1.bias, layer2.weights, layer2.bias, layer3.weights, layer3.bias], lr=1e-7, betas=[0., .95])
 
 for e in range(300):
     correct = 0
