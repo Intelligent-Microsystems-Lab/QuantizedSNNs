@@ -329,8 +329,8 @@ y_test  = np.array(test_dataset.test_labels, dtype=np.int)
 #x_train = x_train[:1000, :]
 #y_train = y_train[:1000]
 
-T = 500
-T_test = 1000
+T = 300
+T_test = 300
 input_neurons = 28*28
 hidden1_neurons = 500
 hidden2_neurons = 300
