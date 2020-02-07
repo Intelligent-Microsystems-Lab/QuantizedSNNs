@@ -334,7 +334,7 @@ input_neurons = 28*28
 hidden1_neurons = 500
 hidden2_neurons = 300
 output_neurons = 10
-batch_size = 64
+batch_size = 1024
 burnin = 50
 
 layer1 = LIFDenseLayer(in_channels = input_neurons, out_channels = hidden1_neurons, batch_size = batch_size, device = device).to(device)
