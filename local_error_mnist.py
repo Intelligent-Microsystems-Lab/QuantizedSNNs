@@ -366,9 +366,9 @@ T = torch.Tensor([1000*ms]).to(device)
 T_test = torch.Tensor([1000*ms]).to(device)
 burnin = torch.Tensor([50*ms]).to(device)
 
-tau_mem = torch.Tensor([5*ms, 35*ms])
-tau_syn = torch.Tensor([5*ms, 10*ms])
-tau_ref = torch.Tensor([2.86*ms])
+tau_mem = torch.Tensor([5*ms, 35*ms]).to(device)
+tau_syn = torch.Tensor([5*ms, 10*ms]).to(device)
+tau_ref = torch.Tensor([2.86*ms]).to(device)
 thr = torch.Tensor([1.]).to(device)
 
 input_neurons = torch.Tensor([28*28]).to(device)
