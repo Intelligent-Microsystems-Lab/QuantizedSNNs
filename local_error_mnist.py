@@ -251,13 +251,13 @@ class LinearLayer(nn.Module):
 
 
 class LIFDenseLayer(nn.Module):
-    def __init__(self, in_channels, out_channels, batch_size, bias=True, alpha = .9, beta=.85, firing_threshold = 1, device=torch.device("cpu"), dtype = torch.float):
+    def __init__(self, in_channels, out_channels, batch_size, bias=True, alpha = .9, beta=.85, thr = 1, device=torch.device("cpu"), dtype = torch.float):
         super(LIFDenseLayer, self).__init__()        
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.alpha = alpha
         self.beta = beta
-        self.firing_threshold = firing_threshold
+        self.thr = thr
         self.batch_size = batch_size
 
         self.weights = torch.empty((in_channels, out_channels),  device=device, dtype=dtype, requires_grad=True)
@@ -276,18 +276,18 @@ class LIFDenseLayer(nn.Module):
     def forward(self, input_t):
         self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.alpha * self.R - self.S, self.beta * self.Q + input_t
         self.U = torch.einsum("ab,bc->ac", (self.P, self.weights)) + self.bias + self.R
-        self.S = (self.U>self.firing_threshold).float()
+        self.S = (self.U>self.thr).float()
 
         return self.S
 
 
 class LIFConvLayer(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size, batch_size, tau_syn, tau_mem, tau_ref, delta_t, bias=True, firing_threshold = 1, device=torch.device("cpu"), dtype = torch.float):
+    def __init__(self, in_channels, out_channels, kernel_size, batch_size, tau_syn, tau_mem, tau_ref, delta_t, bias=True, thr = 1, device=torch.device("cpu"), dtype = torch.float):
         super(LIFConvLayer, self).__init__()        
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.kernel_size = kernel_size
-        self.firing_threshold = firing_threshold
+        self.thr = thr
         self.batch_size = batch_size
 
 
@@ -327,7 +327,7 @@ class LIFConvLayer(nn.Module):
         self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.gamma * self.R - self.S, self.beta * self.Q + input_t
 
         self.U = torch.einsum("ab,bc->ac", (self.P, self.weights)) + self.bias + self.R
-        self.S = (self.U>self.firing_threshold).float()
+        self.S = (self.U>self.thr).float()
 
         return self.S
 
@@ -366,6 +366,7 @@ burnin = 50*ms
 tau_mem = [5*ms, 35*ms]
 tau_syn = [5*ms, 10*ms]
 tau_ref = 2.86*ms
+thr = 1
 
 input_neurons = 28*28
 hidden1_neurons = 500
@@ -374,13 +375,13 @@ output_neurons = 10
 batch_size = 64
 
 
-layer1 = LIFConvLayer(in_channels = input_neurons, out_channels = hidden1_neurons, kernel_size = 7, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, batch_size = batch_size, device = device).to(device)
+layer1 = LIFConvLayer(in_channels = input_neurons, out_channels = hidden1_neurons, kernel_size = 7, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, batch_size = batch_size, device = device).to(device)
 random_readout1 = LinearLayer(hidden1_neurons, output_neurons).to(device)
 
-layer2 = LIFConvLayer(in_channels = hidden1_neurons, out_channels = hidden2_neurons, kernel_size = 7, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, batch_size = batch_size, device = device).to(device)
+layer2 = LIFConvLayer(in_channels = hidden1_neurons, out_channels = hidden2_neurons, kernel_size = 7, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, batch_size = batch_size, device = device).to(device)
 random_readout2 = LinearLayer(hidden2_neurons, output_neurons).to(device)
 
-layer3 = LIFConvLayer(in_channels = hidden2_neurons, out_channels = output_neurons, kernel_size = 7, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, batch_size = batch_size, device = device).to(device)
+layer3 = LIFConvLayer(in_channels = hidden2_neurons, out_channels = output_neurons, kernel_size = 7, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, batch_size = batch_size, device = device).to(device)
 
 log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
 nll_loss = torch.nn.NLLLoss()
@@ -391,7 +392,7 @@ for e in range(300):
     start_time = time.time()
     correct = 0
     total = 0
-    for x_local, y_local in sparse_data_generator(x_train, y_train, batch_size, T, samples = 3000, tau_eff = tau_mem, shuffle = True, device = device):
+    for x_local, y_local in sparse_data_generator(x_train, y_train, batch_size, T, samples = 3000, tau_eff = tau_mem, thr = thr, shuffle = True, device = device):
         loss_hist = 0
         class_rec = torch.zeros([batch_size, output_neurons]).to(device)
         for t in range(T/ms):
@@ -426,7 +427,7 @@ for e in range(300):
     # compute test accuracy
     tcorrect = 0
     ttotal = 0
-    for x_local, y_local in sparse_data_generator(x_test, y_test, batch_size, T_test, samples = 1024, shuffle = True, device = device):
+    for x_local, y_local in sparse_data_generator(x_test, y_test, batch_size, T_test, samples = 1024, tau_eff = tau_mem, thr = thr, shuffle = True, device = device):
         class_rec = torch.zeros([batch_size, output_neurons]).to(device)
         for t in range(T_test/ms):
             out_spikes1 = layer1.forward(x_local[:,t,:])
