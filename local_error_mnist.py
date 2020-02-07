@@ -53,6 +53,8 @@ def sparse_data_generator(X, y, batch_size, nb_steps, samples, tau_eff, thr, shu
     nb_units = X.shape[1]
 
     # compute discrete firing times
+    if type(tau_eff) == list:
+        tau_eff = (tau_eff[0] + tau_eff[1])/2
     firing_times = np.array(current2firing_time(X, tau = tau_eff, tmax = nb_steps, thr = thr), dtype = np.int)
     unit_numbers = np.arange(nb_units)
 
@@ -394,6 +396,7 @@ for e in range(300):
     total = 0
     for x_local, y_local in sparse_data_generator(x_train, y_train, batch_size, T, samples = 3000, tau_eff = tau_mem, thr = thr, shuffle = True, device = device):
         loss_hist = 0
+        import pdb; pdb.set_trace()
         class_rec = torch.zeros([batch_size, output_neurons]).to(device)
         for t in range(T/ms):
             # run network and random readouts
