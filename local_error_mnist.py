@@ -19,6 +19,7 @@ def spike_trains(rates, T, batches = 1):
     return spike_data
 
 def current2firing_time(x, tau=20, thr=0.2, tmax=1.0, epsilon=1e-7):
+    import pdb; pdb.set_trace()
     """ Computes first firing time latency for a current input x assuming the charge time of a current based LIF neuron.
 
     Args:
@@ -34,7 +35,7 @@ def current2firing_time(x, tau=20, thr=0.2, tmax=1.0, epsilon=1e-7):
     Time to first spike for each "current" x
     """
     idx = x < thr
-    x = torch.clip(x, thr + epsilon, 1e9)
+    x = torch.clamp(x, thr + epsilon, 1e9)
     T = tau * torch.log(x / (x - thr))
     T[idx] = tmax
     return T
