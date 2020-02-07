@@ -375,13 +375,13 @@ output_neurons = 10
 batch_size = 64
 
 
-layer1 = LIFConvLayer(in_channels = input_neurons, out_channels = hidden1_neurons, batch_size = batch_size, device = device).to(device)
+layer1 = LIFConvLayer(in_channels = input_neurons, out_channels = hidden1_neurons, kernel_size = 7, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, batch_size = batch_size, device = device).to(device)
 random_readout1 = LinearLayer(hidden1_neurons, output_neurons).to(device)
 
-layer2 = LIFConvLayer(in_channels = hidden1_neurons, out_channels = hidden2_neurons, batch_size = batch_size, device = device).to(device)
+layer2 = LIFConvLayer(in_channels = hidden1_neurons, out_channels = hidden2_neurons, kernel_size = 7, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref,batch_size = batch_size, device = device).to(device)
 random_readout2 = LinearLayer(hidden2_neurons, output_neurons).to(device)
 
-layer3 = LIFConvLayer(in_channels = hidden2_neurons, out_channels = output_neurons, batch_size = batch_size, device = device).to(device)
+layer3 = LIFConvLayer(in_channels = hidden2_neurons, out_channels = output_neurons, kernel_size = 7, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, batch_size = batch_size, device = device).to(device)
 
 log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
 nll_loss = torch.nn.NLLLoss()
