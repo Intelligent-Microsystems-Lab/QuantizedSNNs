@@ -49,8 +49,8 @@ def sparse_data_generator(X, y, batch_size, nb_steps, samples, tau_eff, thr, shu
     """
     # shuffle is obsolete now...
     sample_idx = torch.randperm(len(X))[:samples]
-    X = X[sample_idx]
-    y = y[sample_idx]
+    X = X[sample_idx].to(device)
+    y = y[sample_idx].to(device)
 
     labels_ = y.type(torch.uint8)
     number_of_batches = samples//batch_size
