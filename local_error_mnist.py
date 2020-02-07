@@ -399,7 +399,8 @@ for e in range(300):
 
     inf_time = time.time()
 
-    print("Epoch "+str(e)+": "+str(np.round(loss_hist.item(),4)) + " Train Acc: "+str(np.round(correct.item()/total, 4)) + " Test Acc: "+str(np.round(tcorrect.item()/ttotal, 4)) + "Train Time: "+str(np.round(start_time-train_time, 4))+"s Inference Time: "+str(np.round(train_time - inf_time, 4) +"s") )
+
+    print("Epoch "+str(e)+" | Loss: "+str(np.round(loss_hist.item(),4)) + " Train Acc: "+str(np.round(correct.item()/total, 4)) + " Test Acc: "+str(np.round(tcorrect.item()/ttotal, 4)) + " Train Time: "+str(np.round(train_time-start_time, 4))+"s Inference Time: "+str(np.round(inf_time - train_time, 4)) +"s") 
 
 
 
