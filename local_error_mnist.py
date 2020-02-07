@@ -47,11 +47,16 @@ def sparse_data_generator(X, y, batch_size, nb_steps, samples, tau_eff, thr, shu
         X: The data ( sample x event x 2 ) the last dim holds (time,neuron) tuples
         y: The labels
     """
-    import pdb; pdb.set_trace()
-    labels_ = torch.Tensor(y, dtype=np.int)
-    number_of_batches = len(X)//batch_size
+    # shuffle is obsolete now...
+    sample_idx = torch.randperm(len(X))[:samples]
+    X = X[sample_idx]
+    y = y[sample_idx]
+
+    labels_ = y.type(torch.uint8)
+    number_of_batches = samples//batch_size
     sample_index = torch.arange(len(X))
     nb_units = X.shape[1]
+
 
     # compute discrete firing times
     if tau_eff.shape[0] == 2:
@@ -59,9 +64,9 @@ def sparse_data_generator(X, y, batch_size, nb_steps, samples, tau_eff, thr, shu
     firing_times = torch.Tensor(current2firing_time(X, tau = tau_eff, tmax = nb_steps, thr = thr), dtype = np.int)
     unit_numbers = torch.arange(nb_units)
 
-    if shuffle:
-        torch.randperm(sample_index)
-        torch.random.shuffle(sample_index)
+    #if shuffle:
+    #    torch.randperm(sample_index)
+    #    torch.random.shuffle(sample_index)
 
     total_batch_count = 0
     counter = 0
