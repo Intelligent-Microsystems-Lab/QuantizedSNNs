@@ -242,9 +242,9 @@ class LinearLayer(nn.Module):
         self.output_features = output_features
 
         # weight and bias for forward pass
-        self.weight = nn.Parameter(torch.Tensor(output_features, input_features))
+        self.weight = nn.Parameter(torch.Tensor(int(output_features), int(input_features)))
         if bias:
-            self.bias = nn.Parameter(torch.Tensor(output_features))
+            self.bias = nn.Parameter(torch.Tensor(int(output_features)))
         else:
             self.register_parameter('bias', None)
 
