@@ -361,7 +361,7 @@ y_test  = np.array(test_dataset.test_labels, dtype=np.int)
 ms = 1e-3
 delta_t = 1*ms
 
-T = 500*ms
+T = 1000*ms
 T_test = 1000*ms
 burnin = 50*ms
 
