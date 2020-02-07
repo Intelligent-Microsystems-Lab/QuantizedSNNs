@@ -294,6 +294,8 @@ class LIFConvLayer(nn.Module):
         self.batch_size = batch_size
 
 
+        import pdb; pdb.set_trace()
+
         if tau_syn.shape[0] == 2:
             self.beta = torch.exp( -delta_t / torch.FloatTensor(self.in_channels).uniform_(tau_syn[0], tau_syn[0])).to(device)
         else:
@@ -377,7 +379,6 @@ hidden2_neurons = torch.Tensor([300]).to(device)
 output_neurons = torch.Tensor([10]).to(device)
 batch_size = torch.Tensor([64]).to(device)
 
-import pdb; pdb.set_trace()
 layer1 = LIFConvLayer(in_channels = input_neurons, out_channels = hidden1_neurons, kernel_size = 7, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, batch_size = batch_size, device = device).to(device)
 random_readout1 = LinearLayer(hidden1_neurons, output_neurons).to(device)
 
