@@ -294,8 +294,6 @@ class LIFConvLayer(nn.Module):
         self.batch_size = batch_size
 
 
-        import pdb; pdb.set_trace()
-
         if tau_syn.shape[0] == 2:
             self.beta = torch.exp( -delta_t / torch.Tensor(int(self.in_channels)).uniform_(tau_syn[0], tau_syn[0])).to(device)
         else:
