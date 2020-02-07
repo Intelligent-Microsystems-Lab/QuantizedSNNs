@@ -394,7 +394,7 @@ for e in range(300):
     start_time = time.time()
     correct = 0
     total = 0
-    for x_local, y_local in sparse_data_generator(x_train, y_train, batch_size, nb_steps=T/ms, samples = 3000, tau_eff = tau_mem, thr = thr, shuffle = True, device = device):
+    for x_local, y_local in sparse_data_generator(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, samples = 3000, tau_eff = tau_mem, thr = thr, shuffle = True, device = device):
         loss_hist = 0
         import pdb; pdb.set_trace()
         class_rec = torch.zeros([batch_size, output_neurons]).to(device)
@@ -430,7 +430,7 @@ for e in range(300):
     # compute test accuracy
     tcorrect = 0
     ttotal = 0
-    for x_local, y_local in sparse_data_generator(x_test, y_test, batch_size, nb_steps=T_test/ms, samples = 1024, tau_eff = tau_mem, thr = thr, shuffle = True, device = device):
+    for x_local, y_local in sparse_data_generator(x_test, y_test, batch_size = batch_size, nb_steps = T_test/ms, samples = 1024, tau_eff = tau_mem, thr = thr, shuffle = True, device = device):
         class_rec = torch.zeros([batch_size, output_neurons]).to(device)
         for t in range(T_test/ms):
             out_spikes1 = layer1.forward(x_local[:,t,:])
