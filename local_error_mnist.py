@@ -283,7 +283,7 @@ class LIFDenseLayer(nn.Module):
 
 class LIFConvLayer(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, batch_size, tau_syn, tau_mem, tau_ref, delta_t, bias=True, firing_threshold = 1, device=torch.device("cpu"), dtype = torch.float):
-        super(LIFDenseLayer, self).__init__()        
+        super(LIFConvLayer, self).__init__()        
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.kernel_size = kernel_size
