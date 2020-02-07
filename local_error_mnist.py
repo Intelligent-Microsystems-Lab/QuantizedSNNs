@@ -34,8 +34,8 @@ def current2firing_time(x, tau=20, thr=0.2, tmax=1.0, epsilon=1e-7):
     Time to first spike for each "current" x
     """
     idx = x < thr
-    x = np.clip(x, thr + epsilon, 1e9)
-    T = tau * np.log(x / (x - thr))
+    x = torch.clip(x, thr + epsilon, 1e9)
+    T = tau * torch.log(x / (x - thr))
     T[idx] = tmax
     return T
 
@@ -53,8 +53,8 @@ def sparse_data_generator(X, y, batch_size, nb_steps, samples, tau_eff, thr, shu
     nb_units = X.shape[1]
 
     # compute discrete firing times
-    if type(tau_eff) == list:
-        tau_eff = (tau_eff[0] + tau_eff[1])/2
+    if tau_eff.shape[0] == 2:
+        tau_eff = tau_eff.mean()
     firing_times = np.array(current2firing_time(X, tau = tau_eff, tmax = nb_steps, thr = thr), dtype = np.int)
     unit_numbers = np.arange(nb_units)
 
@@ -293,16 +293,16 @@ class LIFConvLayer(nn.Module):
         self.batch_size = batch_size
 
 
-        if type(tau_syn) == list:
+        if tau_syn.shape[0] == 2:
             self.beta = torch.exp( -delta_t / torch.FloatTensor(self.in_channels).uniform_(tau_syn[0], tau_syn[0])).to(device)
         else:
             self.beta = torch.FloatTensor([np.exp( - delta_t / tau_syn)]).to(device)
-        if type(tau_mem) == list:
+        if tau_mem.shape[0] == 2:
             self.alpha = torch.exp( -delta_t / torch.FloatTensor(self.in_channels).uniform_(tau_mem[0], tau_mem[0]))
         else:
             self.alpha = torch.FloatTensor([np.exp( - delta_t / tau_mem)]).to(device)
 
-        if type(tau_ref) == list:
+        if tau_ref.shape[0] == 2:
             self.gamma = torch.exp( -delta_t / torch.FloatTensor(self.in_channels).uniform_(tau_ref[0], tau_ref[0]))
         else:
             self.gamma = torch.FloatTensor([np.exp( - delta_t / tau_ref)]).to(device)
@@ -365,9 +365,9 @@ T = 1000*ms
 T_test = 1000*ms
 burnin = 50*ms
 
-tau_mem = [5*ms, 35*ms]
-tau_syn = [5*ms, 10*ms]
-tau_ref = 2.86*ms
+tau_mem = torch.Tensor([5*ms, 35*ms])
+tau_syn = torch.Tensor([5*ms, 10*ms])
+tau_ref = torch.Tesnor([2.86*ms])
 thr = 1
 
 input_neurons = 28*28
