@@ -287,8 +287,6 @@ class LIFConvLayer(nn.Module):
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.kernel_size = kernel_size
-        self.alpha = alpha
-        self.beta = beta
         self.firing_threshold = firing_threshold
         self.batch_size = batch_size
 
