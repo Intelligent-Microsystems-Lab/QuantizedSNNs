@@ -79,7 +79,7 @@ def sparse_data_generator(X, y, batch_size, nb_steps, samples, tau_eff, thr, shu
         i = torch.LongTensor(coo).to(device)
         v = torch.FloatTensor(np.ones(len(coo[0]))).to(device)
     
-        X_batch = torch.sparse.FloatTensor(i, v, torch.Size([batch_size,nb_steps,nb_units])).to(device)
+        X_batch = torch.sparse.FloatTensor(i, v, torch.Size([batch_size, int(nb_steps), nb_units])).to(device)
         y_batch = torch.tensor(labels_[batch_index],device=device)
 
         try:
