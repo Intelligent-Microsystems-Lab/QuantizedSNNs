@@ -346,7 +346,7 @@ layer3 = LIFDenseLayer(in_channels = hidden2_neurons, out_channels = output_neur
 
 log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
 nll_loss = torch.nn.NLLLoss()
-opt = torch.optim.Adam([layer1.weights, layer1.bias, layer2.weights, layer2.bias, layer3.weights, layer3.bias], lr=1e-7, betas=[0., .95])
+opt = torch.optim.Adam([layer1.weights, layer1.bias, layer2.weights, layer2.bias, layer3.weights, layer3.bias], lr=1e-6, betas=[0., .95])
 
 for e in range(300):
     start_time = time.time()
@@ -358,25 +358,23 @@ for e in range(300):
         for t in range(T):
             # run network and random readouts
             out_spikes1 = layer1.forward(x_local[:,t,:])
+            rreadout1 = random_readout1(superspike(layer1.U))
+            y_log_p1 = log_softmax_fn(rreadout1)
+            loss_t = nll_loss(y_log_p1, y_local)
+
             out_spikes2 = layer2.forward(out_spikes1)
+            rreadout2 = random_readout2(superspike(layer2.U))
+            y_log_p2 = log_softmax_fn(rreadout2)
+            loss_t += nll_loss(y_log_p2, y_local)
+
             out_spikes3 = layer3.forward(out_spikes2)
-
-            if t > burnin:
-                rreadout1 = random_readout1(superspike(layer1.U))
-                y_log_p1 = log_softmax_fn(rreadout1)
-                loss_t = nll_loss(y_log_p1, y_local)
-
-                rreadout2 = random_readout2(superspike(layer2.U))
-                y_log_p2 = log_softmax_fn(rreadout2)
-                loss_t += nll_loss(y_log_p2, y_local)
-
-                y_log_p3 = log_softmax_fn(superspike(layer3.U))
-                loss_t += nll_loss(y_log_p3, y_local)
-     
-                loss_t.backward()
-                opt.step()
-                opt.zero_grad()
-                loss_hist += loss_t
+            y_log_p3 = log_softmax_fn(superspike(layer3.U))
+            loss_t += nll_loss(y_log_p3, y_local)
+ 
+            loss_t.backward()
+            opt.step()
+            opt.zero_grad()
+            loss_hist += loss_t
 
             class_rec += out_spikes3
         correct += (torch.max(class_rec, dim = 1).indices == y_local).sum() 
