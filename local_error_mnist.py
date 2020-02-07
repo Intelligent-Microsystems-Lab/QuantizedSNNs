@@ -384,7 +384,8 @@ layer3 = LIFConvLayer(in_channels = hidden2_neurons, out_channels = output_neuro
 
 log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
 nll_loss = torch.nn.NLLLoss()
-opt = torch.optim.Adam([layer1.parameters(), layer2.parameters(), layer3.parameters()], lr=1e-5, betas=[0., .95])
+params = list(layer1.parameters()) + list(layer2.parameters()) + list(layer3.parameters())
+opt = torch.optim.Adam(params, lr=1e-5, betas=[0., .95])
 
 for e in range(300):
     start_time = time.time()
