@@ -367,7 +367,7 @@ burnin = 50*ms
 
 tau_mem = torch.Tensor([5*ms, 35*ms])
 tau_syn = torch.Tensor([5*ms, 10*ms])
-tau_ref = torch.Tesnor([2.86*ms])
+tau_ref = torch.Tensor([2.86*ms])
 thr = 1
 
 input_neurons = 28*28
