@@ -3,44 +3,42 @@ import torch.nn as nn
 import torchvision
 import pickle
 import time
+import numpy as np
 
 import matplotlib.pyplot as plt
 
 
-def spike_trains(rates, T, batches = 1):
-    spike_data = torch.zeros(batches, len(rates),T)
-    for j in range(batches):
-        for i in range(len(rates)):
-            spike_times = torch.cumsum(torch.distributions.poisson.Poisson(int(rates[i])).sample([int(T+rates[i])]), dim = 0)
-            spike_times = spike_times[int(rates[i]):]
-            spike_times = spike_times[spike_times < T]
-            spike_data[j, i, :].index_fill_(0, spike_times.type(torch.LongTensor), 1)
-    return spike_data
-
-def current2firing_time(x, tau=20, thr=0.2, tmax=1.0, epsilon=1e-7):
-    import pdb; pdb.set_trace()
-    """ Computes first firing time latency for a current input x assuming the charge time of a current based LIF neuron.
-
-    Args:
-    x -- The "current" values
-
-    Keyword args:
-    tau -- The membrane time constant of the LIF neuron to be charged
-    thr -- The firing threshold value 
-    tmax -- The maximum time returned 
-    epsilon -- A generic (small) epsilon > 0
-
-    Returns:
-    Time to first spike for each "current" x
-    """
-    idx = x < thr
-    x = torch.clamp(x, thr + epsilon, 1e9)
-    T = tau * torch.log(x / (x - thr))
-    T[idx] = tmax
-    return T
+def __gen_ST(N, T, rate, mode = 'regular'):    
+    if mode == 'regular':
+        spikes = np.zeros([T, N])
+        spikes[::(1000//rate)] = 1
+        return spikes
+    elif mode == 'poisson':
+        spikes = np.ones([T, N])        
+        spikes[np.random.binomial(1,float(1000. - rate)/1000, size=(T,N)).astype('bool')] = 0
+        return spikes
+    else:
+        raise Exception('mode must be regular or Poisson')
+        
+def spiketrains(N, T, rates, mode = 'poisson'):
+    '''
+    *N*: number of neurons
+    *T*: number of time steps
+    *rates*: vector or firing rates, one per neuron
+    *mode*: 'regular' or 'poisson'
+    '''
+    if not hasattr(rates, '__iter__'):
+        return __gen_ST(N, T, rates, mode)
+    rates = np.array(rates)
+    M = rates.shape[0]
+    spikes = np.zeros([T, N])
+    for i in range(M):
+        if int(rates[i])>0:
+            spikes[:,i] = __gen_ST(1, T, int(rates[i]), mode = mode).flatten()
+    return spikes
 
 
-def sparse_data_generator(X, y, batch_size, nb_steps, samples, tau_eff, thr, shuffle=True, time_step=1e-3, device=torch.device("cpu")):
+def sparse_data_generator(X, y, batch_size, nb_steps, samples, max_hertz, shuffle=True, device=torch.device("cpu")):
     """ This generator takes datasets in analog format and generates spiking network input as sparse tensors. 
 
     Args:
@@ -49,51 +47,74 @@ def sparse_data_generator(X, y, batch_size, nb_steps, samples, tau_eff, thr, shu
     """
     # shuffle is obsolete now...
     sample_idx = torch.randperm(len(X))[:samples]
-    X = X[sample_idx].to(device)
-    y = y[sample_idx].to(device)
+    number_of_batches = int(np.ceil(samples/batch_size))
+    nb_steps = int(nb_steps)
 
-    labels_ = y.type(torch.uint8)
-    number_of_batches = samples//batch_size
-    sample_index = torch.arange(len(X))
-    nb_units = X.shape[1]
-
-
-    # compute discrete firing times
-    if tau_eff.shape[0] == 2:
-        tau_eff = tau_eff.mean()
-    firing_times = torch.Tensor(current2firing_time(X, tau = tau_eff, tmax = nb_steps, thr = thr), dtype = np.int)
-    unit_numbers = torch.arange(nb_units)
-
-    #if shuffle:
-    #    torch.randperm(sample_index)
-    #    torch.random.shuffle(sample_index)
-
-    total_batch_count = 0
     counter = 0
     while counter<number_of_batches:
-        batch_index = sample_index[batch_size*counter:batch_size*(counter+1)]
+        if counter == number_of_batches:
+            cur_sample = sample_idx[batch_size*counter:]
+        else:
+            cur_sample = sample_idx[batch_size*counter:batch_size*(counter+1)]
+        X_batch = np.zeros((batch_size, nb_steps, X.shape[1]))
+        for i,idx in enumerate(cur_sample):
+            X_batch[i] = spiketrains(T = nb_steps, N = X.shape[1], rates=max_hertz*X[idx,:]).astype(np.float32)
 
-        coo = [ [] for i in range(3) ]
-        for bc,idx in enumerate(batch_index):
-            c = firing_times[idx]<nb_steps
-            times, units = firing_times[idx][c], unit_numbers[c]
-
-            batch = [bc for _ in range(len(times))]
-            coo[0].extend(batch)
-            coo[1].extend(times)
-            coo[2].extend(units)
-
-        i = torch.LongTensor(coo).to(device)
-        v = torch.FloatTensor(torch.ones(len(coo[0]))).to(device)
-    
-        X_batch = torch.sparse.FloatTensor(i, v, torch.Size([batch_size, int(nb_steps), nb_units])).to(device)
-        y_batch = torch.tensor(labels_[batch_index],device=device)
-
+        X_batch = torch.from_numpy(X_batch).float()
+        y_batch = torch.tensor(y[cur_sample])
         try:
-            yield X_batch.to(device=device).to_dense(), y_batch.to(device=device)
+            yield X_batch.to(device), y_batch.to(device)
             counter += 1
         except StopIteration:
             return
+
+
+    # import pdb; pdb.set_trace()
+    # X = X[sample_idx].to(device)
+    # y = y[sample_idx].to(device)
+
+    # labels_ = y.type(torch.uint8)
+    # number_of_batches = samples//batch_size
+    # sample_index = torch.arange(len(X))
+    # nb_units = X.shape[1]
+
+
+    # # compute discrete firing times
+    # if tau_eff.shape[0] == 2:
+    #     tau_eff = tau_eff.mean()
+    # firing_times = torch.Tensor(current2firing_time(X, tau = tau_eff, tmax = nb_steps, thr = thr), dtype = np.int)
+    # unit_numbers = torch.arange(nb_units)
+
+    # #if shuffle:
+    # #    torch.randperm(sample_index)
+    # #    torch.random.shuffle(sample_index)
+
+    # total_batch_count = 0
+    # counter = 0
+    # while counter<number_of_batches:
+    #     batch_index = sample_index[batch_size*counter:batch_size*(counter+1)]
+
+    #     coo = [ [] for i in range(3) ]
+    #     for bc,idx in enumerate(batch_index):
+    #         c = firing_times[idx]<nb_steps
+    #         times, units = firing_times[idx][c], unit_numbers[c]
+
+    #         batch = [bc for _ in range(len(times))]
+    #         coo[0].extend(batch)
+    #         coo[1].extend(times)
+    #         coo[2].extend(units)
+
+    #     i = torch.LongTensor(coo).to(device)
+    #     v = torch.FloatTensor(torch.ones(len(coo[0]))).to(device)
+    
+    #     X_batch = torch.sparse.FloatTensor(i, v, torch.Size([batch_size, nb_steps, nb_units])).to(device)
+    #     y_batch = torch.tensor(labels_[batch_index],device=device)
+
+    #     try:
+    #         yield X_batch.to(device=device).to_dense(), y_batch.to(device=device)
+    #         counter += 1
+    #     except StopIteration:
+    #         return
 
 
 
@@ -248,9 +269,9 @@ class LinearLayer(nn.Module):
         self.output_features = output_features
 
         # weight and bias for forward pass
-        self.weight = nn.Parameter(torch.Tensor(int(output_features), int(input_features)))
+        self.weight = nn.Parameter(torch.Tensor(output_features, input_features))
         if bias:
-            self.bias = nn.Parameter(torch.Tensor(int(output_features)))
+            self.bias = nn.Parameter(torch.Tensor(output_features))
         else:
             self.register_parameter('bias', None)
 
@@ -301,35 +322,35 @@ class LIFConvLayer(nn.Module):
 
 
         if tau_syn.shape[0] == 2:
-            self.beta = torch.exp( -delta_t / torch.Tensor(int(self.in_channels)).uniform_(tau_syn[0], tau_syn[0]).to(device))
+            self.beta = torch.exp( -delta_t / torch.Tensor(self.in_channels).uniform_(tau_syn[0], tau_syn[0]).to(device))
         else:
             self.beta = torch.Tensor([torch.exp( - delta_t / tau_syn)]).to(device)
         if tau_mem.shape[0] == 2:
-            self.alpha = torch.exp( -delta_t / torch.Tensor(int(self.in_channels)).uniform_(tau_mem[0], tau_mem[0]).to(device))
+            self.alpha = torch.exp( -delta_t / torch.Tensor(self.in_channels).uniform_(tau_mem[0], tau_mem[0]).to(device))
         else:
             self.alpha = torch.Tensor([torch.exp( - delta_t / tau_mem)]).to(device)
 
         if tau_ref.shape[0] == 2:
-            self.gamma = torch.exp( -delta_t / torch.Tensor(int(self.in_channels)).uniform_(tau_ref[0], tau_ref[0]).to(device))
+            self.gamma = torch.exp( -delta_t / torch.Tensor(self.in_channels).uniform_(tau_ref[0], tau_ref[0]).to(device))
         else:
             self.gamma = torch.Tensor([torch.exp( - delta_t / tau_ref)]).to(device)
 
 
-        self.weights = nn.Parameter(torch.empty((int(self.in_channels), int(self.out_channels)),  device=device, dtype=dtype, requires_grad=True))
+        self.weights = nn.Parameter(torch.empty((self.in_channels, self.out_channels),  device=device, dtype=dtype, requires_grad=True))
         torch.nn.init.uniform_(self.weights, a = -.3, b = .3)
 
         if bias:
-            self.bias = nn.Parameter(torch.empty((int(out_channels)),  device=device, dtype=dtype, requires_grad=True))
+            self.bias = nn.Parameter(torch.empty(out_channels,  device=device, dtype=dtype, requires_grad=True))
             torch.nn.init.uniform_(self.bias, a = -.01, b = .01)
         else:
             self.register_parameter('bias', None)
 
 
-        self.P = torch.zeros(int(self.batch_size), int(self.in_channels)).detach().to(device)
-        self.Q = torch.zeros(int(self.batch_size), int(self.in_channels)).detach().to(device)
-        self.R = torch.zeros(int(self.batch_size), int(self.out_channels)).detach().to(device)
-        self.S = torch.zeros(int(self.batch_size), int(self.out_channels)).detach().to(device)
-        self.U = torch.zeros(int(self.batch_size), int(self.out_channels)).detach().to(device)
+        self.P = torch.zeros(self.batch_size, self.in_channels).detach().to(device)
+        self.Q = torch.zeros(self.batch_size, self.in_channels).detach().to(device)
+        self.R = torch.zeros(self.batch_size, self.out_channels).detach().to(device)
+        self.S = torch.zeros(self.batch_size, self.out_channels).detach().to(device)
+        self.U = torch.zeros(self.batch_size, self.out_channels).detach().to(device)
     
     
     def forward(self, input_t):
@@ -350,10 +371,9 @@ else:
     device = torch.device("cpu")
 dtype = torch.float
 
+
 train_dataset = torchvision.datasets.MNIST('../data', train=True, transform=None, target_transform=None, download=True)
 test_dataset = torchvision.datasets.MNIST('../data', train=False, transform=None, target_transform=None, download=True)
-
-# dont use full set
 
 # Standardize data
 x_train = train_dataset.data.type(dtype)
@@ -364,24 +384,23 @@ x_test = x_test.reshape(x_test.shape[0],-1)/255
 y_train = train_dataset.targets
 y_test  = test_dataset.targets
 
+ms = 1e-3
+delta_t = 1*ms
 
-ms = torch.Tensor([1e-3]).to(device)
-delta_t = torch.Tensor([1*ms]).to(device)
-
-T = torch.Tensor([1000*ms]).to(device)
-T_test = torch.Tensor([1000*ms]).to(device)
-burnin = torch.Tensor([50*ms]).to(device)
+T = 1000*ms
+T_test = 1000*ms
+burnin = 50*ms
 
 tau_mem = torch.Tensor([5*ms, 35*ms]).to(device)
 tau_syn = torch.Tensor([5*ms, 10*ms]).to(device)
 tau_ref = torch.Tensor([2.86*ms]).to(device)
 thr = torch.Tensor([1.]).to(device)
 
-input_neurons = torch.Tensor([28*28]).to(device)
-hidden1_neurons = torch.Tensor([500]).to(device)
-hidden2_neurons = torch.Tensor([300]).to(device)
-output_neurons = torch.Tensor([10]).to(device)
-batch_size = torch.Tensor([64]).to(device)
+input_neurons = 28*28
+hidden1_neurons = 500
+hidden2_neurons = 300
+output_neurons = 10
+batch_size = 64
 
 layer1 = LIFConvLayer(in_channels = input_neurons, out_channels = hidden1_neurons, kernel_size = 7, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, batch_size = batch_size, device = device).to(device)
 random_readout1 = LinearLayer(hidden1_neurons, output_neurons).to(device)
@@ -400,12 +419,19 @@ for e in range(300):
     start_time = time.time()
     correct = 0
     total = 0
-    for x_local, y_local in sparse_data_generator(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, samples = 3000, tau_eff = tau_mem/ms, thr = thr, shuffle = True, device = device):
+    for x_local, y_local in sparse_data_generator(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, samples = 3000, max_hertz = 50, shuffle = True, device = device):
         loss_hist = 0
-        import pdb; pdb.set_trace()
         class_rec = torch.zeros([batch_size, output_neurons]).to(device)
-        for t in range(T/ms):
-            # run network and random readouts
+
+        # burnin
+        for t in range(int(T_test/ms)):
+            out_spikes1 = layer1.forward(x_local[:,t,:])
+            out_spikes2 = layer2.forward(out_spikes1)
+            out_spikes3 = layer3.forward(out_spikes2)
+            class_rec += out_spikes3
+
+        # training
+        for t in range(int(T/ms)):
             out_spikes1 = layer1.forward(x_local[:,t,:])
             rreadout1 = random_readout1(SmoothStep(layer1.U))
             y_log_p1 = log_softmax_fn(rreadout1)
@@ -436,9 +462,9 @@ for e in range(300):
     # compute test accuracy
     tcorrect = 0
     ttotal = 0
-    for x_local, y_local in sparse_data_generator(x_test, y_test, batch_size = batch_size, nb_steps = T_test/ms, samples = 1024, tau_eff = tau_mem/ms, thr = thr, shuffle = True, device = device):
+    for x_local, y_local in sparse_data_generator(x_test, y_test, batch_size = batch_size, nb_steps = T_test/ms, samples = 1024, max_hertz = 50, shuffle = True, device = device):
         class_rec = torch.zeros([batch_size, output_neurons]).to(device)
-        for t in range(T_test/ms):
+        for t in range(int(T_test/ms)):
             out_spikes1 = layer1.forward(x_local[:,t,:])
             out_spikes2 = layer2.forward(out_spikes1)
             out_spikes3 = layer3.forward(out_spikes2)
