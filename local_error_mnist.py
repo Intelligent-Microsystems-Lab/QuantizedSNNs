@@ -56,7 +56,8 @@ def sparse_data_generator(X, y, batch_size, nb_steps, samples, max_hertz, shuffl
             cur_sample = sample_idx[batch_size*counter:]
         else:
             cur_sample = sample_idx[batch_size*counter:batch_size*(counter+1)]
-        X_batch = np.zeros((batch_size, nb_steps, X.shape[1]))
+
+        X_batch = np.zeros((cur_sample.shape[0], nb_steps, X.shape[1]))
         for i,idx in enumerate(cur_sample):
             X_batch[i] = spiketrains(T = nb_steps, N = X.shape[1], rates=max_hertz*X[idx,:]).astype(np.float32)
 
@@ -67,55 +68,6 @@ def sparse_data_generator(X, y, batch_size, nb_steps, samples, max_hertz, shuffl
             counter += 1
         except StopIteration:
             return
-
-
-    # import pdb; pdb.set_trace()
-    # X = X[sample_idx].to(device)
-    # y = y[sample_idx].to(device)
-
-    # labels_ = y.type(torch.uint8)
-    # number_of_batches = samples//batch_size
-    # sample_index = torch.arange(len(X))
-    # nb_units = X.shape[1]
-
-
-    # # compute discrete firing times
-    # if tau_eff.shape[0] == 2:
-    #     tau_eff = tau_eff.mean()
-    # firing_times = torch.Tensor(current2firing_time(X, tau = tau_eff, tmax = nb_steps, thr = thr), dtype = np.int)
-    # unit_numbers = torch.arange(nb_units)
-
-    # #if shuffle:
-    # #    torch.randperm(sample_index)
-    # #    torch.random.shuffle(sample_index)
-
-    # total_batch_count = 0
-    # counter = 0
-    # while counter<number_of_batches:
-    #     batch_index = sample_index[batch_size*counter:batch_size*(counter+1)]
-
-    #     coo = [ [] for i in range(3) ]
-    #     for bc,idx in enumerate(batch_index):
-    #         c = firing_times[idx]<nb_steps
-    #         times, units = firing_times[idx][c], unit_numbers[c]
-
-    #         batch = [bc for _ in range(len(times))]
-    #         coo[0].extend(batch)
-    #         coo[1].extend(times)
-    #         coo[2].extend(units)
-
-    #     i = torch.LongTensor(coo).to(device)
-    #     v = torch.FloatTensor(torch.ones(len(coo[0]))).to(device)
-    
-    #     X_batch = torch.sparse.FloatTensor(i, v, torch.Size([batch_size, nb_steps, nb_units])).to(device)
-    #     y_batch = torch.tensor(labels_[batch_index],device=device)
-
-    #     try:
-    #         yield X_batch.to(device=device).to_dense(), y_batch.to(device=device)
-    #         counter += 1
-    #     except StopIteration:
-    #         return
-
 
 
 def aux_plot_i_u_s(inputs, rec_u, rec_s, batches, filename = ''):
@@ -420,6 +372,7 @@ for e in range(300):
     correct = 0
     total = 0
     for x_local, y_local in sparse_data_generator(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, samples = 3000, max_hertz = 50, shuffle = True, device = device):
+
         loss_hist = 0
         class_rec = torch.zeros([batch_size, output_neurons]).to(device)
 
