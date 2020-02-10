@@ -9,40 +9,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def __gen_ST(N, T, rate, mode = 'regular'):    
-    if mode == 'regular':
-        spikes = np.zeros([T, N])
-        spikes[::(1000//rate)] = 1
-        return spikes
-    elif mode == 'poisson':
-        spikes = np.ones([T, N])        
-        spikes[np.random.binomial(1,float(1000. - rate)/1000, size=(T,N)).astype('bool')] = 0
-        return spikes
-    else:
-        raise Exception('mode must be regular or Poisson')
-        
-def spiketrains(N, T, dim, rates, mode = 'poisson'):
-    '''
-    *N*: number of neurons, as shape tuple
-    *T*: number of time steps
-    *rates*: vector or firing rates, one per neuron
-    *mode*: 'regular' or 'poisson'
-    '''
-    if not hasattr(rates, '__iter__'):
-        return __gen_ST(N, T, rates, mode)
-    rates = np.array(rates)
-    M = rates.shape[0]
-    spikes = np.zeros([T, N])
-    for i in range(M):
-        if int(rates[i])>0:
-            spikes[:,i] = __gen_ST(1, T, int(rates[i]), mode = mode).flatten()
-    return spikes
-
 def clee_spikes(T, rates):
-    import pdb; pdb.set_trace()
-    spikes = np.ones((rates.shape + (T,)))        
-    spikes[np.random.binomial(1, (1000. - rates)/1000, size=(rates.shape + (T,))).astype('bool')] = 0
-    return spikes
+    spikes = np.ones((T, + np.prod(rates.shape)))        
+    spikes[np.random.binomial(1, (1000. - rates.flatten())/1000, size=(T,  np.prod(rates.shape))).astype('bool')] = 0
+    return spikes.T.reshape((rates.shape + (T,)))
 
 
 def sparse_data_generator(X, y, batch_size, nb_steps, samples, max_hertz, shuffle=True, device=torch.device("cpu")):
@@ -366,25 +336,39 @@ delta_t = 1*ms
 T = 500*ms
 T_test = 1000*ms
 burnin = 50*ms
+batch_size = 64
 
 tau_mem = torch.Tensor([5*ms, 35*ms]).to(device)
 tau_syn = torch.Tensor([5*ms, 10*ms]).to(device)
 tau_ref = torch.Tensor([2.86*ms]).to(device)
 thr = torch.Tensor([1.]).to(device)
 
-input_neurons = 28*28
-hidden1_neurons = 500
-hidden2_neurons = 300
-output_neurons = 10
-batch_size = 64
 
-layer1 = LIFDenseLayer(in_channels = input_neurons, out_channels = hidden1_neurons, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
+# dense architecture
+# input_neurons = 28*28
+# hidden1_neurons = 500
+# hidden2_neurons = 300
+# output_neurons = 10
+
+# layer1 = LIFDenseLayer(in_channels = input_neurons, out_channels = hidden1_neurons, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
+# random_readout1 = LinearLayer(hidden1_neurons, output_neurons).to(device)
+
+# layer2 = LIFDenseLayer(in_channels = hidden1_neurons, out_channels = hidden2_neurons, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
+# random_readout2 = LinearLayer(hidden2_neurons, output_neurons).to(device)
+
+# layer3 = LIFDenseLayer(in_channels = hidden2_neurons, out_channels = output_neurons, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
+
+
+layer1 = LIFConvLayer(kernel_size = 7, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
 random_readout1 = LinearLayer(hidden1_neurons, output_neurons).to(device)
 
-layer2 = LIFDenseLayer(in_channels = hidden1_neurons, out_channels = hidden2_neurons, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
+layer2 = LIFConvLayer(kernel_size = 7, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
 random_readout2 = LinearLayer(hidden2_neurons, output_neurons).to(device)
 
-layer3 = LIFDenseLayer(in_channels = hidden2_neurons, out_channels = output_neurons, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
+layer3 = LIFConvLayer(kernel_size = 7, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
+random_readout3 = LinearLayer(hidden2_neurons, output_neurons).to(device)
+
+layer4 = LIFDenseLayer(in_channels = hidden2_neurons, out_channels = output_neurons, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
 
 log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
 nll_loss = torch.nn.NLLLoss()
@@ -396,6 +380,8 @@ for e in range(300):
     correct = 0
     total = 0
     for x_local, y_local in sparse_data_generator(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, samples = 3000, max_hertz = 50, shuffle = True, device = device):
+        import pdb; pdb.set_trace()
+
         layer1.state_init(x_local.shape[0])
         layer2.state_init(x_local.shape[0])
         layer3.state_init(x_local.shape[0])
