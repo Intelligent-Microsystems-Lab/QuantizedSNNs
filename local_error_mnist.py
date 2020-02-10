@@ -8,12 +8,11 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-
 def clee_spikes(T, rates):
     spikes = np.ones((T, + np.prod(rates.shape)))        
-    spikes[np.random.binomial(1, (1000. - rates.flatten())/1000, size=(T,  np.prod(rates.shape))).astype('bool')] = 0
+    spikes[np.random.binomial(1, (1000. - rates.flatten())/1000, size=(T, np.prod(rates.shape))).astype('bool')] = 0
+    import pdb; pdb.set_trace()
     return spikes.T.reshape((rates.shape + (T,)))
-
 
 def sparse_data_generator(X, y, batch_size, nb_steps, samples, max_hertz, shuffle=True, device=torch.device("cpu")):
     """ This generator takes datasets in analog format and generates spiking network input as sparse tensors. 
@@ -230,7 +229,7 @@ class LIFDenseLayer(nn.Module):
             self.alpha = torch.Tensor([torch.exp( - delta_t / tau_mem)]).to(device)
 
         if tau_ref.shape[0] == 2:
-            self.gamma = torch.exp( -delta_t / torch.Tensor(self.in_channels).uniform_(tau_ref[0], tau_ref[0]).to(device))
+            self.gamma = torch.exp( -delta_t / torch.Tensor(self.out_channels).uniform_(tau_ref[0], tau_ref[0]).to(device))
         else:
             self.gamma = torch.Tensor([torch.exp( - delta_t / tau_ref)]).to(device)
 
@@ -262,47 +261,56 @@ class LIFDenseLayer(nn.Module):
 
 
 class LIFConvLayer(nn.Module):
-    def __init__(self, kernel_size, tau_syn, tau_mem, tau_ref, delta_t, bias=True, thr = 1, device=torch.device("cpu"), dtype = torch.float):
-        super(LIFConvLayer, self).__init__()        
+    def __init__(self, inp_shape, kernel_size, out_channels, tau_syn, tau_mem, tau_ref, delta_t, bias=True, thr = 1, device=torch.device("cpu"), dtype = torch.float):
+        super(LIFConvLayer, self).__init__()   
+        self.inp_shape = inp_shape
         self.kernel_size = kernel_size
+        self.out_channels = out_channels     
+        self.mpool2x2 = nn.MaxPool2d(2, stride=2, return_indices=False) 
         self.thr = thr
 
-        if tau_syn.shape[0] == 2:
-            self.beta = torch.exp( -delta_t / torch.Tensor(self.in_channels).uniform_(tau_syn[0], tau_syn[0]).to(device))
-        else:
-            self.beta = torch.Tensor([torch.exp( - delta_t / tau_syn)]).to(device)
-        if tau_mem.shape[0] == 2:
-            self.alpha = torch.exp( -delta_t / torch.Tensor(self.in_channels).uniform_(tau_mem[0], tau_mem[0]).to(device))
-        else:
-            self.alpha = torch.Tensor([torch.exp( - delta_t / tau_mem)]).to(device)
-
-        if tau_ref.shape[0] == 2:
-            self.gamma = torch.exp( -delta_t / torch.Tensor(self.in_channels).uniform_(tau_ref[0], tau_ref[0]).to(device))
-        else:
-            self.gamma = torch.Tensor([torch.exp( - delta_t / tau_ref)]).to(device)
-
-
-        self.weights = nn.Parameter(torch.empty((self.kernel_size, self.kernel_size),  device=device, dtype=dtype, requires_grad=True))
+        self.weights = nn.Parameter(torch.empty((self.out_channels, inp_shape[0],  self.kernel_size, self.kernel_size),  device=device, dtype=dtype, requires_grad=True))
         torch.nn.init.uniform_(self.weights, a = -.3, b = .3)
 
         if bias:
-            self.bias = nn.Parameter(torch.empty(1,  device=device, dtype=dtype, requires_grad=True))
+            self.bias = nn.Parameter(torch.empty(self.out_channels, device=device, dtype=dtype, requires_grad=True))
             torch.nn.init.uniform_(self.bias, a = -.01, b = .01)
         else:
             self.register_parameter('bias', None)
 
+        self.out_shape = self.mpool2x2(F.conv2d(input = torch.zeros((1,)+self.inp_shape).to(device), weight = self.weights, bias=self.bias, stride=1, padding=0, dilation=1, groups=1)).shape[1:]
+        self.thr = thr
+
+        if tau_syn.shape[0] == 2:
+            self.beta = torch.exp( -delta_t / torch.Tensor(self.inp_shape).uniform_(tau_syn[0], tau_syn[0]).to(device))
+        else:
+            self.beta = torch.Tensor([torch.exp( - delta_t / tau_syn)]).to(device)
+        if tau_mem.shape[0] == 2:
+            self.alpha = torch.exp( -delta_t / torch.Tensor(self.inp_shape).uniform_(tau_mem[0], tau_mem[0]).to(device))
+        else:
+            self.alpha = torch.Tensor([torch.exp( - delta_t / tau_mem)]).to(device)
+
+        if tau_ref.shape[0] == 2:
+            self.gamma = torch.exp( -delta_t / torch.Tensor(self.out_shape).uniform_(tau_ref[0], tau_ref[0]).to(device))
+        else:
+            self.gamma = torch.Tensor([torch.exp( - delta_t / tau_ref)]).to(device)
+
+
+        
+
     def state_init(self, batch_size):
-        self.P = torch.zeros(batch_size, self.in_channels).detach().to(device)
-        self.Q = torch.zeros(batch_size, self.in_channels).detach().to(device)
-        self.R = torch.zeros(batch_size, self.out_channels).detach().to(device)
-        self.S = torch.zeros(batch_size, self.out_channels).detach().to(device)
-        self.U = torch.zeros(batch_size, self.out_channels).detach().to(device)
+        self.P = torch.zeros((batch_size,) + self.inp_shape).detach().to(device)
+        self.Q = torch.zeros((batch_size,) + self.inp_shape).detach().to(device)
+        self.R = torch.zeros((batch_size,) + self.out_shape).detach().to(device)
+        self.S = torch.zeros((batch_size,) + self.out_shape).detach().to(device)
+        self.U = torch.zeros((batch_size,) + self.out_shape).detach().to(device)
 
     
     def forward(self, input_t):
+        import pdb; pdb.set_trace()
         self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.gamma * self.R - self.S, self.beta * self.Q + input_t
 
-        self.U = F.conv2d(self.P, self.weights, bias=self.bias, stride=1, padding=0, dilation=1, groups=1) + self.R
+        self.U = self.mpool2x2(F.conv2d(self.P, self.weights, bias=self.bias, stride=1, padding=0, dilation=1, groups=1)) + self.R
         self.S = (self.U>self.thr).float()
 
         return self.S
@@ -323,7 +331,9 @@ test_dataset = torchvision.datasets.MNIST('../data', train=False, transform=None
 
 # Standardize data
 x_train = train_dataset.data.type(dtype)/255
+x_train = x_train.reshape((x_train.shape[0],) + (1,) + x_train.shape[1:])
 x_test = test_dataset.data.type(dtype)/255
+x_test = x_test.reshape((x_test.shape[0],) + (1,) + x_test.shape[1:])
 
 y_train = train_dataset.targets
 y_test  = test_dataset.targets
@@ -337,6 +347,7 @@ T = 500*ms
 T_test = 1000*ms
 burnin = 50*ms
 batch_size = 64
+output_neurons = 10
 
 tau_mem = torch.Tensor([5*ms, 35*ms]).to(device)
 tau_syn = torch.Tensor([5*ms, 10*ms]).to(device)
@@ -359,16 +370,16 @@ thr = torch.Tensor([1.]).to(device)
 # layer3 = LIFDenseLayer(in_channels = hidden2_neurons, out_channels = output_neurons, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
 
 
-layer1 = LIFConvLayer(kernel_size = 7, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
-random_readout1 = LinearLayer(hidden1_neurons, output_neurons).to(device)
+layer1 = LIFConvLayer(inp_shape = x_train.shape[1:], kernel_size = 7, out_channels = 16, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
+random_readout1 = LinearLayer(np.prod(layer1.out_shape), output_neurons).to(device)
 
-layer2 = LIFConvLayer(kernel_size = 7, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
-random_readout2 = LinearLayer(hidden2_neurons, output_neurons).to(device)
+# layer2 = LIFConvLayer(inp_shape = x_train.shape[1:], kernel_size = 7, out_channels = 24, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
+# random_readout2 = LinearLayer(hidden2_neurons, output_neurons).to(device)
 
-layer3 = LIFConvLayer(kernel_size = 7, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
-random_readout3 = LinearLayer(hidden2_neurons, output_neurons).to(device)
+# layer3 = LIFConvLayer(inp_shape = x_train.shape[1:], kernel_size = 7, out_channels = 32, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
+# random_readout3 = LinearLayer(hidden2_neurons, output_neurons).to(device)
 
-layer4 = LIFDenseLayer(in_channels = hidden2_neurons, out_channels = output_neurons, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
+# layer4 = LIFDenseLayer(in_channels = hidden2_neurons, out_channels = output_neurons, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
 
 log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
 nll_loss = torch.nn.NLLLoss()
@@ -385,6 +396,7 @@ for e in range(300):
         layer1.state_init(x_local.shape[0])
         layer2.state_init(x_local.shape[0])
         layer3.state_init(x_local.shape[0])
+        layer4.state_init(x_local.shape[0])
         loss_hist = 0
         class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
 
@@ -393,6 +405,7 @@ for e in range(300):
             out_spikes1 = layer1.forward(x_local[:,t,:])
             out_spikes2 = layer2.forward(out_spikes1)
             out_spikes3 = layer3.forward(out_spikes2)
+            out_spikes3 = layer4.forward(out_spikes2)
             class_rec += out_spikes3
 
         # training
@@ -408,8 +421,13 @@ for e in range(300):
             loss_t += nll_loss(y_log_p2, y_local)
 
             out_spikes3 = layer3.forward(out_spikes2)
-            y_log_p3 = log_softmax_fn(smoothstep(layer3.U))
+            rreadout3 = random_readout3(smoothstep(layer3.U))
+            y_log_p3 = log_softmax_fn(smoothstep(rreadout3))
             loss_t += nll_loss(y_log_p3, y_local)
+
+            out_spikes4 = layer4.forward(out_spikes3)
+            y_log_p4 = log_softmax_fn(smoothstep(layer4.U))
+            loss_t += nll_loss(y_log_p4, y_local)
  
             # introduce regularizer
 
