@@ -338,18 +338,18 @@ y_test  = test_dataset.targets
 # fixed subsampling
 # train: 300 samples per class -> 3000
 # test: 103 samples per class -> 1030 (a wee more than 1024)
-# index_list_train = []
-# index_list_test = []
-# for i in range(10):
-#     index_list_train.append((y_train == i).nonzero()[:300])
-#     index_list_test.append((y_test == i).nonzero()[:103])
-# index_list_train = torch.cat(index_list_train).reshape([3000])
-# index_list_test = torch.cat(index_list_test).reshape([1030])
+index_list_train = []
+index_list_test = []
+for i in range(10):
+    index_list_train.append((y_train == i).nonzero()[:300])
+    index_list_test.append((y_test == i).nonzero()[:103])
+index_list_train = torch.cat(index_list_train).reshape([3000])
+index_list_test = torch.cat(index_list_test).reshape([1030])
 
-# x_train = x_train[index_list_train, :]
-# x_test = x_test[index_list_test, :]
-# y_train = y_train[index_list_train]
-# y_test = y_test[index_list_test]
+x_train = x_train[index_list_train, :]
+x_test = x_test[index_list_test, :]
+y_train = y_train[index_list_train]
+y_test = y_test[index_list_test]
 
 
 
