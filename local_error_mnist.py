@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 def clee_spikes(T, rates):
     spikes = np.ones((T, + np.prod(rates.shape)))        
     spikes[np.random.binomial(1, (1000. - rates.flatten())/1000, size=(T, np.prod(rates.shape))).astype('bool')] = 0
-    import pdb; pdb.set_trace()
     return spikes.T.reshape((rates.shape + (T,)))
 
 def sparse_data_generator(X, y, batch_size, nb_steps, samples, max_hertz, shuffle=True, device=torch.device("cpu")):
@@ -163,7 +162,6 @@ class SuperSpike(torch.autograd.Function):
 
 superspike = SuperSpike().apply
 
-
 class LinearFunctional(torch.autograd.Function):
     '''from https://github.com/L0SG/feedback-alignment-pytorch/'''
     @staticmethod
@@ -261,14 +259,17 @@ class LIFDenseLayer(nn.Module):
 
 
 class LIFConvLayer(nn.Module):
-    def __init__(self, inp_shape, kernel_size, out_channels, tau_syn, tau_mem, tau_ref, delta_t, bias=True, thr = 1, device=torch.device("cpu"), dtype = torch.float):
+    def __init__(self, inp_shape, kernel_size, out_channels, tau_syn, tau_mem, tau_ref, delta_t, pooling = 1, padding = 0, bias=True, thr = 1, device=torch.device("cpu"), dtype = torch.float):
         super(LIFConvLayer, self).__init__()   
         self.inp_shape = inp_shape
         self.kernel_size = kernel_size
-        self.out_channels = out_channels     
-        self.mpool2x2 = nn.MaxPool2d(2, stride=2, return_indices=False) 
-        self.thr = thr
+        self.out_channels = out_channels  
 
+        self.padding = padding
+        self.pooling = pooling
+
+        self.mpoolF = nn.MaxPool2d(kernel_size = self.pooling, stride = self.pooling, padding = (self.pooling-1)//2, return_indices=False) 
+        
         self.weights = nn.Parameter(torch.empty((self.out_channels, inp_shape[0],  self.kernel_size, self.kernel_size),  device=device, dtype=dtype, requires_grad=True))
         torch.nn.init.uniform_(self.weights, a = -.3, b = .3)
 
@@ -278,7 +279,7 @@ class LIFConvLayer(nn.Module):
         else:
             self.register_parameter('bias', None)
 
-        self.out_shape = self.mpool2x2(F.conv2d(input = torch.zeros((1,)+self.inp_shape).to(device), weight = self.weights, bias=self.bias, stride=1, padding=0, dilation=1, groups=1)).shape[1:]
+        self.out_shape = self.mpoolF(F.conv2d(input = torch.zeros((1,)+self.inp_shape).to(device), weight = self.weights, bias=self.bias, padding = self.padding)).shape[1:]
         self.thr = thr
 
         if tau_syn.shape[0] == 2:
@@ -307,10 +308,8 @@ class LIFConvLayer(nn.Module):
 
     
     def forward(self, input_t):
-        import pdb; pdb.set_trace()
         self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.gamma * self.R - self.S, self.beta * self.Q + input_t
-
-        self.U = self.mpool2x2(F.conv2d(self.P, self.weights, bias=self.bias, stride=1, padding=0, dilation=1, groups=1)) + self.R
+        self.U = self.mpoolF(F.conv2d(input = self.P, weight = self.weights, bias=self.bias, padding = self.padding)) + self.R
         self.S = (self.U>self.thr).float()
 
         return self.S
@@ -369,21 +368,22 @@ thr = torch.Tensor([1.]).to(device)
 
 # layer3 = LIFDenseLayer(in_channels = hidden2_neurons, out_channels = output_neurons, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
 
+dropout_learning = nn.Dropout(p=0.)
 
-layer1 = LIFConvLayer(inp_shape = x_train.shape[1:], kernel_size = 7, out_channels = 16, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
+layer1 = LIFConvLayer(inp_shape = x_train.shape[1:], kernel_size = 7, out_channels = 16, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device).to(device)
 random_readout1 = LinearLayer(np.prod(layer1.out_shape), output_neurons).to(device)
 
-# layer2 = LIFConvLayer(inp_shape = x_train.shape[1:], kernel_size = 7, out_channels = 24, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
-# random_readout2 = LinearLayer(hidden2_neurons, output_neurons).to(device)
+layer2 = LIFConvLayer(inp_shape = layer1.out_shape, kernel_size = 7, out_channels = 24, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 1, padding = 2, thr = thr, device = device).to(device)
+random_readout2 = LinearLayer(np.prod(layer2.out_shape), output_neurons).to(device)
 
-# layer3 = LIFConvLayer(inp_shape = x_train.shape[1:], kernel_size = 7, out_channels = 32, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
-# random_readout3 = LinearLayer(hidden2_neurons, output_neurons).to(device)
+layer3 = LIFConvLayer(inp_shape = layer2.out_shape, kernel_size = 7, out_channels = 32, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device).to(device)
+random_readout3 = LinearLayer(np.prod(layer3.out_shape), output_neurons).to(device)
 
-# layer4 = LIFDenseLayer(in_channels = hidden2_neurons, out_channels = output_neurons, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
+layer4 = LIFDenseLayer(in_channels = np.prod(layer3.out_shape), out_channels = output_neurons, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
 
 log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
 nll_loss = torch.nn.NLLLoss()
-params = list(layer1.parameters()) + list(layer2.parameters()) + list(layer3.parameters())
+params = list(layer1.parameters()) + list(layer2.parameters()) + list(layer3.parameters()) 
 opt = torch.optim.Adam(params, lr=1e-5, betas=[0., .95])
 
 for e in range(300):
@@ -391,43 +391,39 @@ for e in range(300):
     correct = 0
     total = 0
     for x_local, y_local in sparse_data_generator(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, samples = 3000, max_hertz = 50, shuffle = True, device = device):
-        import pdb; pdb.set_trace()
 
         layer1.state_init(x_local.shape[0])
         layer2.state_init(x_local.shape[0])
         layer3.state_init(x_local.shape[0])
         layer4.state_init(x_local.shape[0])
         loss_hist = 0
-        class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
 
         # burnin
         for t in range(int(burnin/ms)):
-            out_spikes1 = layer1.forward(x_local[:,t,:])
+            out_spikes1 = layer1.forward(x_local[:,:,:,:,t])
             out_spikes2 = layer2.forward(out_spikes1)
             out_spikes3 = layer3.forward(out_spikes2)
-            out_spikes3 = layer4.forward(out_spikes2)
-            class_rec += out_spikes3
+            out_spikes4 = layer4.forward(out_spikes3)
+
 
         # training
         for t in range(int(burnin/ms), int(T/ms)):
-            out_spikes1 = layer1.forward(x_local[:,t,:])
-            rreadout1 = random_readout1(smoothstep(layer1.U))
+            out_spikes1 = layer1.forward(x_local[:,:,:,:,t])
+            rreadout1 = random_readout1(dropout_learning(smoothstep(layer1.U.reshape([batch_size, np.prod(layer1.out_shape)]))))
             y_log_p1 = log_softmax_fn(rreadout1)
             loss_t = nll_loss(y_log_p1, y_local)
 
             out_spikes2 = layer2.forward(out_spikes1)
-            rreadout2 = random_readout2(smoothstep(layer2.U))
+            rreadout2 = random_readout2(dropout_learning(smoothstep(layer2.U.reshape([batch_size, np.prod(layer2.out_shape)]))))
             y_log_p2 = log_softmax_fn(rreadout2)
             loss_t += nll_loss(y_log_p2, y_local)
 
             out_spikes3 = layer3.forward(out_spikes2)
-            rreadout3 = random_readout3(smoothstep(layer3.U))
-            y_log_p3 = log_softmax_fn(smoothstep(rreadout3))
+            rreadout3 = random_readout3(dropout_learning(smoothstep(layer3.U.reshape([batch_size, np.prod(layer3.out_shape)]))))
+            y_log_p3 = log_softmax_fn(rreadout3)
             loss_t += nll_loss(y_log_p3, y_local)
 
-            out_spikes4 = layer4.forward(out_spikes3)
-            y_log_p4 = log_softmax_fn(smoothstep(layer4.U))
-            loss_t += nll_loss(y_log_p4, y_local)
+
  
             # introduce regularizer
 
@@ -436,7 +432,8 @@ for e in range(300):
             opt.zero_grad()
             loss_hist += loss_t
 
-            class_rec += out_spikes3
+        import pdb; pdb.set_trace()
+
         correct += (torch.max(class_rec, dim = 1).indices == y_local).sum() 
         total += len(y_local)
     train_time = time.time()
