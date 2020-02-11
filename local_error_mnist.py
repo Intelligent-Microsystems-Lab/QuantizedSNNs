@@ -383,7 +383,7 @@ layer4 = LIFDenseLayer(in_channels = np.prod(layer3.out_shape), out_channels = o
 
 log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
 nll_loss = torch.nn.NLLLoss()
-params = list(layer1.parameters()) + list(layer2.parameters()) + list(layer3.parameters()) + list(layer3.parameters()) 
+params = list(layer1.parameters()) + list(layer2.parameters()) + list(layer3.parameters()) + list(layer4.parameters()) 
 opt = torch.optim.Adam(params, lr=1e-9, betas=[0., .95])
 
 for e in range(300):
