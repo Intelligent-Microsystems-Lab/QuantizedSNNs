@@ -384,13 +384,14 @@ layer4 = LIFDenseLayer(in_channels = np.prod(layer3.out_shape), out_channels = o
 log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
 nll_loss = torch.nn.NLLLoss()
 params = list(layer1.parameters()) + list(layer2.parameters()) + list(layer3.parameters()) 
-opt = torch.optim.Adam(params, lr=1e-5, betas=[0., .95])
+opt = torch.optim.Adam(params, lr=1e-9, betas=[0., .95])
 
 for e in range(300):
     start_time = time.time()
     correct = 0
     total = 0
     for x_local, y_local in sparse_data_generator(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, samples = 3000, max_hertz = 50, shuffle = True, device = device):
+        class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
 
         layer1.state_init(x_local.shape[0])
         layer2.state_init(x_local.shape[0])
@@ -403,27 +404,31 @@ for e in range(300):
             out_spikes1 = layer1.forward(x_local[:,:,:,:,t])
             out_spikes2 = layer2.forward(out_spikes1)
             out_spikes3 = layer3.forward(out_spikes2)
+            out_spikes3 = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
             out_spikes4 = layer4.forward(out_spikes3)
 
 
         # training
         for t in range(int(burnin/ms), int(T/ms)):
             out_spikes1 = layer1.forward(x_local[:,:,:,:,t])
-            rreadout1 = random_readout1(dropout_learning(smoothstep(layer1.U.reshape([batch_size, np.prod(layer1.out_shape)]))))
+            rreadout1 = random_readout1(dropout_learning(smoothstep(layer1.U.reshape([x_local.shape[0], np.prod(layer1.out_shape)]))))
             y_log_p1 = log_softmax_fn(rreadout1)
             loss_t = nll_loss(y_log_p1, y_local)
 
             out_spikes2 = layer2.forward(out_spikes1)
-            rreadout2 = random_readout2(dropout_learning(smoothstep(layer2.U.reshape([batch_size, np.prod(layer2.out_shape)]))))
+            rreadout2 = random_readout2(dropout_learning(smoothstep(layer2.U.reshape([x_local.shape[0], np.prod(layer2.out_shape)]))))
             y_log_p2 = log_softmax_fn(rreadout2)
             loss_t += nll_loss(y_log_p2, y_local)
 
             out_spikes3 = layer3.forward(out_spikes2)
-            rreadout3 = random_readout3(dropout_learning(smoothstep(layer3.U.reshape([batch_size, np.prod(layer3.out_shape)]))))
+            rreadout3 = random_readout3(dropout_learning(smoothstep(layer3.U.reshape([x_local.shape[0], np.prod(layer3.out_shape)]))))
             y_log_p3 = log_softmax_fn(rreadout3)
             loss_t += nll_loss(y_log_p3, y_local)
 
-
+            out_spikes3 = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
+            out_spikes4 = layer4.forward(out_spikes3)
+            y_log_p4 = log_softmax_fn(smoothstep(layer4.U))
+            loss_t += nll_loss(y_log_p4, y_local)
  
             # introduce regularizer
 
@@ -432,7 +437,7 @@ for e in range(300):
             opt.zero_grad()
             loss_hist += loss_t
 
-        import pdb; pdb.set_trace()
+            class_rec += out_spikes4
 
         correct += (torch.max(class_rec, dim = 1).indices == y_local).sum() 
         total += len(y_local)
@@ -447,18 +452,20 @@ for e in range(300):
         layer1.state_init(x_local.shape[0])
         layer2.state_init(x_local.shape[0])
         layer3.state_init(x_local.shape[0])
+        layer4.state_init(x_local.shape[0])
 
         for t in range(int(T_test/ms)):
-            out_spikes1 = layer1.forward(x_local[:,t,:])
+            out_spikes1 = layer1.forward(x_local[:,:,:,:,t])
             out_spikes2 = layer2.forward(out_spikes1)
             out_spikes3 = layer3.forward(out_spikes2)
-            class_rec += out_spikes3
+            out_spikes3 = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
+            out_spikes4 = layer4.forward(out_spikes3)
+            class_rec += out_spikes4
         tcorrect += (torch.max(class_rec, dim = 1).indices == y_local).sum() 
         ttotal += len(y_local)
     inf_time = time.time()
 
-
-    print("Epoch "+str(e+1)+" | Loss: "+str(np.round(loss_hist.item(),4)) + " Train Acc: "+str(np.round(correct.item()/total, 4)) + " Test Acc: "+str(np.round(tcorrect.item()/ttotal, 4)) + " Train Time: "+str(np.round(train_time-start_time, 4))+"s Inference Time: "+str(np.round(inf_time - train_time, 4)) +"s") 
+    print("Epoch {0} | Loss: {1:.4f} Train Acc: {2:.4f} Test Acc: {3:.4f} Train Time: {4:.4f}s Inference Time: {5:.4f}s".format(e+1, loss_hist.item(), correct.item()/total, tcorrect.item()/ttotal, train_time-start_time, inf_time - train_time)) 
 
 
 
