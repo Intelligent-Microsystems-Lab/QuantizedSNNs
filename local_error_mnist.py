@@ -389,10 +389,10 @@ layer4 = LIFDenseLayer(in_channels = np.prod(layer3.out_shape), out_channels = o
 log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
 nll_loss = torch.nn.NLLLoss()
 
-opt1 = torch.optim.Adam(layer1.parameters(), lr=1e-9, betas=[0., .95])
-opt2 = torch.optim.Adam(layer2.parameters(), lr=1e-9, betas=[0., .95])
-opt3 = torch.optim.Adam(layer3.parameters(), lr=1e-9, betas=[0., .95])
-opt4 = torch.optim.Adam(layer4.parameters(), lr=1e-9, betas=[0., .95])
+opt1 = torch.optim.Adam(layer1.parameters(), lr=1e-7, betas=[0., .95])
+opt2 = torch.optim.Adam(layer2.parameters(), lr=1e-7, betas=[0., .95])
+opt3 = torch.optim.Adam(layer3.parameters(), lr=1e-7, betas=[0., .95])
+opt4 = torch.optim.Adam(layer4.parameters(), lr=1e-7, betas=[0., .95])
 
 for e in range(300):
     correct = 0
@@ -481,6 +481,7 @@ for e in range(300):
     inf_time = time.time()
 
     print("Epoch {0} | Loss: {1:.4f} Train Acc: {2:.4f} Test Acc: {3:.4f} Train Time: {4:.4f}s Inference Time: {5:.4f}s".format(e+1, np.mean(loss_hist), correct.item()/total, tcorrect.item()/ttotal, train_time-start_time, inf_time - train_time)) 
+
 
 
 
