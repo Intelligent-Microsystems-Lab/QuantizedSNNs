@@ -296,9 +296,6 @@ class LIFConvLayer(nn.Module):
         else:
             self.gamma = torch.Tensor([torch.exp( - delta_t / tau_ref)]).to(device)
 
-
-        
-
     def state_init(self, batch_size):
         self.P = torch.zeros((batch_size,) + self.inp_shape).detach().to(device)
         self.Q = torch.zeros((batch_size,) + self.inp_shape).detach().to(device)
@@ -389,10 +386,10 @@ layer4 = LIFDenseLayer(in_channels = np.prod(layer3.out_shape), out_channels = o
 log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
 nll_loss = torch.nn.NLLLoss()
 
-opt1 = torch.optim.Adam(layer1.parameters(), lr=1e-7, betas=[0., .95])
-opt2 = torch.optim.Adam(layer2.parameters(), lr=1e-7, betas=[0., .95])
-opt3 = torch.optim.Adam(layer3.parameters(), lr=1e-7, betas=[0., .95])
-opt4 = torch.optim.Adam(layer4.parameters(), lr=1e-7, betas=[0., .95])
+opt1 = torch.optim.Adam(layer1.parameters(), lr=1e-9, betas=[0., .95])
+opt2 = torch.optim.Adam(layer2.parameters(), lr=1e-9, betas=[0., .95])
+opt3 = torch.optim.Adam(layer3.parameters(), lr=1e-9, betas=[0., .95])
+opt4 = torch.optim.Adam(layer4.parameters(), lr=1e-9, betas=[0., .95])
 
 for e in range(300):
     correct = 0
