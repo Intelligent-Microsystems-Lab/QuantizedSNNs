@@ -368,22 +368,10 @@ output_neurons = 10
 tau_mem = torch.Tensor([5*ms, 35*ms]).to(device)
 tau_syn = torch.Tensor([5*ms, 10*ms]).to(device)
 tau_ref = torch.Tensor([2.86*ms]).to(device)
-thr = torch.Tensor([1.]).to(device)
+thr = torch.Tensor([.1]).to(device)
 
-
-# dense architecture
-# input_neurons = 28*28
-# hidden1_neurons = 500
-# hidden2_neurons = 300
-# output_neurons = 10
-
-# layer1 = LIFDenseLayer(in_channels = input_neurons, out_channels = hidden1_neurons, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
-# random_readout1 = LinearLayer(hidden1_neurons, output_neurons).to(device)
-
-# layer2 = LIFDenseLayer(in_channels = hidden1_neurons, out_channels = hidden2_neurons, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
-# random_readout2 = LinearLayer(hidden2_neurons, output_neurons).to(device)
-
-# layer3 = LIFDenseLayer(in_channels = hidden2_neurons, out_channels = output_neurons, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
+lambda1 = .6
+lambda2 = .3
 
 dropout_learning = nn.Dropout(p=0.)
 
@@ -400,13 +388,20 @@ layer4 = LIFDenseLayer(in_channels = np.prod(layer3.out_shape), out_channels = o
 
 log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
 nll_loss = torch.nn.NLLLoss()
-params = list(layer1.parameters()) + list(layer2.parameters()) + list(layer3.parameters()) + list(layer4.parameters()) 
-opt = torch.optim.Adam(params, lr=1e-9, betas=[0., .95])
+
+opt1 = torch.optim.Adam(layer1.parameters(), lr=1e-9, betas=[0., .95])
+opt2 = torch.optim.Adam(layer2.parameters(), lr=1e-9, betas=[0., .95])
+opt3 = torch.optim.Adam(layer3.parameters(), lr=1e-9, betas=[0., .95])
+opt4 = torch.optim.Adam(layer4.parameters(), lr=1e-9, betas=[0., .95])
 
 for e in range(300):
-    start_time = time.time()
     correct = 0
     total = 0
+    tcorrect = 0
+    ttotal = 0
+    loss_hist = []
+    start_time = time.time()
+
     for x_local, y_local in sparse_data_generator(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, samples = 3000, max_hertz = 50, shuffle = True, device = device):
         class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
 
@@ -414,7 +409,6 @@ for e in range(300):
         layer2.state_init(x_local.shape[0])
         layer3.state_init(x_local.shape[0])
         layer4.state_init(x_local.shape[0])
-        loss_hist = 0
 
         # burnin
         for t in range(int(burnin/ms)):
@@ -430,30 +424,36 @@ for e in range(300):
             out_spikes1 = layer1.forward(x_local[:,:,:,:,t])
             rreadout1 = random_readout1(dropout_learning(smoothstep(layer1.U.reshape([x_local.shape[0], np.prod(layer1.out_shape)]))))
             y_log_p1 = log_softmax_fn(rreadout1)
-            loss_t = nll_loss(y_log_p1, y_local)
+            loss_t1 = nll_loss(y_log_p1, y_local) + lambda1 * F.relu(layer1.U+.01).mean() + lambda2 * F.relu(thr-layer1.U).mean()
+            loss_t1.backward()
+            opt1.step()
+            opt1.zero_grad()
 
             out_spikes2 = layer2.forward(out_spikes1)
             rreadout2 = random_readout2(dropout_learning(smoothstep(layer2.U.reshape([x_local.shape[0], np.prod(layer2.out_shape)]))))
             y_log_p2 = log_softmax_fn(rreadout2)
-            loss_t += nll_loss(y_log_p2, y_local)
+            loss_t2 = nll_loss(y_log_p2, y_local) + lambda1 * F.relu(layer2.U+.01).sum() + lambda2 * F.relu(thr-layer2.U).sum()
+            loss_t2.backward()
+            opt2.step()
+            opt2.zero_grad()
 
             out_spikes3 = layer3.forward(out_spikes2)
             rreadout3 = random_readout3(dropout_learning(smoothstep(layer3.U.reshape([x_local.shape[0], np.prod(layer3.out_shape)]))))
             y_log_p3 = log_softmax_fn(rreadout3)
-            loss_t += nll_loss(y_log_p3, y_local)
+            loss_t3 = nll_loss(y_log_p3, y_local) + lambda1 * F.relu(layer3.U+.01).sum() + lambda2 * F.relu(thr-layer3.U).sum()
+            loss_t3.backward()
+            opt3.step()
+            opt3.zero_grad()
 
             out_spikes3 = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
             out_spikes4 = layer4.forward(out_spikes3)
             y_log_p4 = log_softmax_fn(smoothstep(layer4.U))
-            loss_t += nll_loss(y_log_p4, y_local)
- 
-            # introduce regularizer
+            loss_t4 = nll_loss(y_log_p4, y_local) + lambda1 * F.relu(layer4.U+.01).sum() + lambda2 * F.relu(.1-layer4.U).sum()
+            loss_t4.backward()
+            opt4.step()
+            opt4.zero_grad()
 
-            loss_t.backward()
-            opt.step()
-            opt.zero_grad()
-            loss_hist += loss_t
-
+            loss_hist.append(loss_t4.item())
             class_rec += out_spikes4
 
         correct += (torch.max(class_rec, dim = 1).indices == y_local).sum() 
@@ -462,8 +462,6 @@ for e in range(300):
 
 
     # compute test accuracy
-    tcorrect = 0
-    ttotal = 0
     for x_local, y_local in sparse_data_generator(x_test, y_test, batch_size = batch_size, nb_steps = T_test/ms, samples = 1030, max_hertz = 50, shuffle = True, device = device):
         class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
         layer1.state_init(x_local.shape[0])
@@ -482,6 +480,7 @@ for e in range(300):
         ttotal += len(y_local)
     inf_time = time.time()
 
+    import pdb; pdb.set_trace()
     print("Epoch {0} | Loss: {1:.4f} Train Acc: {2:.4f} Test Acc: {3:.4f} Train Time: {4:.4f}s Inference Time: {5:.4f}s".format(e+1, loss_hist.item(), correct.item()/total, tcorrect.item()/ttotal, train_time-start_time, inf_time - train_time)) 
 
 
