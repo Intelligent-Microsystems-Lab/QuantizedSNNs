@@ -432,7 +432,7 @@ for e in range(300):
             out_spikes2 = layer2.forward(out_spikes1)
             rreadout2 = random_readout2(dropout_learning(smoothstep(layer2.U.reshape([x_local.shape[0], np.prod(layer2.out_shape)]))))
             y_log_p2 = log_softmax_fn(rreadout2)
-            loss_t2 = nll_loss(y_log_p2, y_local) + lambda1 * F.relu(layer2.U+.01).sum() + lambda2 * F.relu(thr-layer2.U).sum()
+            loss_t2 = nll_loss(y_log_p2, y_local) + lambda1 * F.relu(layer2.U+.01).mean() + lambda2 * F.relu(thr-layer2.U).mean()
             loss_t2.backward()
             opt2.step()
             opt2.zero_grad()
@@ -440,7 +440,7 @@ for e in range(300):
             out_spikes3 = layer3.forward(out_spikes2)
             rreadout3 = random_readout3(dropout_learning(smoothstep(layer3.U.reshape([x_local.shape[0], np.prod(layer3.out_shape)]))))
             y_log_p3 = log_softmax_fn(rreadout3)
-            loss_t3 = nll_loss(y_log_p3, y_local) + lambda1 * F.relu(layer3.U+.01).sum() + lambda2 * F.relu(thr-layer3.U).sum()
+            loss_t3 = nll_loss(y_log_p3, y_local) + lambda1 * F.relu(layer3.U+.01).mean() + lambda2 * F.relu(thr-layer3.U).mean()
             loss_t3.backward()
             opt3.step()
             opt3.zero_grad()
@@ -448,7 +448,7 @@ for e in range(300):
             out_spikes3 = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
             out_spikes4 = layer4.forward(out_spikes3)
             y_log_p4 = log_softmax_fn(smoothstep(layer4.U))
-            loss_t4 = nll_loss(y_log_p4, y_local) + lambda1 * F.relu(layer4.U+.01).sum() + lambda2 * F.relu(.1-layer4.U).sum()
+            loss_t4 = nll_loss(y_log_p4, y_local) + lambda1 * F.relu(layer4.U+.01).mean() + lambda2 * F.relu(.1-layer4.U).mean()
             loss_t4.backward()
             opt4.step()
             opt4.zero_grad()
@@ -480,8 +480,7 @@ for e in range(300):
         ttotal += len(y_local)
     inf_time = time.time()
 
-    import pdb; pdb.set_trace()
-    print("Epoch {0} | Loss: {1:.4f} Train Acc: {2:.4f} Test Acc: {3:.4f} Train Time: {4:.4f}s Inference Time: {5:.4f}s".format(e+1, loss_hist.item(), correct.item()/total, tcorrect.item()/ttotal, train_time-start_time, inf_time - train_time)) 
+    print("Epoch {0} | Loss: {1:.4f} Train Acc: {2:.4f} Test Acc: {3:.4f} Train Time: {4:.4f}s Inference Time: {5:.4f}s".format(e+1, np.mean(loss_hist), correct.item()/total, tcorrect.item()/ttotal, train_time-start_time, inf_time - train_time)) 
 
 
 
