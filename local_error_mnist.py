@@ -338,18 +338,18 @@ y_test  = test_dataset.targets
 # fixed subsampling
 # train: 300 samples per class -> 3000
 # test: 103 samples per class -> 1030 (a wee more than 1024)
-# index_list_train = []
-# index_list_test = []
-# for i in range(10):
-#     index_list_train.append((y_train == i).nonzero()[:300])
-#     index_list_test.append((y_test == i).nonzero()[:103])
-# index_list_train = torch.cat(index_list_train).reshape([3000])
-# index_list_test = torch.cat(index_list_test).reshape([1030])
+index_list_train = []
+index_list_test = []
+for i in range(10):
+    index_list_train.append((y_train == i).nonzero()[:300])
+    index_list_test.append((y_test == i).nonzero()[:103])
+index_list_train = torch.cat(index_list_train).reshape([3000])
+index_list_test = torch.cat(index_list_test).reshape([1030])
 
-# x_train = x_train[index_list_train, :]
-# x_test = x_test[index_list_test, :]
-# y_train = y_train[index_list_train]
-# y_test = y_test[index_list_test]
+x_train = x_train[index_list_train, :]
+x_test = x_test[index_list_test, :]
+y_train = y_train[index_list_train]
+y_test = y_test[index_list_test]
 
 
 
@@ -421,6 +421,7 @@ for e in range(300):
             out_spikes1 = layer1.forward(x_local[:,:,:,:,t])
             rreadout1 = random_readout1(dropout_learning(smoothstep(layer1.U.reshape([x_local.shape[0], np.prod(layer1.out_shape)]))))
             y_log_p1 = log_softmax_fn(rreadout1)
+            import pdb; pdb.set_trace()
             loss_t1 = nll_loss(y_log_p1, y_local) + lambda1 * F.relu(layer1.U+.01).mean() + lambda2 * F.relu(thr-layer1.U).mean()
             loss_t1.backward()
             opt1.step()
@@ -429,6 +430,7 @@ for e in range(300):
             out_spikes2 = layer2.forward(out_spikes1)
             rreadout2 = random_readout2(dropout_learning(smoothstep(layer2.U.reshape([x_local.shape[0], np.prod(layer2.out_shape)]))))
             y_log_p2 = log_softmax_fn(rreadout2)
+            import pdb; pdb.set_trace()
             loss_t2 = nll_loss(y_log_p2, y_local) + lambda1 * F.relu(layer2.U+.01).mean() + lambda2 * F.relu(thr-layer2.U).mean()
             loss_t2.backward()
             opt2.step()
@@ -437,6 +439,7 @@ for e in range(300):
             out_spikes3 = layer3.forward(out_spikes2)
             rreadout3 = random_readout3(dropout_learning(smoothstep(layer3.U.reshape([x_local.shape[0], np.prod(layer3.out_shape)]))))
             y_log_p3 = log_softmax_fn(rreadout3)
+            import pdb; pdb.set_trace()
             loss_t3 = nll_loss(y_log_p3, y_local) + lambda1 * F.relu(layer3.U+.01).mean() + lambda2 * F.relu(thr-layer3.U).mean()
             loss_t3.backward()
             opt3.step()
@@ -445,6 +448,7 @@ for e in range(300):
             out_spikes3 = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
             out_spikes4 = layer4.forward(out_spikes3)
             y_log_p4 = log_softmax_fn(smoothstep(layer4.U))
+            import pdb; pdb.set_trace()
             loss_t4 = nll_loss(y_log_p4, y_local) + lambda1 * F.relu(layer4.U+.01).mean() + lambda2 * F.relu(.1-layer4.U).mean()
             loss_t4.backward()
             opt4.step()
