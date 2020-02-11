@@ -337,7 +337,24 @@ x_test = x_test.reshape((x_test.shape[0],) + (1,) + x_test.shape[1:])
 y_train = train_dataset.targets
 y_test  = test_dataset.targets
 
-#fixed subsampling
+
+# fixed subsampling
+# train: 300 samples per class -> 3000
+# test: 103 samples per class -> 1030 (a wee more than 1024)
+index_list_train = []
+index_list_test = []
+for i in range(10):
+    index_list_train.append((y_train == i).nonzero()[:300])
+    index_list_test.append((y_test == i).nonzero()[:103])
+index_list_train = torch.cat(index_list_train).reshape([3000])
+index_list_test = torch.cat(index_list_test).reshape([1030])
+
+x_train = x_train[index_list_train, :]
+x_test = x_test[index_list_test, :]
+y_train = y_train[index_list_train]
+y_test = y_test[index_list_test]
+
+
 
 ms = 1e-3
 delta_t = 1*ms
@@ -384,7 +401,7 @@ layer4 = LIFDenseLayer(in_channels = np.prod(layer3.out_shape), out_channels = o
 log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
 nll_loss = torch.nn.NLLLoss()
 params = list(layer1.parameters()) + list(layer2.parameters()) + list(layer3.parameters()) + list(layer4.parameters()) 
-opt = torch.optim.Adam(params, lr=1e-5, betas=[0., .95])
+opt = torch.optim.Adam(params, lr=1e-9, betas=[0., .95])
 
 for e in range(300):
     start_time = time.time()
@@ -447,7 +464,7 @@ for e in range(300):
     # compute test accuracy
     tcorrect = 0
     ttotal = 0
-    for x_local, y_local in sparse_data_generator(x_test, y_test, batch_size = batch_size, nb_steps = T_test/ms, samples = 1024, max_hertz = 50, shuffle = True, device = device):
+    for x_local, y_local in sparse_data_generator(x_test, y_test, batch_size = batch_size, nb_steps = T_test/ms, samples = 1030, max_hertz = 50, shuffle = True, device = device):
         class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
         layer1.state_init(x_local.shape[0])
         layer2.state_init(x_local.shape[0])
