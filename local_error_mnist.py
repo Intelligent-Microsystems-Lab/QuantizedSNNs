@@ -345,13 +345,13 @@ y_test  = test_dataset.targets
 # fixed subsampling
 # train: 300 samples per class -> 3000
 # test: 103 samples per class -> 1030 (a wee more than 1024)
-index_list_train = []
-index_list_test = []
-for i in range(10):
-    index_list_train.append((y_train == i).nonzero()[:300])
-    index_list_test.append((y_test == i).nonzero()[:103])
-index_list_train = torch.cat(index_list_train).reshape([3000])
-index_list_test = torch.cat(index_list_test).reshape([1030])
+# index_list_train = []
+# index_list_test = []
+# for i in range(10):
+#     index_list_train.append((y_train == i).nonzero()[:300])
+#     index_list_test.append((y_test == i).nonzero()[:103])
+# index_list_train = torch.cat(index_list_train).reshape([3000])
+# index_list_test = torch.cat(index_list_test).reshape([1030])
 
 x_train = x_train[index_list_train, :]
 x_test = x_test[index_list_test, :]
@@ -367,7 +367,7 @@ delta_t = 1*ms
 T = 500*ms
 T_test = 1000*ms
 burnin = 50*ms
-batch_size = 64
+batch_size = 256
 output_neurons = 10
 
 tau_mem = torch.Tensor([5*ms, 35*ms]).to(device)
@@ -399,7 +399,7 @@ opt2 = torch.optim.Adam(layer2.parameters(), lr=1e-8, betas=[0., .95])
 opt3 = torch.optim.Adam(layer3.parameters(), lr=1e-8, betas=[0., .95])
 opt4 = torch.optim.Adam(layer4.parameters(), lr=1e-8, betas=[0., .95])
 
-for e in range(300):
+for e in range(60):
     correct = 0
     total = 0
     tcorrect = 0
@@ -407,7 +407,7 @@ for e in range(300):
     loss_hist = []
     start_time = time.time()
 
-    for x_local, y_local in sparse_data_generator(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, samples = 3000, max_hertz = 50, shuffle = True, device = device):
+    for x_local, y_local in sparse_data_generator(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, samples = 60000, max_hertz = 50, shuffle = True, device = device):
         class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
 
         layer1.state_init(x_local.shape[0])
@@ -467,7 +467,7 @@ for e in range(300):
 
 
     # compute test accuracy
-    for x_local, y_local in sparse_data_generator(x_test, y_test, batch_size = batch_size, nb_steps = T_test/ms, samples = 1030, max_hertz = 50, shuffle = True, device = device):
+    for x_local, y_local in sparse_data_generator(x_test, y_test, batch_size = batch_size, nb_steps = T_test/ms, samples = 10000, max_hertz = 50, shuffle = True, device = device):
         class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
         layer1.state_init(x_local.shape[0])
         layer2.state_init(x_local.shape[0])
