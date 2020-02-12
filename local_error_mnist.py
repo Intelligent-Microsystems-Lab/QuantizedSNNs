@@ -430,12 +430,6 @@ scheduler4 = torch.optim.lr_scheduler.StepLR(opt4, step_size=20, gamma=0.5)
 print("Weight Quantization: {0}".format(quantization.global_wb))
 
 for e in range(60):
-
-    scheduler1.step()
-    scheduler1.step()
-    scheduler1.step()
-    scheduler1.step()
-
     correct = 0
     total = 0
     tcorrect = 0
@@ -520,6 +514,11 @@ for e in range(60):
         tcorrect += (torch.max(class_rec, dim = 1).indices == y_local).sum() 
         ttotal += len(y_local)
     inf_time = time.time()
+
+    scheduler1.step()
+    scheduler2.step()
+    scheduler3.step()
+    scheduler4.step()
 
     print("Epoch {0} | Loss: {1:.4f} Train Acc: {2:.4f} Test Acc: {3:.4f} Train Time: {4:.4f}s Inference Time: {5:.4f}s".format(e+1, np.mean(loss_hist), correct.item()/total, tcorrect.item()/ttotal, train_time-start_time, inf_time - train_time)) 
 
