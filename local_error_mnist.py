@@ -216,6 +216,9 @@ class LIFDenseLayer(nn.Module):
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.thr = thr
+        self.fan_in = in_channels
+        self.L_min = global_beta * 2**(1-global_wb)
+        self.L = np.max([np.sqrt( 6/self.fan_in), self.L_min])
 
         if tau_syn.shape[0] == 2:
             self.beta = torch.exp( -delta_t / torch.Tensor(self.in_channels).uniform_(tau_syn[0], tau_syn[0]).to(device))
@@ -233,11 +236,11 @@ class LIFDenseLayer(nn.Module):
 
 
         self.weights = nn.Parameter(torch.empty((self.in_channels, self.out_channels),  device=device, dtype=dtype, requires_grad=True))
-        torch.nn.init.uniform_(self.weights, a = -.3, b = .3)
+        torch.nn.init.uniform_(self.weights, a = -self.L, b = self.L)
 
         if bias:
             self.bias = nn.Parameter(torch.empty(out_channels,  device=device, dtype=dtype, requires_grad=True))
-            torch.nn.init.uniform_(self.bias, a = -.01, b = .01)
+            torch.nn.init.uniform_(self.bias, a = -self.L, b = self.L)
         else:
             self.register_parameter('bias', None)
 
@@ -264,18 +267,22 @@ class LIFConvLayer(nn.Module):
         self.inp_shape = inp_shape
         self.kernel_size = kernel_size
         self.out_channels = out_channels  
+        self.fan_in = kernel_size * kernel_size * inp_shape[0]
+        self.L_min = global_beta * 2**(1-global_wb)
+        self.L = np.max([np.sqrt( 6/self.fan_in), self.L_min])
 
         self.padding = padding
         self.pooling = pooling
 
         self.mpoolF = nn.MaxPool2d(kernel_size = self.pooling, stride = self.pooling, padding = (self.pooling-1)//2, return_indices=False) 
         
+        
         self.weights = nn.Parameter(torch.empty((self.out_channels, inp_shape[0],  self.kernel_size, self.kernel_size),  device=device, dtype=dtype, requires_grad=True))
-        torch.nn.init.uniform_(self.weights, a = -.3, b = .3)
+        torch.nn.init.uniform_(self.weights, a = -self.L, b = self.L)
 
         if bias:
             self.bias = nn.Parameter(torch.empty(self.out_channels, device=device, dtype=dtype, requires_grad=True))
-            torch.nn.init.uniform_(self.bias, a = -.01, b = .01)
+            torch.nn.init.uniform_(self.bias, a = -self.L, b = self.L)
         else:
             self.register_parameter('bias', None)
 
@@ -351,7 +358,8 @@ x_test = x_test[index_list_test, :]
 y_train = y_train[index_list_train]
 y_test = y_test[index_list_test]
 
-
+global_beta = 1.5
+global_wb = 64 
 
 ms = 1e-3
 delta_t = 1*ms
@@ -367,10 +375,10 @@ tau_syn = torch.Tensor([5*ms, 10*ms]).to(device)
 tau_ref = torch.Tensor([2.86*ms]).to(device)
 thr = torch.Tensor([.1]).to(device)
 
-lambda1 = .6
-lambda2 = .3
+lambda1 = .2
+lambda2 = .1
 
-dropout_learning = nn.Dropout(p=0.)
+dropout_learning = nn.Dropout(p=.5)
 
 layer1 = LIFConvLayer(inp_shape = x_train.shape[1:], kernel_size = 7, out_channels = 16, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device).to(device)
 random_readout1 = LinearLayer(np.prod(layer1.out_shape), output_neurons).to(device)
@@ -386,10 +394,10 @@ layer4 = LIFDenseLayer(in_channels = np.prod(layer3.out_shape), out_channels = o
 log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
 nll_loss = torch.nn.NLLLoss()
 
-opt1 = torch.optim.Adam(layer1.parameters(), lr=1e-9, betas=[0., .95])
-opt2 = torch.optim.Adam(layer2.parameters(), lr=1e-9, betas=[0., .95])
-opt3 = torch.optim.Adam(layer3.parameters(), lr=1e-9, betas=[0., .95])
-opt4 = torch.optim.Adam(layer4.parameters(), lr=1e-9, betas=[0., .95])
+opt1 = torch.optim.Adam(layer1.parameters(), lr=1e-8, betas=[0., .95])
+opt2 = torch.optim.Adam(layer2.parameters(), lr=1e-8, betas=[0., .95])
+opt3 = torch.optim.Adam(layer3.parameters(), lr=1e-8, betas=[0., .95])
+opt4 = torch.optim.Adam(layer4.parameters(), lr=1e-8, betas=[0., .95])
 
 for e in range(300):
     correct = 0
@@ -421,7 +429,6 @@ for e in range(300):
             out_spikes1 = layer1.forward(x_local[:,:,:,:,t])
             rreadout1 = random_readout1(dropout_learning(smoothstep(layer1.U.reshape([x_local.shape[0], np.prod(layer1.out_shape)]))))
             y_log_p1 = log_softmax_fn(rreadout1)
-            import pdb; pdb.set_trace()
             loss_t1 = nll_loss(y_log_p1, y_local) + lambda1 * F.relu(layer1.U+.01).mean() + lambda2 * F.relu(thr-layer1.U).mean()
             loss_t1.backward()
             opt1.step()
@@ -430,7 +437,6 @@ for e in range(300):
             out_spikes2 = layer2.forward(out_spikes1)
             rreadout2 = random_readout2(dropout_learning(smoothstep(layer2.U.reshape([x_local.shape[0], np.prod(layer2.out_shape)]))))
             y_log_p2 = log_softmax_fn(rreadout2)
-            import pdb; pdb.set_trace()
             loss_t2 = nll_loss(y_log_p2, y_local) + lambda1 * F.relu(layer2.U+.01).mean() + lambda2 * F.relu(thr-layer2.U).mean()
             loss_t2.backward()
             opt2.step()
@@ -439,7 +445,6 @@ for e in range(300):
             out_spikes3 = layer3.forward(out_spikes2)
             rreadout3 = random_readout3(dropout_learning(smoothstep(layer3.U.reshape([x_local.shape[0], np.prod(layer3.out_shape)]))))
             y_log_p3 = log_softmax_fn(rreadout3)
-            import pdb; pdb.set_trace()
             loss_t3 = nll_loss(y_log_p3, y_local) + lambda1 * F.relu(layer3.U+.01).mean() + lambda2 * F.relu(thr-layer3.U).mean()
             loss_t3.backward()
             opt3.step()
@@ -448,7 +453,6 @@ for e in range(300):
             out_spikes3 = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
             out_spikes4 = layer4.forward(out_spikes3)
             y_log_p4 = log_softmax_fn(smoothstep(layer4.U))
-            import pdb; pdb.set_trace()
             loss_t4 = nll_loss(y_log_p4, y_local) + lambda1 * F.relu(layer4.U+.01).mean() + lambda2 * F.relu(.1-layer4.U).mean()
             loss_t4.backward()
             opt4.step()
