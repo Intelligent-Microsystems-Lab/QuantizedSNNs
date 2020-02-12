@@ -4,9 +4,12 @@ import torch.nn.functional as F
 import torchvision
 import pickle
 import time
+import math
 import numpy as np
 
 import matplotlib.pyplot as plt
+
+import quantization
 
 def clee_spikes(T, rates):
     spikes = np.ones((T, + np.prod(rates.shape)))        
@@ -212,13 +215,16 @@ class LinearLayer(nn.Module):
 
 class LIFDenseLayer(nn.Module):
     def __init__(self, in_channels, out_channels, tau_syn, tau_mem, tau_ref, delta_t, bias=True, thr = 1, device=torch.device("cpu"), dtype = torch.float):
-        super(LIFDenseLayer, self).__init__()        
+        super(LIFDenseLayer, self).__init__()      
+        self.bias_active = bias  
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.thr = thr
         self.fan_in = in_channels
-        self.L_min = global_beta * 2**(1-global_wb)
+        self.L_min = quantization.global_beta/quantization.step_d(torch.tensor([float(quantization.global_wb)]))
         self.L = np.max([np.sqrt( 6/self.fan_in), self.L_min])
+        self.scale = 2 ** round(math.log(self.L_min / self.L, 2.0))
+        self.scale = self.scale if self.scale > 1 else 1.0
 
         if tau_syn.shape[0] == 2:
             self.beta = torch.exp( -delta_t / torch.Tensor(self.in_channels).uniform_(tau_syn[0], tau_syn[0]).to(device))
@@ -253,10 +259,17 @@ class LIFDenseLayer(nn.Module):
 
     
     def forward(self, input_t):
-        self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.gamma * self.R - self.S, self.beta * self.Q + input_t
+        with torch.no_grad():
+            self.weights.data = quantization.clip(self.weights.data, quantization.global_wb)
+            if self.bias_active:
+                self.bias.data = quantization.clip(self.bias.data, quantization.global_wb)
 
-        self.U = torch.einsum("ab,bc->ac", (self.P, self.weights)) + self.bias + self.R
-        self.S = (self.U>self.thr).float()
+        self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.gamma * self.R - self.S, self.beta * self.Q + input_t
+        if self.bias_active:
+            self.U = torch.einsum("ab,bc->ac", (self.P, quantization.quant_w(self.weights, self.scale))) + quantization.quant_w(self.bias, self.scale) + self.R
+        else:
+            self.U = torch.einsum("ab,bc->ac", (self.P, quantization.quant_w(self.weights, self.scale))) + self.R
+        self.S = (self.U > self.thr).float()
 
         return self.S
 
@@ -264,12 +277,15 @@ class LIFDenseLayer(nn.Module):
 class LIFConvLayer(nn.Module):
     def __init__(self, inp_shape, kernel_size, out_channels, tau_syn, tau_mem, tau_ref, delta_t, pooling = 1, padding = 0, bias=True, thr = 1, device=torch.device("cpu"), dtype = torch.float):
         super(LIFConvLayer, self).__init__()   
+        self.bias_active = bias  
         self.inp_shape = inp_shape
         self.kernel_size = kernel_size
         self.out_channels = out_channels  
         self.fan_in = kernel_size * kernel_size * inp_shape[0]
-        self.L_min = global_beta * 2**(1-global_wb)
+        self.L_min = quantization.global_beta/quantization.step_d(torch.tensor([float(quantization.global_wb)]))
         self.L = np.max([np.sqrt( 6/self.fan_in), self.L_min])
+        self.scale = 2 ** round(math.log(self.L_min / self.L, 2.0))
+        self.scale = self.scale if self.scale > 1 else 1.0
 
         self.padding = padding
         self.pooling = pooling
@@ -312,9 +328,17 @@ class LIFConvLayer(nn.Module):
 
     
     def forward(self, input_t):
+        with torch.no_grad():
+            self.weights.data = quantization.clip(self.weights.data, quantization.global_wb)
+            if self.bias_active:
+                self.bias.data = quantization.clip(self.bias.data, quantization.global_wb)
+
         self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.gamma * self.R - self.S, self.beta * self.Q + input_t
-        self.U = self.mpoolF(F.conv2d(input = self.P, weight = self.weights, bias=self.bias, padding = self.padding)) + self.R
-        self.S = (self.U>self.thr).float()
+        if self.bias_active:
+            self.U = self.mpoolF(F.conv2d(input = self.P, weight = quantization.quant_w(self.weights, self.scale), bias = quantization.quant_w(self.bias, self.scale), padding = self.padding)) + self.R
+        else:
+            self.U = self.mpoolF(F.conv2d(input = self.P, weight = quantization.quant_w(self.weights, self.scale), bias = self.bias, padding = self.padding)) + self.R
+        self.S = (self.U > self.thr).float()
 
         return self.S
 
@@ -345,21 +369,21 @@ y_test  = test_dataset.targets
 # fixed subsampling
 # train: 300 samples per class -> 3000
 # test: 103 samples per class -> 1030 (a wee more than 1024)
-# index_list_train = []
-# index_list_test = []
-# for i in range(10):
-#     index_list_train.append((y_train == i).nonzero()[:300])
-#     index_list_test.append((y_test == i).nonzero()[:103])
-# index_list_train = torch.cat(index_list_train).reshape([3000])
-# index_list_test = torch.cat(index_list_test).reshape([1030])
+index_list_train = []
+index_list_test = []
+for i in range(10):
+    index_list_train.append((y_train == i).nonzero()[:300])
+    index_list_test.append((y_test == i).nonzero()[:103])
+index_list_train = torch.cat(index_list_train).reshape([3000])
+index_list_test = torch.cat(index_list_test).reshape([1030])
 
-# x_train = x_train[index_list_train, :]
-# x_test = x_test[index_list_test, :]
-# y_train = y_train[index_list_train]
-# y_test = y_test[index_list_test]
+x_train = x_train[index_list_train, :]
+x_test = x_test[index_list_test, :]
+y_train = y_train[index_list_train]
+y_test = y_test[index_list_test]
 
-global_beta = 1.5
-global_wb = 64 
+quantization.global_beta = 1.5
+quantization.global_wb = 2
 
 ms = 1e-3
 delta_t = 1*ms
@@ -394,12 +418,24 @@ layer4 = LIFDenseLayer(in_channels = np.prod(layer3.out_shape), out_channels = o
 log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
 nll_loss = torch.nn.NLLLoss()
 
-opt1 = torch.optim.Adam(layer1.parameters(), lr=1e-8, betas=[0., .95])
-opt2 = torch.optim.Adam(layer2.parameters(), lr=1e-8, betas=[0., .95])
-opt3 = torch.optim.Adam(layer3.parameters(), lr=1e-8, betas=[0., .95])
-opt4 = torch.optim.Adam(layer4.parameters(), lr=1e-8, betas=[0., .95])
+opt1 = torch.optim.Adam(layer1.parameters(), lr=1e-5, betas=[0., .95])
+opt2 = torch.optim.Adam(layer2.parameters(), lr=1e-5, betas=[0., .95])
+opt3 = torch.optim.Adam(layer3.parameters(), lr=1e-5, betas=[0., .95])
+opt4 = torch.optim.Adam(layer4.parameters(), lr=1e-5, betas=[0., .95])
+scheduler1 = StepLR(opt1, step_size=20, gamma=0.5)
+scheduler2 = StepLR(opt2, step_size=20, gamma=0.5)
+scheduler3 = StepLR(opt3, step_size=20, gamma=0.5)
+scheduler4 = StepLR(opt4, step_size=20, gamma=0.5)
+
+print("Weight Quantization: {0}".format(quantization.global_wb))
 
 for e in range(60):
+
+    scheduler1.step()
+    scheduler1.step()
+    scheduler1.step()
+    scheduler1.step()
+
     correct = 0
     total = 0
     tcorrect = 0
@@ -407,7 +443,7 @@ for e in range(60):
     loss_hist = []
     start_time = time.time()
 
-    for x_local, y_local in sparse_data_generator(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, samples = 60000, max_hertz = 50, shuffle = True, device = device):
+    for x_local, y_local in sparse_data_generator(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, samples = 3000, max_hertz = 50, shuffle = True, device = device):
         class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
 
         layer1.state_init(x_local.shape[0])
@@ -467,7 +503,7 @@ for e in range(60):
 
 
     # compute test accuracy
-    for x_local, y_local in sparse_data_generator(x_test, y_test, batch_size = batch_size, nb_steps = T_test/ms, samples = 10000, max_hertz = 50, shuffle = True, device = device):
+    for x_local, y_local in sparse_data_generator(x_test, y_test, batch_size = batch_size, nb_steps = T_test/ms, samples = 1030, max_hertz = 50, shuffle = True, device = device):
         class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
         layer1.state_init(x_local.shape[0])
         layer2.state_init(x_local.shape[0])
