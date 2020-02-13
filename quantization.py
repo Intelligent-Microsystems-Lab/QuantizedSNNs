@@ -11,6 +11,9 @@ global_wb = 2
 global_ab = 8
 global_gb = 8
 global_eb = 8
+global_ub = 8
+global_qb = 8
+global_pb = 8
 global_rb = 16
 
 global_beta = 1.5

@@ -271,6 +271,11 @@ class LIFDenseLayer(nn.Module):
             self.U = torch.einsum("ab,bc->ac", (self.P, quantization.quant_w(self.weights, self.scale))) + self.R
         self.S = (self.U > self.thr).float()
 
+        # quantize P, Q and U
+        self.P = quantization.quant_generic(self.P, quantization.pb)
+        self.Q = quantization.quant_generic(self.Q, quantization.qb)
+        self.U = quantization.quant_generic(self.U, quantization.ub)
+
         return self.S
 
 
@@ -340,6 +345,11 @@ class LIFConvLayer(nn.Module):
             self.U = self.mpoolF(F.conv2d(input = self.P, weight = quantization.quant_w(self.weights, self.scale), bias = self.bias, padding = self.padding)) + self.R
         self.S = (self.U > self.thr).float()
 
+        # quantize P, Q and U
+        self.P = quantization.quant_generic(self.P, quantization.pb)
+        self.Q = quantization.quant_generic(self.Q, quantization.qb)
+        self.U = quantization.quant_generic(self.U, quantization.ub)
+
         return self.S
 
 
@@ -392,7 +402,10 @@ y_train = y_train[index_list_train]
 y_test = y_test[index_list_test]
 
 quantization.global_beta = 1.5
-quantization.global_wb = 2
+quantization.global_wb = 8
+quantization.global_ub = 8
+quantization.global_qb = 8
+quantization.global_pb = 8
 
 ms = 1e-3
 delta_t = 1*ms
@@ -405,7 +418,7 @@ output_neurons = 10
 
 tau_mem = torch.Tensor([5*ms, 35*ms]).to(device)
 tau_syn = torch.Tensor([5*ms, 10*ms]).to(device)
-tau_ref = torch.Tensor([2.86*ms]).to(device)
+tau_ref = torch.Tensor([0*ms]).to(device)
 thr = torch.Tensor([.1]).to(device)
 
 lambda1 = .2 
@@ -415,19 +428,25 @@ dropout_learning = nn.Dropout(p=.5)
 
 layer1 = LIFConvLayer(inp_shape = x_train.shape[1:], kernel_size = 7, out_channels = 16, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device).to(device)
 random_readout1 = LinearLayer(np.prod(layer1.out_shape), output_neurons).to(device)
+random_readout1.weights.data[random_readout1.weights.data > 0] = 1
+random_readout1.weights.data[random_readout1.weights.data < 0] = -1
 
 layer2 = LIFConvLayer(inp_shape = layer1.out_shape, kernel_size = 7, out_channels = 24, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 1, padding = 2, thr = thr, device = device).to(device)
 random_readout2 = LinearLayer(np.prod(layer2.out_shape), output_neurons).to(device)
+random_readout2.weights.data[random_readout2.weights.data > 0] = 1
+random_readout2.weights.data[random_readout2.weights.data < 0] = -1
 
 layer3 = LIFConvLayer(inp_shape = layer2.out_shape, kernel_size = 7, out_channels = 32, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device).to(device)
 random_readout3 = LinearLayer(np.prod(layer3.out_shape), output_neurons).to(device)
+random_readout3.weights.data[random_readout3.weights.data > 0] = 1
+random_readout3.weights.data[random_readout3.weights.data < 0] = -1
 
 layer4 = LIFDenseLayer(in_channels = np.prod(layer3.out_shape), out_channels = output_neurons, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
 
 log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
 nll_loss = torch.nn.NLLLoss()
 
-global_lr = 3.3246e-4
+global_lr = 7.4057e-4
 opt1 = torch.optim.Adam(layer1.parameters(), lr=global_lr, betas=[0., .95])
 opt2 = torch.optim.Adam(layer2.parameters(), lr=global_lr, betas=[0., .95])
 opt3 = torch.optim.Adam(layer3.parameters(), lr=global_lr, betas=[0., .95])
