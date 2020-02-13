@@ -369,6 +369,8 @@ y_test  = test_dataset.targets
 # fixed subsampling
 # train: 300 samples per class -> 3000
 # test: 103 samples per class -> 1030 (a wee more than 1024)
+
+
 train_samples = 3000
 test_samples = 1030
 num_classes = 10
@@ -386,7 +388,7 @@ y_train = y_train[index_list_train]
 y_test = y_test[index_list_test]
 
 quantization.global_beta = 1.5
-quantization.global_wb = 8
+quantization.global_wb = 6
 
 ms = 1e-3
 delta_t = 1*ms
@@ -522,6 +524,9 @@ for x_local, y_local in sparse_data_generator(x_train, y_train, batch_size = bat
     opt3.param_groups[0]['lr'] = lr
     opt4.param_groups[0]['lr'] = lr
 
+best_lr = 10**(log_lrs[np.argmin(losses)]+1) 
+
 plt.clf()
 plt.plot(log_lrs,losses)
-plt.savefig('figures/conv_snn_mnist_lr')
+plt.title("Optimizing LR for {0}bit Weights: {1:.4e}".format(quantization.global_wb, best_lr))
+plt.savefig('figures/conv_snn_mnist_lr_{0}.png'.format(quantization.global_wb))
