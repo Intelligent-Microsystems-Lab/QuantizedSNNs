@@ -6,3 +6,66 @@ Traceback (most recent call last):
 TypeError: slice indices must be integers or None or have an __index__ method
 Loading python/3.7.3
   Loading requirement: tcl/8.6.8 gcc/8.3.0
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+Weight Quantization: 8
+Epoch 1 | Loss: 2.3556 Train Acc: 0.9760 Test Acc: 0.8117 Train Time: 89.9629s Inference Time: 42.3760s
+Epoch 2 | Loss: 2.2386 Train Acc: 0.9923 Test Acc: 0.6010 Train Time: 88.1512s Inference Time: 43.2980s
+Epoch 3 | Loss: 2.2434 Train Acc: 0.9927 Test Acc: 0.8718 Train Time: 99.9290s Inference Time: 43.8138s
+Epoch 4 | Loss: 2.2494 Train Acc: 0.9923 Test Acc: 0.7417 Train Time: 104.9028s Inference Time: 44.1659s
+Epoch 5 | Loss: 2.2477 Train Acc: 0.9907 Test Acc: 0.8641 Train Time: 99.4340s Inference Time: 42.9508s
+Epoch 6 | Loss: 2.2497 Train Acc: 0.9943 Test Acc: 0.4573 Train Time: 93.4457s Inference Time: 45.1805s
+Epoch 7 | Loss: 2.2470 Train Acc: 0.9933 Test Acc: 0.8097 Train Time: 96.5568s Inference Time: 42.4031s
+Epoch 8 | Loss: 2.2435 Train Acc: 0.9903 Test Acc: 0.7854 Train Time: 95.2810s Inference Time: 46.0685s
+Epoch 9 | Loss: 2.2395 Train Acc: 0.9913 Test Acc: 0.6408 Train Time: 103.8075s Inference Time: 43.4860s
+Epoch 10 | Loss: 2.2507 Train Acc: 0.9933 Test Acc: 0.5485 Train Time: 104.0161s Inference Time: 44.7460s
+Epoch 11 | Loss: 2.2511 Train Acc: 0.9920 Test Acc: 0.8602 Train Time: 107.1929s Inference Time: 43.6860s
+Epoch 12 | Loss: 2.2501 Train Acc: 0.9927 Test Acc: 0.8214 Train Time: 98.5830s Inference Time: 43.1398s
+Epoch 13 | Loss: 2.2496 Train Acc: 0.9927 Test Acc: 0.8010 Train Time: 94.9144s Inference Time: 43.5152s
+Epoch 14 | Loss: 2.2448 Train Acc: 0.9937 Test Acc: 0.6913 Train Time: 98.5961s Inference Time: 43.1195s
+Epoch 15 | Loss: 2.2475 Train Acc: 0.9920 Test Acc: 0.8689 Train Time: 87.6103s Inference Time: 42.0959s
+Epoch 16 | Loss: 2.2479 Train Acc: 0.9913 Test Acc: 0.8155 Train Time: 86.2028s Inference Time: 42.0609s
+Epoch 17 | Loss: 2.2454 Train Acc: 0.9913 Test Acc: 0.7068 Train Time: 87.8728s Inference Time: 42.1285s
+Epoch 18 | Loss: 2.2491 Train Acc: 0.9943 Test Acc: 0.7495 Train Time: 86.3812s Inference Time: 42.2390s
+Epoch 19 | Loss: 2.2471 Train Acc: 0.9900 Test Acc: 0.7214 Train Time: 86.5523s Inference Time: 42.2269s
+Epoch 20 | Loss: 2.2472 Train Acc: 0.9910 Test Acc: 0.8097 Train Time: 86.2656s Inference Time: 42.2285s
+Epoch 21 | Loss: 2.0724 Train Acc: 0.9953 Test Acc: 0.8078 Train Time: 87.4891s Inference Time: 42.3942s
+Epoch 22 | Loss: 2.0851 Train Acc: 0.9947 Test Acc: 0.8485 Train Time: 87.9181s Inference Time: 42.3752s
+Epoch 23 | Loss: 2.0817 Train Acc: 0.9930 Test Acc: 0.8738 Train Time: 87.5770s Inference Time: 42.4722s
+Epoch 24 | Loss: 2.0889 Train Acc: 0.9940 Test Acc: 0.9155 Train Time: 87.5331s Inference Time: 42.3834s
+Epoch 25 | Loss: 2.0811 Train Acc: 0.9930 Test Acc: 0.9136 Train Time: 89.4275s Inference Time: 44.8361s
+Epoch 26 | Loss: 2.0856 Train Acc: 0.9957 Test Acc: 0.8524 Train Time: 95.2201s Inference Time: 42.2679s
+Epoch 27 | Loss: 2.0796 Train Acc: 0.9950 Test Acc: 0.7893 Train Time: 88.7209s Inference Time: 42.2014s
+Epoch 28 | Loss: 2.0796 Train Acc: 0.9943 Test Acc: 0.8456 Train Time: 89.1833s Inference Time: 42.0954s
+Epoch 29 | Loss: 2.0831 Train Acc: 0.9940 Test Acc: 0.8816 Train Time: 89.1182s Inference Time: 42.0077s
+Epoch 30 | Loss: 2.0838 Train Acc: 0.9927 Test Acc: 0.7252 Train Time: 89.0703s Inference Time: 42.1500s
+Epoch 31 | Loss: 2.0795 Train Acc: 0.9947 Test Acc: 0.9204 Train Time: 88.8407s Inference Time: 42.1750s
+Epoch 32 | Loss: 2.0796 Train Acc: 0.9920 Test Acc: 0.7883 Train Time: 89.0540s Inference Time: 42.1358s
+Epoch 33 | Loss: 2.0794 Train Acc: 0.9943 Test Acc: 0.7427 Train Time: 88.9128s Inference Time: 42.1223s
+Epoch 34 | Loss: 2.0840 Train Acc: 0.9953 Test Acc: 0.9068 Train Time: 89.5333s Inference Time: 42.0193s
+Epoch 35 | Loss: 2.0829 Train Acc: 0.9937 Test Acc: 0.8495 Train Time: 89.2367s Inference Time: 42.0260s
+Epoch 36 | Loss: 2.0783 Train Acc: 0.9947 Test Acc: 0.7816 Train Time: 89.1692s Inference Time: 42.0242s
+Epoch 37 | Loss: 2.0828 Train Acc: 0.9953 Test Acc: 0.8544 Train Time: 89.1468s Inference Time: 42.0314s
+Epoch 38 | Loss: 2.0756 Train Acc: 0.9957 Test Acc: 0.8670 Train Time: 89.0092s Inference Time: 42.0117s
+Epoch 39 | Loss: 2.0742 Train Acc: 0.9923 Test Acc: 0.8243 Train Time: 89.1584s Inference Time: 42.2337s
+Epoch 40 | Loss: 2.0804 Train Acc: 0.9933 Test Acc: 0.8903 Train Time: 89.1321s Inference Time: 42.0884s
+Epoch 41 | Loss: 1.9796 Train Acc: 0.9960 Test Acc: 0.9291 Train Time: 89.2766s Inference Time: 42.0779s
+Epoch 42 | Loss: 2.0087 Train Acc: 0.9957 Test Acc: 0.9019 Train Time: 88.9768s Inference Time: 42.4434s
+Epoch 43 | Loss: 2.0121 Train Acc: 0.9953 Test Acc: 0.8971 Train Time: 89.1040s Inference Time: 42.0783s
+Epoch 44 | Loss: 2.0088 Train Acc: 0.9953 Test Acc: 0.8544 Train Time: 89.2098s Inference Time: 42.0310s
+Epoch 45 | Loss: 2.0147 Train Acc: 0.9950 Test Acc: 0.8961 Train Time: 88.9298s Inference Time: 42.0707s
+Epoch 46 | Loss: 2.0180 Train Acc: 0.9963 Test Acc: 0.8806 Train Time: 89.2173s Inference Time: 42.0376s
+Epoch 47 | Loss: 2.0175 Train Acc: 0.9953 Test Acc: 0.7942 Train Time: 88.6968s Inference Time: 42.0025s
+Epoch 48 | Loss: 2.0148 Train Acc: 0.9957 Test Acc: 0.9068 Train Time: 88.9724s Inference Time: 42.0594s
+Epoch 49 | Loss: 2.0138 Train Acc: 0.9960 Test Acc: 0.8835 Train Time: 88.5899s Inference Time: 42.0546s
+Epoch 50 | Loss: 2.0146 Train Acc: 0.9953 Test Acc: 0.8913 Train Time: 87.9356s Inference Time: 42.2317s
+Epoch 51 | Loss: 2.0074 Train Acc: 0.9957 Test Acc: 0.9146 Train Time: 89.1882s Inference Time: 42.5042s
+Epoch 52 | Loss: 2.0220 Train Acc: 0.9957 Test Acc: 0.9204 Train Time: 88.1272s Inference Time: 42.4688s
+Epoch 53 | Loss: 2.0167 Train Acc: 0.9960 Test Acc: 0.8825 Train Time: 88.3261s Inference Time: 42.7129s
+Epoch 54 | Loss: 2.0233 Train Acc: 0.9960 Test Acc: 0.8408 Train Time: 96.4097s Inference Time: 43.2141s
+Epoch 55 | Loss: 2.0133 Train Acc: 0.9957 Test Acc: 0.9126 Train Time: 92.3088s Inference Time: 42.9616s
+Epoch 56 | Loss: 2.0096 Train Acc: 0.9963 Test Acc: 0.8680 Train Time: 87.6252s Inference Time: 42.8555s
+Epoch 57 | Loss: 2.0194 Train Acc: 0.9953 Test Acc: 0.9068 Train Time: 88.1324s Inference Time: 42.9927s
+Epoch 58 | Loss: 2.0145 Train Acc: 0.9960 Test Acc: 0.8757 Train Time: 90.0143s Inference Time: 42.9679s
+Epoch 59 | Loss: 2.0152 Train Acc: 0.9957 Test Acc: 0.8583 Train Time: 90.7353s Inference Time: 43.1861s
+Epoch 60 | Loss: 2.0094 Train Acc: 0.9960 Test Acc: 0.9291 Train Time: 87.8860s Inference Time: 42.8555s
