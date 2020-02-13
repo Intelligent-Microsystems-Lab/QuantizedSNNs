@@ -381,8 +381,8 @@ num_classes = 10
 index_list_train = []
 index_list_test = []
 for i in range(10):
-    index_list_train.append((y_train == i).nonzero()[:train_samples/num_classes])
-    index_list_test.append((y_test == i).nonzero()[:test_samples/num_classes])
+    index_list_train.append((y_train == i).nonzero()[:int(train_samples/num_classes)])
+    index_list_test.append((y_test == i).nonzero()[:int(test_samples/num_classes)])
 index_list_train = torch.cat(index_list_train).reshape([train_samples])
 index_list_test = torch.cat(index_list_test).reshape([test_samples])
 
@@ -439,7 +439,7 @@ scheduler4 = torch.optim.lr_scheduler.StepLR(opt4, step_size=20, gamma=0.5)
 
 print("Weight Quantization: {0}".format(quantization.global_wb))
 
-for e in range(60):
+for e in range(3):
     correct = 0
     total = 0
     tcorrect = 0
