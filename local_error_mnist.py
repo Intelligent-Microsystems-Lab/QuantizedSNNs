@@ -427,10 +427,11 @@ layer4 = LIFDenseLayer(in_channels = np.prod(layer3.out_shape), out_channels = o
 log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
 nll_loss = torch.nn.NLLLoss()
 
-opt1 = torch.optim.Adam(layer1.parameters(), lr=1e-5, betas=[0., .95])
-opt2 = torch.optim.Adam(layer2.parameters(), lr=1e-5, betas=[0., .95])
-opt3 = torch.optim.Adam(layer3.parameters(), lr=1e-5, betas=[0., .95])
-opt4 = torch.optim.Adam(layer4.parameters(), lr=1e-5, betas=[0., .95])
+global_lr = 1e-5
+opt1 = torch.optim.Adam(layer1.parameters(), lr=global_lr, betas=[0., .95])
+opt2 = torch.optim.Adam(layer2.parameters(), lr=global_lr, betas=[0., .95])
+opt3 = torch.optim.Adam(layer3.parameters(), lr=global_lr, betas=[0., .95])
+opt4 = torch.optim.Adam(layer4.parameters(), lr=global_lr, betas=[0., .95])
 scheduler1 = torch.optim.lr_scheduler.StepLR(opt1, step_size=20, gamma=0.5)
 scheduler2 = torch.optim.lr_scheduler.StepLR(opt2, step_size=20, gamma=0.5)
 scheduler3 = torch.optim.lr_scheduler.StepLR(opt3, step_size=20, gamma=0.5)
