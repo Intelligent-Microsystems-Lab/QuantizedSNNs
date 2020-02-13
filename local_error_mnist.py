@@ -408,8 +408,8 @@ tau_syn = torch.Tensor([5*ms, 10*ms]).to(device)
 tau_ref = torch.Tensor([2.86*ms]).to(device)
 thr = torch.Tensor([.1]).to(device)
 
-lambda1 = .2
-lambda2 = .1
+lambda1 = .3
+lambda2 = .2
 
 dropout_learning = nn.Dropout(p=.5)
 
@@ -427,7 +427,7 @@ layer4 = LIFDenseLayer(in_channels = np.prod(layer3.out_shape), out_channels = o
 log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
 nll_loss = torch.nn.NLLLoss()
 
-global_lr = 1e-5
+global_lr = 3.3246e-2
 opt1 = torch.optim.Adam(layer1.parameters(), lr=global_lr, betas=[0., .95])
 opt2 = torch.optim.Adam(layer2.parameters(), lr=global_lr, betas=[0., .95])
 opt3 = torch.optim.Adam(layer3.parameters(), lr=global_lr, betas=[0., .95])
