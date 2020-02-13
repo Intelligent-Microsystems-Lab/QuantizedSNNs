@@ -388,7 +388,7 @@ y_train = y_train[index_list_train]
 y_test = y_test[index_list_test]
 
 quantization.global_beta = 1.5
-quantization.global_wb = 6
+quantization.global_wb = 2
 
 ms = 1e-3
 delta_t = 1*ms
@@ -524,7 +524,7 @@ for x_local, y_local in sparse_data_generator(x_train, y_train, batch_size = bat
     opt3.param_groups[0]['lr'] = lr
     opt4.param_groups[0]['lr'] = lr
 
-best_lr = 10**(log_lrs[np.argmin(losses)]+1) 
+best_lr = 10**(log_lrs[np.argmin(losses)]-1) 
 
 plt.clf()
 plt.plot(log_lrs,losses)
