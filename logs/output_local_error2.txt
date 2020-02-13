@@ -1,0 +1,6 @@
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+Traceback (most recent call last):
+  File "local_error_mnist.py", line 356, in <module>
+    x_train = x_train[index_list_train, :]
+NameError: name 'index_list_train' is not defined
