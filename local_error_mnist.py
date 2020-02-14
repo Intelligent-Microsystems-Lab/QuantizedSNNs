@@ -403,7 +403,7 @@ scheduler4 = torch.optim.lr_scheduler.StepLR(opt4, step_size=20, gamma=0.5)
 
 print("WPQU Quantization: {0}".format(quantization.global_wb))
 
-for e in range(2):
+for e in range(60):
     correct = 0
     total = 0
     tcorrect = 0
