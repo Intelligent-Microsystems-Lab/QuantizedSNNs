@@ -160,3 +160,64 @@ def weight_visual(weights, input_tuple):
         axes[i].imshow(test.detach().cpu().numpy(), cmap='gray')
     fig.tight_layout()
     plt.savefig("blabla.png", dpi=100)
+
+
+
+
+def aux_plot_i_u_s(inputs, rec_u, rec_s, batches, filename = ''):
+    plt.clf()
+    figure, axes = plt.subplots(nrows=3, ncols=batches)
+
+    if batches == 1:
+        i = 0
+        axes[0].set_ylabel("Input Spikes")
+        axes[1].set_ylabel("Neurons U(t)")
+        axes[2].set_ylabel("Neurons S(t)")
+        axes[0].set_title("Batch #"+str(i))
+        axes[0].plot(inputs[i,:,:].nonzero()[:,1].cpu(), inputs[i,:,:].nonzero()[:,0].cpu(), 'k|')
+        axes[0].set_yticklabels([])
+        axes[0].set_xticklabels([])
+        axes[0].set_xlim([0,len(rec_u[i,0,:])])
+        for j in range(rec_u.shape[1]):
+            axes[1].plot(rec_u[i,j,:].cpu()+j*5)
+        axes[1].set_yticklabels([])
+        axes[1].set_xticklabels([])
+        axes[2].plot(rec_s[i,:,:].nonzero()[:,1].cpu(), rec_s[i,:,:].nonzero()[:,0].cpu(), 'k|')
+        axes[2].set_yticklabels([])
+        axes[2].set_xlim([0,len(rec_u[i,0,:])])
+        axes[2].set_xlabel('Time (t)')
+
+        plt.tight_layout()
+        if filename == '':
+            plt.show()
+        else:
+            plt.savefig(filename)
+
+
+    elif batches > 1:
+        axes[0, 0].set_ylabel("Input Spikes")
+        axes[1, 0].set_ylabel("Neurons U(t)")
+        axes[2, 0].set_ylabel("Neurons S(t)")
+        for i in range(batches):
+            axes[0, i].set_title("Batch #"+str(i))
+            axes[0, i].plot(inputs[i,:,:].nonzero()[:,1].cpu(), inputs[i,:,:].nonzero()[:,0].cpu(), 'k|')
+            axes[0, i].set_yticklabels([])
+            axes[0, i].set_xticklabels([])
+            axes[0, i].set_xlim([0,len(rec_u[i,0,:])])
+            for j in range(rec_u.shape[1]):
+                axes[1, i].plot(rec_u[i,j,:].cpu()+j*5)
+            axes[1, i].set_yticklabels([])
+            axes[1, i].set_xticklabels([])
+            axes[2, i].plot(rec_s[i,:,:].nonzero()[:,1].cpu(), rec_s[i,:,:].nonzero()[:,0].cpu(), 'k|')
+            axes[2, i].set_yticklabels([])
+            axes[2, i].set_xlim([0,len(rec_u[i,0,:])])
+            axes[2, i].set_xlabel('Time (t)')
+
+        plt.tight_layout()
+        if filename == '':
+            plt.show()
+        else:
+            plt.savefig(filename)
+    else:
+        print('Bad number of batches to display')
+

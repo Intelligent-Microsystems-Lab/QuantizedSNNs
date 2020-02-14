@@ -47,65 +47,6 @@ def sparse_data_generator(X, y, batch_size, nb_steps, samples, max_hertz, shuffl
             return
 
 
-def aux_plot_i_u_s(inputs, rec_u, rec_s, batches, filename = ''):
-    plt.clf()
-    figure, axes = plt.subplots(nrows=3, ncols=batches)
-
-    if batches == 1:
-        i = 0
-        axes[0].set_ylabel("Input Spikes")
-        axes[1].set_ylabel("Neurons U(t)")
-        axes[2].set_ylabel("Neurons S(t)")
-        axes[0].set_title("Batch #"+str(i))
-        axes[0].plot(inputs[i,:,:].nonzero()[:,1].cpu(), inputs[i,:,:].nonzero()[:,0].cpu(), 'k|')
-        axes[0].set_yticklabels([])
-        axes[0].set_xticklabels([])
-        axes[0].set_xlim([0,len(rec_u[i,0,:])])
-        for j in range(rec_u.shape[1]):
-            axes[1].plot(rec_u[i,j,:].cpu()+j*5)
-        axes[1].set_yticklabels([])
-        axes[1].set_xticklabels([])
-        axes[2].plot(rec_s[i,:,:].nonzero()[:,1].cpu(), rec_s[i,:,:].nonzero()[:,0].cpu(), 'k|')
-        axes[2].set_yticklabels([])
-        axes[2].set_xlim([0,len(rec_u[i,0,:])])
-        axes[2].set_xlabel('Time (t)')
-
-        plt.tight_layout()
-        if filename == '':
-            plt.show()
-        else:
-            plt.savefig(filename)
-
-
-    elif batches > 1:
-        axes[0, 0].set_ylabel("Input Spikes")
-        axes[1, 0].set_ylabel("Neurons U(t)")
-        axes[2, 0].set_ylabel("Neurons S(t)")
-        for i in range(batches):
-            axes[0, i].set_title("Batch #"+str(i))
-            axes[0, i].plot(inputs[i,:,:].nonzero()[:,1].cpu(), inputs[i,:,:].nonzero()[:,0].cpu(), 'k|')
-            axes[0, i].set_yticklabels([])
-            axes[0, i].set_xticklabels([])
-            axes[0, i].set_xlim([0,len(rec_u[i,0,:])])
-            for j in range(rec_u.shape[1]):
-                axes[1, i].plot(rec_u[i,j,:].cpu()+j*5)
-            axes[1, i].set_yticklabels([])
-            axes[1, i].set_xticklabels([])
-            axes[2, i].plot(rec_s[i,:,:].nonzero()[:,1].cpu(), rec_s[i,:,:].nonzero()[:,0].cpu(), 'k|')
-            axes[2, i].set_yticklabels([])
-            axes[2, i].set_xlim([0,len(rec_u[i,0,:])])
-            axes[2, i].set_xlabel('Time (t)')
-
-        plt.tight_layout()
-        if filename == '':
-            plt.show()
-        else:
-            plt.savefig(filename)
-    else:
-        print('Bad number of batches to display')
-
-
-
 class SmoothStep(torch.autograd.Function):
     '''
     Modified from: https://pytorch.org/tutorials/beginner/examples_autograd/two_layer_net_custom_function.html
@@ -212,6 +153,8 @@ class LinearLayer(nn.Module):
         return LinearFunctional.apply(input, self.weights, self.bias)
 
 
+# forward and backward pass for dense
+
 
 class LIFDenseLayer(nn.Module):
     def __init__(self, in_channels, out_channels, tau_syn, tau_mem, tau_ref, delta_t, bias=True, thr = 1, device=torch.device("cpu"), dtype = torch.float):
@@ -272,12 +215,14 @@ class LIFDenseLayer(nn.Module):
         self.S = (self.U > self.thr).float()
 
         # quantize P, Q and U
-        self.P = quantization.quant_generic(self.P, quantization.pb)
-        self.Q = quantization.quant_generic(self.Q, quantization.qb)
-        self.U = quantization.quant_generic(self.U, quantization.ub)
+        self.P, _ = quantization.quant_generic(self.P, quantization.global_pb)
+        self.Q, _ = quantization.quant_generic(self.Q, quantization.global_qb)
+        self.U, _ = quantization.quant_generic(self.U, quantization.global_ub)
 
         return self.S
 
+
+# forward 
 
 class LIFConvLayer(nn.Module):
     def __init__(self, inp_shape, kernel_size, out_channels, tau_syn, tau_mem, tau_ref, delta_t, pooling = 1, padding = 0, bias=True, thr = 1, device=torch.device("cpu"), dtype = torch.float):
@@ -346,9 +291,9 @@ class LIFConvLayer(nn.Module):
         self.S = (self.U > self.thr).float()
 
         # quantize P, Q and U
-        self.P = quantization.quant_generic(self.P, quantization.pb)
-        self.Q = quantization.quant_generic(self.Q, quantization.qb)
-        self.U = quantization.quant_generic(self.U, quantization.ub)
+        self.P, _ = quantization.quant_generic(self.P, quantization.global_pb)
+        self.Q, _ = quantization.quant_generic(self.Q, quantization.global_qb)
+        self.U, _ = quantization.quant_generic(self.U, quantization.global_ub)
 
         return self.S
 
@@ -402,10 +347,10 @@ y_train = y_train[index_list_train]
 y_test = y_test[index_list_test]
 
 quantization.global_beta = 1.5
-quantization.global_wb = 8
-quantization.global_ub = 8
-quantization.global_qb = 8
-quantization.global_pb = 8
+quantization.global_wb = 2
+quantization.global_ub = 2
+quantization.global_qb = 2
+quantization.global_pb = 2
 
 ms = 1e-3
 delta_t = 1*ms
@@ -446,7 +391,7 @@ layer4 = LIFDenseLayer(in_channels = np.prod(layer3.out_shape), out_channels = o
 log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
 nll_loss = torch.nn.NLLLoss()
 
-global_lr = 7.4057e-4
+global_lr = 3.3246e-4
 opt1 = torch.optim.Adam(layer1.parameters(), lr=global_lr, betas=[0., .95])
 opt2 = torch.optim.Adam(layer2.parameters(), lr=global_lr, betas=[0., .95])
 opt3 = torch.optim.Adam(layer3.parameters(), lr=global_lr, betas=[0., .95])
@@ -456,9 +401,9 @@ scheduler2 = torch.optim.lr_scheduler.StepLR(opt2, step_size=20, gamma=0.5)
 scheduler3 = torch.optim.lr_scheduler.StepLR(opt3, step_size=20, gamma=0.5)
 scheduler4 = torch.optim.lr_scheduler.StepLR(opt4, step_size=20, gamma=0.5)
 
-print("Weight Quantization: {0}".format(quantization.global_wb))
+print("WPQU Quantization: {0}".format(quantization.global_wb))
 
-for e in range(60):
+for e in range(2):
     correct = 0
     total = 0
     tcorrect = 0
