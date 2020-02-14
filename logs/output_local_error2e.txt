@@ -1,0 +1,5 @@
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+WPQU Quantization: 2
+Epoch 1 | Loss: 2.1716 Train Acc: 0.3550 Test Acc: 0.4680 Train Time: 221.9282s Inference Time: 53.9550s
+Epoch 2 | Loss: 1.9247 Train Acc: 0.6123 Test Acc: 0.5456 Train Time: 213.7494s Inference Time: 53.4424s
