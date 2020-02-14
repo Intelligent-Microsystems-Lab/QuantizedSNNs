@@ -347,10 +347,10 @@ y_train = y_train[index_list_train]
 y_test = y_test[index_list_test]
 
 quantization.global_beta = 1.5
-quantization.global_wb = 6
-quantization.global_ub = 6
-quantization.global_qb = 6
-quantization.global_pb = 6
+quantization.global_wb = 7
+quantization.global_ub = 7
+quantization.global_qb = 7
+quantization.global_pb = 7
 
 ms = 1e-3
 delta_t = 1*ms
