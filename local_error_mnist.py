@@ -347,10 +347,10 @@ y_train = y_train[index_list_train]
 y_test = y_test[index_list_test]
 
 quantization.global_beta = 1.5
-quantization.global_wb = 2
-quantization.global_ub = 2
-quantization.global_qb = 2
-quantization.global_pb = 2
+quantization.global_wb = 3
+quantization.global_ub = 3
+quantization.global_qb = 3
+quantization.global_pb = 3
 
 ms = 1e-3
 delta_t = 1*ms
@@ -391,6 +391,7 @@ layer4 = LIFDenseLayer(in_channels = np.prod(layer3.out_shape), out_channels = o
 log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
 nll_loss = torch.nn.NLLLoss()
 
+# shall I train this every time upfront?
 global_lr = 3.3246e-4
 opt1 = torch.optim.Adam(layer1.parameters(), lr=global_lr, betas=[0., .95])
 opt2 = torch.optim.Adam(layer2.parameters(), lr=global_lr, betas=[0., .95])
