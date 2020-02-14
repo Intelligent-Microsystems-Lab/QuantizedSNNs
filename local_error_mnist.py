@@ -102,6 +102,9 @@ class SuperSpike(torch.autograd.Function):
         grad_input = grad_output.clone()
 
         grad_input = grad_input/(SuperSpike.scale*torch.abs(x)+1.0)**2
+
+        # error quant
+
         return grad_input
 
 superspike = SuperSpike().apply
@@ -154,7 +157,58 @@ class LinearLayer(nn.Module):
 
 
 # forward and backward pass for dense
+# Inherit from Function
+class clee_LinearFunction(torch.autograd.Function):
 
+    # Note that both forward and backward are @staticmethods
+    @staticmethod
+    # bias is an optional argument
+    def forward(ctx, input, weight, scale, act, act_q, bias=None):
+        P, R, Q = alpha * P + Q, gamma * R - S, beta * Q + input_t
+        if bias_active:
+            U = torch.einsum("ab,bc->ac", (P, quantization.quant_w(weights, scale))) + quantization.quant_w(bias, scale) + R
+
+        # prep and save
+        w_quant = quant_w(weight, scale)
+        input = input.float()
+        
+        # compute output
+        output = input.mm(w_quant.t())
+
+        relu_mask = torch.ones(output.shape).to(output.device)
+        clip_info = torch.ones(output.shape).to(output.device)
+
+        # add relu and quant optionally
+        if act:
+            output = F.relu(output)
+            relu_mask = (output != 0)
+        if act_q:
+            output, clip_info = quant_act(output)
+        if bias is not None:
+            output += bias.unsqueeze(0).expand_as(output)
+
+        gradient_mask = relu_mask * clip_info
+
+        ctx.save_for_backward(input, w_quant, bias, gradient_mask)
+        return output
+
+    # This function has only a single output, so it gets only one gradient
+    @staticmethod
+    def backward(ctx, grad_output):
+        input, w_quant, bias, gradient_mask = ctx.saved_tensors
+        grad_input = grad_weight = grad_bias = None
+        quant_error = quant_err(grad_output) * gradient_mask.float()
+
+        if ctx.needs_input_grad[0]:
+            # propagate quantized error
+            grad_input = quant_error.mm(w_quant)
+        if ctx.needs_input_grad[1]:
+            grad_weight = quant_grad(quant_error.t().mm(input)).float()
+            
+        if bias is not None and ctx.needs_input_grad[2]:
+            grad_bias = grad_output.sum(0).squeeze(0)
+
+        return grad_input, grad_weight, grad_bias, None, None
 
 class LIFDenseLayer(nn.Module):
     def __init__(self, in_channels, out_channels, tau_syn, tau_mem, tau_ref, delta_t, bias=True, thr = 1, device=torch.device("cpu"), dtype = torch.float):
@@ -204,14 +258,11 @@ class LIFDenseLayer(nn.Module):
     def forward(self, input_t):
         with torch.no_grad():
             self.weights.data = quantization.clip(self.weights.data, quantization.global_wb)
-            if self.bias_active:
-                self.bias.data = quantization.clip(self.bias.data, quantization.global_wb)
+            self.bias.data = quantization.clip(self.bias.data, quantization.global_wb)
 
         self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.gamma * self.R - self.S, self.beta * self.Q + input_t
-        if self.bias_active:
-            self.U = torch.einsum("ab,bc->ac", (self.P, quantization.quant_w(self.weights, self.scale))) + quantization.quant_w(self.bias, self.scale) + self.R
-        else:
-            self.U = torch.einsum("ab,bc->ac", (self.P, quantization.quant_w(self.weights, self.scale))) + self.R
+        # the linear part should be forward backward pass
+        self.U = torch.einsum("ab,bc->ac", (self.P, quantization.quant_w(self.weights, self.scale))) + quantization.quant_w(self.bias, self.scale) + self.R
         self.S = (self.U > self.thr).float()
 
         # quantize P, Q and U
@@ -284,10 +335,8 @@ class LIFConvLayer(nn.Module):
                 self.bias.data = quantization.clip(self.bias.data, quantization.global_wb)
 
         self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.gamma * self.R - self.S, self.beta * self.Q + input_t
-        if self.bias_active:
-            self.U = self.mpoolF(F.conv2d(input = self.P, weight = quantization.quant_w(self.weights, self.scale), bias = quantization.quant_w(self.bias, self.scale), padding = self.padding)) + self.R
-        else:
-            self.U = self.mpoolF(F.conv2d(input = self.P, weight = quantization.quant_w(self.weights, self.scale), bias = self.bias, padding = self.padding)) + self.R
+        # conv part should be forward backward part
+        self.U = self.mpoolF(F.conv2d(input = self.P, weight = quantization.quant_w(self.weights, self.scale), bias = quantization.quant_w(self.bias, self.scale), padding = self.padding)) + self.R
         self.S = (self.U > self.thr).float()
 
         # quantize P, Q and U
@@ -347,10 +396,13 @@ y_train = y_train[index_list_train]
 y_test = y_test[index_list_test]
 
 quantization.global_beta = 1.5
-quantization.global_wb = 8
-quantization.global_ub = 8
-quantization.global_qb = 8
-quantization.global_pb = 8
+quantization.global_wb = 6
+quantization.global_ub = 6
+quantization.global_qb = 6
+quantization.global_pb = 6
+quantization.global_gb = 6
+quantization.global_eb = 6
+
 
 ms = 1e-3
 delta_t = 1*ms

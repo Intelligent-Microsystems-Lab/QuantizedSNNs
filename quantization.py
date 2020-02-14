@@ -46,6 +46,9 @@ def quant(x, bits):
         return torch.round(x * scale ) / scale
 
 def quant_w(x, scale = 1):
+    if x == None:
+        return 0
+
     with torch.no_grad():
         y = quant(clip(x, global_wb) , global_wb)
         diff = (y - x)
