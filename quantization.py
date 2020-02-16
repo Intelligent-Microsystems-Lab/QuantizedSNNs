@@ -87,8 +87,8 @@ def quant_grad(x):
     norm_int = torch.floor(norm_abs)
     norm_float = norm_abs - norm_int
     rand_float = torch.FloatTensor(x.shape).uniform_(0,1).to(x.device)
-    import pdb; pdb.set_trace()
-    norm = norm_sign.double() * ( norm_int.double() + 0.5 * (torch.sign(norm_float.double() - rand_float.double()) + 1) )
+    #norm = norm_sign.double() * ( norm_int.double() + 0.5 * (torch.sign(norm_float.double() - rand_float.double()) + 1) )
+    norm = norm_sign * ( norm_int + 0.5 * (torch.sign(norm_float - rand_float) + 1) )
 
     return norm / step_d(global_gb)
 
