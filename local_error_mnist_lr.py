@@ -450,7 +450,7 @@ losses = []
 log_lrs = []
 
 print("Optimizing LR for Weight Quantization: {0}".format(quantization.global_wb))
-
+# https://sgugger.github.io/how-do-you-find-a-good-learning-rate.html
 
 for x_local, y_local in sparse_data_generator(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, samples = train_samples, max_hertz = 50, shuffle = True, device = device):
     batch_num += 1

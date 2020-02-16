@@ -63,6 +63,10 @@ class SmoothStep(torch.autograd.Function):
 
         grad_input[x <= -.5] = 0
         grad_input[x > .5] = 0
+
+        # quantize error
+        grad_input = quantization.quant_err(grad_input)
+
         return grad_input
 
 smoothstep = SmoothStep().apply
@@ -103,16 +107,19 @@ class SuperSpike(torch.autograd.Function):
 
         grad_input = grad_input/(SuperSpike.scale*torch.abs(x)+1.0)**2
 
-        # error quant
+        # quantize error
+        grad_input = quantization.quant_err(grad_input)
 
         return grad_input
 
 superspike = SuperSpike().apply
 
-class LinearFunctional(torch.autograd.Function):
+class QLinearFunctional(torch.autograd.Function):
     '''from https://github.com/L0SG/feedback-alignment-pytorch/'''
     @staticmethod
     def forward(context, input, weight, bias=None):
+        input[input > 0]  = 1 #correct for dropout scale
+        input[input <= 0] = 0
         context.save_for_backward(input, weight, bias)
         output = input.mm(weight.t())
         if bias is not None:
@@ -124,91 +131,37 @@ class LinearFunctional(torch.autograd.Function):
         input, weight, bias = context.saved_tensors
         grad_input = grad_weight = grad_bias = None
 
+        # quantize error 
+        grad_output = quantization.quant_err(grad_output) 
+
         if context.needs_input_grad[0]:
             grad_input = grad_output.mm(weight)
         if context.needs_input_grad[1]:
-            grad_weight = grad_output.t().mm(input)
+            grad_weight = quantization.quant_grad(grad_output.t().mm(input))
         if bias is not None and context.needs_input_grad[2]:
-            grad_bias = grad_output.sum(0)
+            grad_bias = quantization.quant_grad(grad_output.sum(0))
 
         return grad_input, grad_weight, grad_bias
 
-class LinearLayer(nn.Module):
+class QLinearLayerSign(nn.Module):
     '''from https://github.com/L0SG/feedback-alignment-pytorch/'''
-    def __init__(self, input_features, output_features, bias=True):
-        super(LinearLayer, self).__init__()
+    def __init__(self, input_features, output_features):
+        super(QLinearLayerSign, self).__init__()
         self.input_features = input_features
         self.output_features = output_features
 
         # weight and bias for forward pass
         self.weights = nn.Parameter(torch.Tensor(output_features, input_features))
-        if bias:
-            self.bias = nn.Parameter(torch.Tensor(output_features))
-        else:
-            self.register_parameter('bias', None)
+        self.weights.data.uniform_(-1, 1)
 
-        stdv = 1. / np.sqrt(self.weights.size(1))
-        self.weights.data.uniform_(-stdv, stdv)
-        if self.bias is not None:
-            self.bias.data.uniform_(-stdv, stdv)
+        self.weights.data[self.weights.data > 0] = 1
+        self.weights.data[self.weights.data < 0] = -1
+        
 
     def forward(self, input):
-        return LinearFunctional.apply(input, self.weights, self.bias)
+        return QLinearFunctional.apply(input, self.weights, None)
 
 
-# forward and backward pass for dense
-# Inherit from Function
-class clee_LinearFunction(torch.autograd.Function):
-
-    # Note that both forward and backward are @staticmethods
-    @staticmethod
-    # bias is an optional argument
-    def forward(ctx, input, weight, scale, act, act_q, bias=None):
-        P, R, Q = alpha * P + Q, gamma * R - S, beta * Q + input_t
-        if bias_active:
-            U = torch.einsum("ab,bc->ac", (P, quantization.quant_w(weights, scale))) + quantization.quant_w(bias, scale) + R
-
-        # prep and save
-        w_quant = quant_w(weight, scale)
-        input = input.float()
-        
-        # compute output
-        output = input.mm(w_quant.t())
-
-        relu_mask = torch.ones(output.shape).to(output.device)
-        clip_info = torch.ones(output.shape).to(output.device)
-
-        # add relu and quant optionally
-        if act:
-            output = F.relu(output)
-            relu_mask = (output != 0)
-        if act_q:
-            output, clip_info = quant_act(output)
-        if bias is not None:
-            output += bias.unsqueeze(0).expand_as(output)
-
-        gradient_mask = relu_mask * clip_info
-
-        ctx.save_for_backward(input, w_quant, bias, gradient_mask)
-        return output
-
-    # This function has only a single output, so it gets only one gradient
-    @staticmethod
-    def backward(ctx, grad_output):
-        input, w_quant, bias, gradient_mask = ctx.saved_tensors
-        grad_input = grad_weight = grad_bias = None
-        quant_error = quant_err(grad_output) * gradient_mask.float()
-
-        if ctx.needs_input_grad[0]:
-            # propagate quantized error
-            grad_input = quant_error.mm(w_quant)
-        if ctx.needs_input_grad[1]:
-            grad_weight = quant_grad(quant_error.t().mm(input)).float()
-            
-        if bias is not None and ctx.needs_input_grad[2]:
-            grad_bias = grad_output.sum(0).squeeze(0)
-
-        return grad_input, grad_weight, grad_bias, None, None
 
 class LIFDenseLayer(nn.Module):
     def __init__(self, in_channels, out_channels, tau_syn, tau_mem, tau_ref, delta_t, bias=True, thr = 1, device=torch.device("cpu"), dtype = torch.float):
@@ -395,6 +348,7 @@ x_test = x_test[index_list_test, :]
 y_train = y_train[index_list_train]
 y_test = y_test[index_list_test]
 
+# quantization.global_beta = quantization.step_d(quantization.global_wb)-.5
 quantization.global_beta = 1.5
 quantization.global_wb = 6
 quantization.global_ub = 6
@@ -424,19 +378,13 @@ lambda2 = .1
 dropout_learning = nn.Dropout(p=.5)
 
 layer1 = LIFConvLayer(inp_shape = x_train.shape[1:], kernel_size = 7, out_channels = 16, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device).to(device)
-random_readout1 = LinearLayer(np.prod(layer1.out_shape), output_neurons).to(device)
-random_readout1.weights.data[random_readout1.weights.data > 0] = 1
-random_readout1.weights.data[random_readout1.weights.data < 0] = -1
+random_readout1 = QLinearLayerSign(np.prod(layer1.out_shape), output_neurons).to(device)
 
 layer2 = LIFConvLayer(inp_shape = layer1.out_shape, kernel_size = 7, out_channels = 24, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 1, padding = 2, thr = thr, device = device).to(device)
-random_readout2 = LinearLayer(np.prod(layer2.out_shape), output_neurons).to(device)
-random_readout2.weights.data[random_readout2.weights.data > 0] = 1
-random_readout2.weights.data[random_readout2.weights.data < 0] = -1
+random_readout2 = QLinearLayerSign(np.prod(layer2.out_shape), output_neurons).to(device)
 
 layer3 = LIFConvLayer(inp_shape = layer2.out_shape, kernel_size = 7, out_channels = 32, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device).to(device)
-random_readout3 = LinearLayer(np.prod(layer3.out_shape), output_neurons).to(device)
-random_readout3.weights.data[random_readout3.weights.data > 0] = 1
-random_readout3.weights.data[random_readout3.weights.data < 0] = -1
+random_readout3 = QLinearLayerSign(np.prod(layer3.out_shape), output_neurons).to(device)
 
 layer4 = LIFDenseLayer(in_channels = np.prod(layer3.out_shape), out_channels = output_neurons, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
 
@@ -548,7 +496,6 @@ for e in range(60):
     scheduler4.step()
 
     print("Epoch {0} | Loss: {1:.4f} Train Acc: {2:.4f} Test Acc: {3:.4f} Train Time: {4:.4f}s Inference Time: {5:.4f}s".format(e+1, np.mean(loss_hist), correct.item()/total, tcorrect.item()/ttotal, train_time-start_time, inf_time - train_time)) 
-
 
 
 
