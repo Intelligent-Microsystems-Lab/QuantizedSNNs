@@ -296,7 +296,7 @@ class LIFDenseLayer(nn.Module):
                 print('Stored Weights not properly quantized')
                 import pdb; pdb.set_trace()
             else:
-            quantization.count_g_vals += torch.cat([self.weights.data.flatten().cpu(), quantization.valid_g_vals]).unique(return_counts = True)[1] - torch.ones_like(quantization.count_g_vals, dtype= int)
+                quantization.count_g_vals += torch.cat([self.weights.data.flatten().cpu(), quantization.valid_g_vals]).unique(return_counts = True)[1] - torch.ones_like(quantization.count_g_vals, dtype= int)
 
 
         self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.gamma * self.R - self.S, self.beta * self.Q + input_t
@@ -353,7 +353,7 @@ class QSConv2dFunctional(torch.autograd.Function):
             print('Weights not properly quantized')
             import pdb; pdb.set_trace()
         else:
-            quantization.count_w_vals += torch.cat([w_quant.flatten().cpu(), quantization.valid_w_vals]).unique(return_counts = True)[1] - torch.ones_like(quantization.count_w_vals, dtype= int)
+            quantization.count_w_vals += torch.cat([w_quant.flatten().cpu(), quantization.valid_w_vals]).unique(return_counts = True)[1] - torch.ones_like(quantization.count_w_vals, dtype = int)
 
         output = F.conv2d(input = input, weight = w_quant, bias = bias_quant, padding = ctx.padding)
         
@@ -562,7 +562,7 @@ quantization.global_qb = 8
 quantization.global_pb = 8
 quantization.global_gb = 8
 quantization.global_eb = 8
-quantization.global_rb = 8
+quantization.global_rb = 16
 quantization.global_lr = 1
 quantization.global_beta = 1.5 #quantization.step_d(quantization.global_wb)-.5
 # effect of global beta 
@@ -570,22 +570,22 @@ quantization.global_beta = 1.5 #quantization.step_d(quantization.global_wb)-.5
 
 # visualize quant
 quantization.valid_w_vals = quantization.quant_w(torch.cat([torch.arange(-1, 1, 2/((2**quantization.global_wb)-1)), torch.tensor([0.])]), 1).unique()
-quantization.count_w_vals = torch.zeros_like(quantization.valid_w_vals)
+quantization.count_w_vals = torch.zeros_like(quantization.valid_w_vals, dtype = int)
 
 quantization.valid_p_vals = quantization.quant_generic(torch.cat([torch.arange(-1, 1, 2/((2**quantization.global_pb)-1)), torch.tensor([0.])]), quantization.global_pb)[0].unique()
-quantization.count_p_vals = torch.zeros_like(quantization.valid_p_vals)
+quantization.count_p_vals = torch.zeros_like(quantization.valid_p_vals, dtype = int)
 
 quantization.valid_q_vals = quantization.quant_generic(torch.cat([torch.arange(-1, 1, 2/((2**quantization.global_qb)-1)), torch.tensor([0.])]), quantization.global_qb)[0].unique()
-quantization.count_q_vals = torch.zeros_like(quantization.valid_q_vals)
+quantization.count_q_vals = torch.zeros_like(quantization.valid_q_vals, dtype = int)
 
 quantization.valid_u_vals = quantization.quant_generic(torch.cat([torch.arange(-1, 1, 2/((2**quantization.global_ub)-1)), torch.tensor([0.])]), quantization.global_ub)[0].unique()
-quantization.count_u_vals = torch.zeros_like(quantization.valid_u_vals)
+quantization.count_u_vals = torch.zeros_like(quantization.valid_u_vals, dtype = int)
 
 quantization.valid_e_vals = quantization.quant_generic(torch.cat([torch.arange(-1, 1, 2/((2**quantization.global_eb)-1)), torch.tensor([0.])]), quantization.global_eb)[0].unique()
-quantization.count_e_vals = torch.zeros_like(quantization.valid_e_vals)
+quantization.count_e_vals = torch.zeros_like(quantization.valid_e_vals, dtype = int)
 
 quantization.valid_g_vals = quantization.quant_generic(torch.cat([torch.arange(-1, 1, 2/((2**quantization.global_gb)-1)), torch.tensor([0.])]), quantization.global_gb)[0].unique()
-quantization.count_g_vals = torch.zeros_like(quantization.valid_g_vals)
+quantization.count_g_vals = torch.zeros_like(quantization.valid_g_vals, dtype = int)
 
 
 ms = 1e-3

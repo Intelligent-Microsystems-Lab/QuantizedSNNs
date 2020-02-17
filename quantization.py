@@ -81,11 +81,10 @@ def quant_generic(x, cb):
 
 
 def quant_grad(x):
-    import pdb; pdb.set_trace()
     xmax = torch.max(torch.abs(x))
     x = x / shift(xmax)
 
-    norm = quant(global_lr * x, global_rb)
+    norm = quant(global_lr * x, global_rb) * step_d(global_gb)
 
     norm_sign = torch.sign(norm)
     norm_abs = torch.abs(norm)
