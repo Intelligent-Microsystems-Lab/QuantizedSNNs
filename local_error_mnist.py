@@ -46,7 +46,6 @@ def sparse_data_generator(X, y, batch_size, nb_steps, samples, max_hertz, shuffl
         except StopIteration:
             return
 
-
 class SmoothStep(torch.autograd.Function):
     '''
     Modified from: https://pytorch.org/tutorials/beginner/examples_autograd/two_layer_net_custom_function.html
@@ -172,6 +171,8 @@ class QSLinearFunctional(torch.autograd.Function):
     def forward(ctx, input, weights, bias, scale):
         w_quant = quantization.quant_w(weights, scale)
         bias_quant = quantization.quant_w(bias, scale)
+
+        import pdb; pdb.set_trace()
         
         output = torch.einsum("ab,bc->ac", (input, w_quant)) + bias_quant
         
@@ -437,8 +438,8 @@ x_test = x_test[index_list_test, :]
 y_train = y_train[index_list_train]
 y_test = y_test[index_list_test]
 
-# quantization.global_beta = quantization.step_d(quantization.global_wb)-.5
-quantization.global_beta = 1.5
+
+#quantization.global_beta = 1.5
 quantization.global_wb = 8
 quantization.global_ub = 8
 quantization.global_qb = 8
@@ -446,6 +447,8 @@ quantization.global_pb = 8
 quantization.global_gb = 8
 quantization.global_eb = 8
 quantization.global_lr = 1
+quantization.global_beta = 1.5 #quantization.step_d(quantization.global_wb)-.5
+# effect of global beta 
 
 
 ms = 1e-3
@@ -523,7 +526,6 @@ for e in range(60):
             out_spikes3 = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
             out_spikes4 = layer4.forward(out_spikes3)
 
-
         # training
         for t in range(int(burnin/ms), int(T/ms)):
             out_spikes1 = layer1.forward(x_local[:,:,:,:,t])
@@ -591,6 +593,11 @@ for e in range(60):
     scheduler4.step()
 
     print("Epoch {0} | Loss: {1:.4f} Train Acc: {2:.4f} Test Acc: {3:.4f} Train Time: {4:.4f}s Inference Time: {5:.4f}s".format(e+1, np.mean(loss_hist), correct.item()/total, tcorrect.item()/ttotal, train_time-start_time, inf_time - train_time)) 
+
+
+
+# visualize quant
+valid_w_vals = quantization.quant_w(torch.cat([torch.arange(-1, 1, 2/((2**quantization.global_wb)-1)), torch.tensor([0.])]), 1).unique()
 
 
 # ta1500, te800, b128

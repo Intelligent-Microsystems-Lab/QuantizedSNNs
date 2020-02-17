@@ -20,6 +20,9 @@ global_beta = 1.5
 global_lr = 1 #8
 
 
+# checks for quant
+valid_w_vals = None
+
 # Quant Functions
 def step_d(bits): 
     return 2.0 ** (bits - 1)
