@@ -156,7 +156,6 @@ class clee_LinearFunction(torch.autograd.Function):
         grad_input = grad_weight = grad_bias = None
         quant_error = quant_err(grad_output) * gradient_mask.float()
 
-        import pdb; pdb.set_trace()
         if ctx.needs_input_grad[0]:
             # propagate quantized error
             grad_input = quant_error.mm(w_quant)

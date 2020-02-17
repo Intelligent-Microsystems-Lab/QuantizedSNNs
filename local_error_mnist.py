@@ -189,12 +189,12 @@ class QSLinearFunctional(torch.autograd.Function):
             grad_input = torch.einsum("ab,cb->ac", (quant_error, w_quant))
         # computed quantized gradient
         if ctx.needs_input_grad[1]:
-            grad_weight = quantization.quant_grad(torch.einsum("ab,ac->bc", (input, quant_error))).float()
+            grad_weight = quantization.quant_grad(torch.einsum("ab,ac->bc", (quant_error, input))).float()
         # computed quantized bias
         if bias is not None and ctx.needs_input_grad[2]:
             grad_bias = quantization.quant_grad(quant_error.sum(0).squeeze(0)).float()
 
-        return grad_input, grad_weight, grad_bias, None
+        return grad_input, grad_weight.T, grad_bias, None
 
 
 class LIFDenseLayer(nn.Module):
@@ -244,19 +244,26 @@ class LIFDenseLayer(nn.Module):
     
     def forward(self, input_t):
         with torch.no_grad():
-            self.weights.data = quantization.clip(quantization.quant_generic(self.weights.data, quantization.global_gb)[0], quantization.global_wb)
-            self.bias.data = quantization.clip(quantization.quant_generic(self.bias.data, quantization.global_gb)[0], quantization.global_wb)
+            #self.weights.data = quantization.clip(quantization.quant_generic(self.weights.data, quantization.global_gb)[0], quantization.global_wb)
+            #self.bias.data = quantization.clip(quantization.quant_generic(self.bias.data, quantization.global_gb)[0], quantization.global_wb)
+
+            self.weights.data = quantization.clip(self.weights.data, quantization.global_wb)
+            self.bias.data = quantization.clip(self.bias.data, quantization.global_wb)
 
         self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.gamma * self.R - self.S, self.beta * self.Q + input_t
-        # quantize P, Q
+
+        # quantize P, 
         self.P, _ = quantization.quant_generic(self.P, quantization.global_pb)
         self.Q, _ = quantization.quant_generic(self.Q, quantization.global_qb)
+        
+        #self.U = torch.einsum("ab,bc->ac", (self.P, quantization.quant_w(self.weights, self.scale))) + quantization.quant_w(self.bias, self.scale)
 
         self.U = QSLinearFunctional.apply(self.P, self.weights, self.bias, self.scale) + self.R
         self.S = (self.U > self.thr).float()
 
         # quantize U
         self.U, _ = quantization.quant_generic(self.U, quantization.global_ub)
+
 
         return self.S
 
@@ -365,8 +372,8 @@ y_test = y_test[shuffle_idx]
 # fixed subsampling
 # train: 300 samples per class -> 3000
 # test: 103 samples per class -> 1030 (a wee more than 1024)
-train_samples = 3000
-test_samples = 1030
+train_samples = 1000
+test_samples = 500
 num_classes = 10
 index_list_train = []
 index_list_test = []
@@ -383,12 +390,13 @@ y_test = y_test[index_list_test]
 
 # quantization.global_beta = quantization.step_d(quantization.global_wb)-.5
 quantization.global_beta = 1.5
-quantization.global_wb = 6
+quantization.global_wb = 8
 quantization.global_ub = 8
 quantization.global_qb = 8
 quantization.global_pb = 8
-quantization.global_gb = 32
-quantization.global_eb = 32
+quantization.global_gb = 8
+quantization.global_eb = 8
+quantization.global_lr = 1
 
 
 ms = 1e-3
@@ -397,7 +405,7 @@ delta_t = 1*ms
 T = 500*ms
 T_test = 1000*ms
 burnin = 50*ms
-batch_size = 64
+batch_size = 128
 output_neurons = 10
 
 tau_mem = torch.Tensor([5*ms, 35*ms]).to(device)
@@ -531,4 +539,9 @@ for e in range(60):
     print("Epoch {0} | Loss: {1:.4f} Train Acc: {2:.4f} Test Acc: {3:.4f} Train Time: {4:.4f}s Inference Time: {5:.4f}s".format(e+1, np.mean(loss_hist), correct.item()/total, tcorrect.item()/ttotal, train_time-start_time, inf_time - train_time)) 
 
 
+# ta1500, te800, b128
+# Epoch 1 | Loss: 1.6959 Train Acc: 0.8993 Test Acc: 0.9113 Train Time: 92.4179s Inference Time: 45.9957s
+# Epoch 1 | Loss: 1.6540 Train Acc: 0.9747 Test Acc: 0.9287 Train Time: 93.9506s Inference Time: 45.2598s
 
+# ta1000, te500, b128
+# Epoch 1 | Loss: 1.6940 Train Acc: 0.9460 Test Acc: 0.8960 Train Time: 62.1373s Inference Time: 27.2974s
