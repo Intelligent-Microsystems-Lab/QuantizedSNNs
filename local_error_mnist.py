@@ -699,7 +699,7 @@ for e in range(60):
 
             loss_hist.append(loss_t4.item())
             class_rec += out_spikes4
-            #print(loss_t4.item())
+            print(loss_t4.item())
 
         correct += (torch.max(class_rec, dim = 1).indices == y_local).sum() 
         total += len(y_local)
