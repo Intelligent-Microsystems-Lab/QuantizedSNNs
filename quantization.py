@@ -31,7 +31,7 @@ def step_d(bits):
 def shift(x):
     if x == 0:
         return 1
-    return 2 ** torch.round(torch.log(x) / np.log(2))
+    return 2 ** torch.round(torch.log2(x))
 
 def clip(x, bits):
     if bits == 1:
