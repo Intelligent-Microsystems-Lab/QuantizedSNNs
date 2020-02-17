@@ -393,6 +393,7 @@ class QSConv2dFunctional(torch.autograd.Function):
             grad_bias = quantization.quant_grad(torch.einsum("abcd->b",(quant_error))).float()
 
         # check whether quantized weights are really quantized
+        import pdb; pdb.set_trace()
         if np.logical_not(np.isin(grad_weight.cpu(), quantization.valid_g_vals.cpu())).sum() != 0:
             print('Gradient not properly quantized')
             import pdb; pdb.set_trace()
@@ -600,7 +601,7 @@ output_neurons = 10
 tau_mem = torch.Tensor([5*ms, 35*ms]).to(device)
 tau_syn = torch.Tensor([5*ms, 10*ms]).to(device)
 tau_ref = torch.Tensor([0*ms]).to(device)
-thr = torch.Tensor([.1]).to(device)
+thr = torch.Tensor([.4]).to(device)
 
 lambda1 = .2 
 lambda2 = .1
