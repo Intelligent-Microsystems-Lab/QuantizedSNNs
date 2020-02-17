@@ -66,6 +66,13 @@ class SmoothStep(torch.autograd.Function):
         # quantize error
         grad_input = quantization.quant_err(grad_input)
 
+        # check whether quantized weights are really quantized
+        if np.logical_not(np.isin(grad_input.cpu(), quantization.valid_e_vals.cpu())).sum() != 0:
+            print('Error not properly quantized')
+            import pdb; pdb.set_trace()
+        else:
+            quantization.count_e_vals += torch.cat([grad_input.flatten().cpu(), quantization.valid_e_vals]).unique(return_counts = True)[1] - torch.ones_like(quantization.count_e_vals, dtype= int)
+
         return grad_input
 
 smoothstep = SmoothStep().apply
@@ -109,6 +116,13 @@ class SuperSpike(torch.autograd.Function):
         # quantize error
         grad_input = quantization.quant_err(grad_input)
 
+        # check whether quantized weights are really quantized
+        if np.logical_not(np.isin(grad_input.cpu(), quantization.valid_e_vals.cpu())).sum() != 0:
+            print('Error not properly quantized')
+            import pdb; pdb.set_trace()
+        else:
+            quantization.count_e_vals += torch.cat([grad_input.flatten().cpu(), quantization.valid_e_vals]).unique(return_counts = True)[1] - torch.ones_like(quantization.count_e_vals, dtype= int)
+
         return grad_input
 
 superspike = SuperSpike().apply
@@ -135,14 +149,17 @@ class QLinearFunctional(torch.autograd.Function):
         if context.needs_input_grad[0]:
             grad_input = quantization.quant_err(grad_output.mm(weight))
 
+            # check whether quantized weights are really quantized
+            if np.logical_not(np.isin(grad_input.cpu(), quantization.valid_e_vals.cpu())).sum() != 0:
+                print('Error not properly quantized')
+                import pdb; pdb.set_trace()
+            else:
+                quantization.count_e_vals += torch.cat([grad_input.flatten().cpu(), quantization.valid_g_vals]).unique(return_counts = True)[1] - torch.ones_like(quantization.count_e_vals, dtype= int)
+
         # those weights should not be updated
         if context.needs_input_grad[1]:
-            #grad_weight = quantization.quant_grad(grad_output.t().mm(input))
-            #grad_weight = torch.ones_like(weight)
             grad_weight = torch.zeros_like(weight)
         if bias is not None and context.needs_input_grad[2]:
-            #grad_bias = quantization.quant_grad(grad_output.sum(0))
-            #grad_bias = torch.ones_like(bias)
             grad_bias = torch.zeros_like(bias)
 
         return grad_input, grad_weight, grad_bias
@@ -172,7 +189,12 @@ class QSLinearFunctional(torch.autograd.Function):
         w_quant = quantization.quant_w(weights, scale)
         bias_quant = quantization.quant_w(bias, scale)
 
-        import pdb; pdb.set_trace()
+        # check whether quantized weights are really quantized
+        if np.logical_not(np.isin(w_quant.cpu(), quantization.valid_w_vals.cpu())).sum() != 0:
+            print('Weights not properly quantized')
+            import pdb; pdb.set_trace()
+        else:
+            quantization.count_w_vals += torch.cat([w_quant.flatten().cpu(), quantization.valid_w_vals]).unique(return_counts = True)[1] - torch.ones_like(quantization.count_w_vals, dtype= int)
         
         output = torch.einsum("ab,bc->ac", (input, w_quant)) + bias_quant
         
@@ -185,6 +207,13 @@ class QSLinearFunctional(torch.autograd.Function):
         grad_input = grad_weight = grad_bias = None
         quant_error = quantization.quant_err(grad_output) 
 
+        # check whether quantized weights are really quantized
+        if np.logical_not(np.isin(quant_error.cpu(), quantization.valid_e_vals.cpu())).sum() != 0:
+            print('Error not properly quantized')
+            import pdb; pdb.set_trace()
+        else:
+            quantization.count_e_vals += torch.cat([quant_error.flatten().cpu(), quantization.valid_e_vals]).unique(return_counts = True)[1] - torch.ones_like(quantization.count_e_vals, dtype= int)
+
         # compute quantized error
         if ctx.needs_input_grad[0]:
             grad_input = torch.einsum("ab,cb->ac", (quant_error, w_quant))
@@ -194,6 +223,13 @@ class QSLinearFunctional(torch.autograd.Function):
         # computed quantized bias
         if bias is not None and ctx.needs_input_grad[2]:
             grad_bias = quantization.quant_grad(quant_error.sum(0).squeeze(0)).float()
+
+        # check whether quantized weights are really quantized
+        if np.logical_not(np.isin(grad_weight.cpu(), quantization.valid_g_vals.cpu())).sum() != 0:
+            print('Gradient not properly quantized')
+            import pdb; pdb.set_trace()
+        else:
+            quantization.count_g_vals += torch.cat([grad_weight.flatten().cpu(), quantization.valid_g_vals]).unique(return_counts = True)[1] - torch.ones_like(quantization.count_g_vals, dtype= int)
 
         return grad_input, grad_weight.T, grad_bias, None
 
@@ -255,6 +291,14 @@ class LIFDenseLayer(nn.Module):
             if self.bias is not None:
                 self.bias.data = quantization.clip(self.bias.data, quantization.global_wb)
 
+            # check whether quantized weights are really quantized
+            if np.logical_not(np.isin(self.weights.data.cpu(), quantization.valid_g_vals.cpu())).sum() != 0:
+                print('Stored Weights not properly quantized')
+                import pdb; pdb.set_trace()
+            else:
+            quantization.count_g_vals += torch.cat([self.weights.data.flatten().cpu(), quantization.valid_g_vals]).unique(return_counts = True)[1] - torch.ones_like(quantization.count_g_vals, dtype= int)
+
+
         self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.gamma * self.R - self.S, self.beta * self.Q + input_t
 
         # quantize P, 
@@ -267,6 +311,28 @@ class LIFDenseLayer(nn.Module):
 
         # quantize U
         self.U, _ = quantization.quant_generic(self.U, quantization.global_ub)
+
+        # check whether quantized weights are really quantized
+        if np.logical_not(np.isin(self.P.cpu(), quantization.valid_p_vals.cpu())).sum() != 0:
+            print('P not properly quantized')
+            import pdb; pdb.set_trace()
+        else:
+            quantization.count_p_vals += torch.cat([self.P.flatten().cpu(), quantization.valid_p_vals]).unique(return_counts = True)[1] - torch.ones_like(quantization.count_p_vals, dtype= int)
+
+        # check whether quantized weights are really quantized
+        if np.logical_not(np.isin(self.Q.cpu(), quantization.valid_q_vals.cpu())).sum() != 0:
+            print('Q not properly quantized')
+            import pdb; pdb.set_trace()
+        else:
+            quantization.count_q_vals += torch.cat([self.Q.flatten().cpu(), quantization.valid_q_vals]).unique(return_counts = True)[1] - torch.ones_like(quantization.count_q_vals, dtype= int)
+
+        # check whether quantized weights are really quantized
+        dummy = self.U.clone().detach()
+        if np.logical_not(np.isin(dummy.cpu(), quantization.valid_u_vals.cpu())).sum() != 0:
+            print('U not properly quantized')
+            import pdb; pdb.set_trace()
+        else:
+            quantization.count_u_vals += torch.cat([self.U.flatten().cpu(), quantization.valid_u_vals]).unique(return_counts = True)[1] - torch.ones_like(quantization.count_u_vals, dtype= int)
 
 
         return self.S
@@ -281,6 +347,13 @@ class QSConv2dFunctional(torch.autograd.Function):
         ctx.pooling = pooling 
         ctx.size_pool = None
         pool_indices = torch.ones(0)
+
+        # check whether quantized weights are really quantized
+        if np.logical_not(np.isin(w_quant.cpu(), quantization.valid_w_vals.cpu())).sum() != 0:
+            print('Weights not properly quantized')
+            import pdb; pdb.set_trace()
+        else:
+            quantization.count_w_vals += torch.cat([w_quant.flatten().cpu(), quantization.valid_w_vals]).unique(return_counts = True)[1] - torch.ones_like(quantization.count_w_vals, dtype= int)
 
         output = F.conv2d(input = input, weight = w_quant, bias = bias_quant, padding = ctx.padding)
         
@@ -302,6 +375,13 @@ class QSConv2dFunctional(torch.autograd.Function):
             grad_output = unmpool(grad_output, pool_indices, output_size = torch.Size(ctx.size_pool))
         quant_error = quantization.quant_err(grad_output)
 
+        # check whether quantized weights are really quantized
+        if np.logical_not(np.isin(quant_error.cpu(), quantization.valid_e_vals.cpu())).sum() != 0:
+            print('Error not properly quantized')
+            import pdb; pdb.set_trace()
+        else:
+            quantization.count_e_vals += torch.cat([quant_error.flatten().cpu(), quantization.valid_e_vals]).unique(return_counts = True)[1] - torch.ones_like(quantization.count_e_vals, dtype= int)
+
         # compute quantized error
         if ctx.needs_input_grad[0]:
             grad_input = torch.nn.grad.conv2d_input(input.shape, w_quant, quant_error, padding = ctx.padding)
@@ -311,6 +391,13 @@ class QSConv2dFunctional(torch.autograd.Function):
         # computed quantized bias
         if bias_quant is not None and ctx.needs_input_grad[2]:
             grad_bias = quantization.quant_grad(torch.einsum("abcd->b",(quant_error))).float()
+
+        # check whether quantized weights are really quantized
+        if np.logical_not(np.isin(grad_weight.cpu(), quantization.valid_g_vals.cpu())).sum() != 0:
+            print('Gradient not properly quantized')
+            import pdb; pdb.set_trace()
+        else:
+            quantization.count_g_vals += torch.cat([grad_weight.flatten().cpu(), quantization.valid_g_vals]).unique(return_counts = True)[1] - torch.ones_like(quantization.count_g_vals, dtype= int)
 
         return grad_input, grad_weight, grad_bias, None, None, None
 
@@ -374,6 +461,13 @@ class LIFConv2dLayer(nn.Module):
             self.weights.data = quantization.clip(self.weights.data, quantization.global_wb)
             if self.bias is not None:
                 self.bias.data = quantization.clip(self.bias.data, quantization.global_wb)
+            
+            # check whether quantized weights are really quantized
+            if np.logical_not(np.isin(self.weights.data.cpu(), quantization.valid_g_vals.cpu())).sum() != 0:
+                print('Stored Weights not properly quantized')
+                import pdb; pdb.set_trace()
+            else:
+                quantization.count_g_vals += torch.cat([self.weights.data.flatten().cpu(), quantization.valid_g_vals]).unique(return_counts = True)[1] - torch.ones_like(quantization.count_g_vals, dtype= int)
 
         self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.gamma * self.R - self.S, self.beta * self.Q + input_t
 
@@ -386,6 +480,28 @@ class LIFConv2dLayer(nn.Module):
 
         # quantize U
         self.U, _ = quantization.quant_generic(self.U, quantization.global_ub)
+
+        # check whether quantized weights are really quantized
+        if np.logical_not(np.isin(self.P.cpu(), quantization.valid_p_vals.cpu())).sum() != 0:
+            print('P not properly quantized')
+            import pdb; pdb.set_trace()
+        else:
+            quantization.count_p_vals += torch.cat([self.P.flatten().cpu(), quantization.valid_p_vals]).unique(return_counts = True)[1] - torch.ones_like(quantization.count_p_vals, dtype= int)
+
+        # check whether quantized weights are really quantized
+        if np.logical_not(np.isin(self.Q.cpu(), quantization.valid_q_vals.cpu())).sum() != 0:
+            print('Q not properly quantized')
+            import pdb; pdb.set_trace()
+        else:
+            quantization.count_q_vals += torch.cat([self.Q.flatten().cpu(), quantization.valid_q_vals]).unique(return_counts = True)[1] - torch.ones_like(quantization.count_q_vals, dtype= int)
+
+        # check whether quantized weights are really quantized
+        dummy = self.U.clone().detach()
+        if np.logical_not(np.isin(dummy.cpu(), quantization.valid_u_vals.cpu())).sum() != 0:
+            print('U not properly quantized')
+            import pdb; pdb.set_trace()
+        else:
+            quantization.count_u_vals += torch.cat([self.U.flatten().cpu(), quantization.valid_u_vals]).unique(return_counts = True)[1] - torch.ones_like(quantization.count_u_vals, dtype= int)
 
         return self.S
 
@@ -446,9 +562,30 @@ quantization.global_qb = 8
 quantization.global_pb = 8
 quantization.global_gb = 8
 quantization.global_eb = 8
+quantization.global_rb = 8
 quantization.global_lr = 1
 quantization.global_beta = 1.5 #quantization.step_d(quantization.global_wb)-.5
 # effect of global beta 
+
+
+# visualize quant
+quantization.valid_w_vals = quantization.quant_w(torch.cat([torch.arange(-1, 1, 2/((2**quantization.global_wb)-1)), torch.tensor([0.])]), 1).unique()
+quantization.count_w_vals = torch.zeros_like(quantization.valid_w_vals)
+
+quantization.valid_p_vals = quantization.quant_generic(torch.cat([torch.arange(-1, 1, 2/((2**quantization.global_pb)-1)), torch.tensor([0.])]), quantization.global_pb)[0].unique()
+quantization.count_p_vals = torch.zeros_like(quantization.valid_p_vals)
+
+quantization.valid_q_vals = quantization.quant_generic(torch.cat([torch.arange(-1, 1, 2/((2**quantization.global_qb)-1)), torch.tensor([0.])]), quantization.global_qb)[0].unique()
+quantization.count_q_vals = torch.zeros_like(quantization.valid_q_vals)
+
+quantization.valid_u_vals = quantization.quant_generic(torch.cat([torch.arange(-1, 1, 2/((2**quantization.global_ub)-1)), torch.tensor([0.])]), quantization.global_ub)[0].unique()
+quantization.count_u_vals = torch.zeros_like(quantization.valid_u_vals)
+
+quantization.valid_e_vals = quantization.quant_generic(torch.cat([torch.arange(-1, 1, 2/((2**quantization.global_eb)-1)), torch.tensor([0.])]), quantization.global_eb)[0].unique()
+quantization.count_e_vals = torch.zeros_like(quantization.valid_e_vals)
+
+quantization.valid_g_vals = quantization.quant_generic(torch.cat([torch.arange(-1, 1, 2/((2**quantization.global_gb)-1)), torch.tensor([0.])]), quantization.global_gb)[0].unique()
+quantization.count_g_vals = torch.zeros_like(quantization.valid_g_vals)
 
 
 ms = 1e-3
@@ -562,6 +699,7 @@ for e in range(60):
 
             loss_hist.append(loss_t4.item())
             class_rec += out_spikes4
+            print(loss_t4.item())
 
         correct += (torch.max(class_rec, dim = 1).indices == y_local).sum() 
         total += len(y_local)
@@ -594,10 +732,6 @@ for e in range(60):
 
     print("Epoch {0} | Loss: {1:.4f} Train Acc: {2:.4f} Test Acc: {3:.4f} Train Time: {4:.4f}s Inference Time: {5:.4f}s".format(e+1, np.mean(loss_hist), correct.item()/total, tcorrect.item()/ttotal, train_time-start_time, inf_time - train_time)) 
 
-
-
-# visualize quant
-valid_w_vals = quantization.quant_w(torch.cat([torch.arange(-1, 1, 2/((2**quantization.global_wb)-1)), torch.tensor([0.])]), 1).unique()
 
 
 # ta1500, te800, b128

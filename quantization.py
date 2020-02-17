@@ -22,6 +22,7 @@ global_lr = 1 #8
 
 # checks for quant
 valid_w_vals = None
+count_w_vals = None
 
 # Quant Functions
 def step_d(bits): 
@@ -80,6 +81,7 @@ def quant_generic(x, cb):
 
 
 def quant_grad(x):
+    import pdb; pdb.set_trace()
     xmax = torch.max(torch.abs(x))
     x = x / shift(xmax)
 
