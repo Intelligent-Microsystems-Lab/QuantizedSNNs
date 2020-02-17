@@ -196,7 +196,6 @@ class QSLinearFunctional(torch.autograd.Function):
 
         return grad_input, grad_weight.T, grad_bias, None
 
-
 class LIFDenseLayer(nn.Module):
     def __init__(self, in_channels, out_channels, tau_syn, tau_mem, tau_ref, delta_t, bias=True, thr = 1, device=torch.device("cpu"), dtype = torch.float):
         super(LIFDenseLayer, self).__init__()      
@@ -268,6 +267,36 @@ class LIFDenseLayer(nn.Module):
         return self.S
 
 
+class QSConvFunctional(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, input, weights, bias, scale, padding):
+        w_quant = quantization.quant_w(weights, scale)
+        bias_quant = quantization.quant_w(bias, scale)
+        
+        output = F.conv2d(input = input, weight = w_quant, bias = bias_quant, padding = padding) + bias_quant
+        
+        ctx.save_for_backward(input, w_quant, bias_quant, padding)
+        return output
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        input, w_quant, bias_quant, padding = ctx.saved_tensors
+        grad_input = grad_weight = grad_bias = None
+        quant_error = quantization.quant_err(grad_output) 
+
+        # compute quantized error
+        if ctx.needs_input_grad[0]:
+            grad_input = torch.nn.grad.conv2d_input(input.shape, w_quant, quant_error, padding = padding)
+        # computed quantized gradient
+        if ctx.needs_input_grad[1]:
+            grad_weight = quant_grad(torch.nn.grad.conv2d_weight(input, w_quant.shape, quant_error, padding = padding)).float()
+        # computed quantized bias
+        if bias is not None and ctx.needs_input_grad[2]:
+            grad_bias = quantization.quant_grad(quant_error.sum(0).squeeze(0)).float()
+
+        return grad_input, grad_weight, grad_bias, None, None
+
+
 class LIFConvLayer(nn.Module):
     def __init__(self, inp_shape, kernel_size, out_channels, tau_syn, tau_mem, tau_ref, delta_t, pooling = 1, padding = 0, bias=True, thr = 1, device=torch.device("cpu"), dtype = torch.float):
         super(LIFConvLayer, self).__init__()   
@@ -328,13 +357,18 @@ class LIFConvLayer(nn.Module):
                 self.bias.data = quantization.clip(self.bias.data, quantization.global_wb)
 
         self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.gamma * self.R - self.S, self.beta * self.Q + input_t
-        # conv part should be forward backward part
-        self.U = self.mpoolF(F.conv2d(input = self.P, weight = quantization.quant_w(self.weights, self.scale), bias = quantization.quant_w(self.bias, self.scale), padding = self.padding)) + self.R
-        self.S = (self.U > self.thr).float()
 
-        # quantize P, Q and U
+        # quantize P, Q
         self.P, _ = quantization.quant_generic(self.P, quantization.global_pb)
         self.Q, _ = quantization.quant_generic(self.Q, quantization.global_qb)
+
+        # conv part should be forward backward part
+        #self.U = self.mpoolF(F.conv2d(input = self.P, weight = quantization.quant_w(self.weights, self.scale), bias = quantization.quant_w(self.bias, self.scale), padding = self.padding)) + self.R
+
+        self.U = self.mpoolF(QSConvFunctional.apply(self.P, self.weights, self.bias, self.scale, self.padding)) + self.R
+        self.S = (self.U > self.thr).float()
+
+        # quantize U
         self.U, _ = quantization.quant_generic(self.U, quantization.global_ub)
 
         return self.S
