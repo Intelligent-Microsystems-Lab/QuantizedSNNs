@@ -220,9 +220,11 @@ class QSLinearFunctional(torch.autograd.Function):
         # computed quantized gradient
         if ctx.needs_input_grad[1]:
             grad_weight = quantization.quant_grad(torch.einsum("ab,ac->bc", (quant_error, input))).float()
+            #grad_weight = torch.einsum("ab,ac->bc", (quant_error, input))
         # computed quantized bias
         if bias is not None and ctx.needs_input_grad[2]:
             grad_bias = quantization.quant_grad(quant_error.sum(0).squeeze(0)).float()
+            #grad_bias = quant_error.sum(0).squeeze(0)
 
         # check whether quantized weights are really quantized
         # if (grad_weight % (1/quantization.step_d(quantization.global_gb))).sum() != 0:
@@ -388,9 +390,11 @@ class QSConv2dFunctional(torch.autograd.Function):
         # computed quantized gradient
         if ctx.needs_input_grad[1]:
             grad_weight = quantization.quant_grad(torch.nn.grad.conv2d_weight(input, w_quant.shape, quant_error, padding = ctx.padding)).float()
+            #grad_weight = torch.nn.grad.conv2d_weight(input, w_quant.shape, quant_error, padding = ctx.padding)
         # computed quantized bias
         if bias_quant is not None and ctx.needs_input_grad[2]:
             grad_bias = quantization.quant_grad(torch.einsum("abcd->b",(quant_error))).float()
+            #grad_bias = torch.einsum("abcd->b",(quant_error))
 
         # check whether quantized weights are really quantized
         # if (grad_weight % (1/quantization.step_d(quantization.global_gb))).sum() != 0:
@@ -622,16 +626,16 @@ log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
 nll_loss = torch.nn.NLLLoss()
 
 # shall I train this every time upfront?
-# global_lr = 3.3246e-4
-# opt1 = torch.optim.Adam(layer1.parameters(), lr=global_lr, betas=[0., .95])
-# opt2 = torch.optim.Adam(layer2.parameters(), lr=global_lr, betas=[0., .95])
-# opt3 = torch.optim.Adam(layer3.parameters(), lr=global_lr, betas=[0., .95])
-# opt4 = torch.optim.Adam(layer4.parameters(), lr=global_lr, betas=[0., .95])
+global_lr = 3.3246e-4
+opt1 = torch.optim.Adam(layer1.parameters(), lr=global_lr, betas=[0., .95])
+opt2 = torch.optim.Adam(layer2.parameters(), lr=global_lr, betas=[0., .95])
+opt3 = torch.optim.Adam(layer3.parameters(), lr=global_lr, betas=[0., .95])
+opt4 = torch.optim.Adam(layer4.parameters(), lr=global_lr, betas=[0., .95])
 
-opt1 = torch.optim.SGD(layer1.parameters(), lr=1)
-opt2 = torch.optim.SGD(layer2.parameters(), lr=1)
-opt3 = torch.optim.SGD(layer3.parameters(), lr=1)
-opt4 = torch.optim.SGD(layer4.parameters(), lr=1)
+# opt1 = torch.optim.SGD(layer1.parameters(), lr=1)
+# opt2 = torch.optim.SGD(layer2.parameters(), lr=1)
+# opt3 = torch.optim.SGD(layer3.parameters(), lr=1)
+# opt4 = torch.optim.SGD(layer4.parameters(), lr=1)
 scheduler1 = torch.optim.lr_scheduler.StepLR(opt1, step_size=20, gamma=0.5)
 scheduler2 = torch.optim.lr_scheduler.StepLR(opt2, step_size=20, gamma=0.5)
 scheduler3 = torch.optim.lr_scheduler.StepLR(opt3, step_size=20, gamma=0.5)
