@@ -199,7 +199,6 @@ class QSLinearFunctional(torch.autograd.Function):
 class LIFDenseLayer(nn.Module):
     def __init__(self, in_channels, out_channels, tau_syn, tau_mem, tau_ref, delta_t, bias=True, thr = 1, device=torch.device("cpu"), dtype = torch.float):
         super(LIFDenseLayer, self).__init__()      
-        self.bias_active = bias  
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.thr = thr
@@ -233,6 +232,11 @@ class LIFDenseLayer(nn.Module):
         else:
             self.register_parameter('bias', None)
 
+        with torch.no_grad():
+            self.weights.data = quantization.clip(quantization.quant_generic(self.weights.data, quantization.global_gb)[0], quantization.global_wb)
+            if self.bias is not None:
+                self.bias.data = quantization.clip(quantization.quant_generic(self.bias.data, quantization.global_gb)[0], quantization.global_wb)
+
     def state_init(self, batch_size):
         self.P = torch.zeros(batch_size, self.in_channels).detach().to(device)
         self.Q = torch.zeros(batch_size, self.in_channels).detach().to(device)
@@ -247,7 +251,8 @@ class LIFDenseLayer(nn.Module):
             #self.bias.data = quantization.clip(quantization.quant_generic(self.bias.data, quantization.global_gb)[0], quantization.global_wb)
 
             self.weights.data = quantization.clip(self.weights.data, quantization.global_wb)
-            self.bias.data = quantization.clip(self.bias.data, quantization.global_wb)
+            if self.bias is not None:
+                self.bias.data = quantization.clip(self.bias.data, quantization.global_wb)
 
         self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.gamma * self.R - self.S, self.beta * self.Q + input_t
 
@@ -255,7 +260,6 @@ class LIFDenseLayer(nn.Module):
         self.P, _ = quantization.quant_generic(self.P, quantization.global_pb)
         self.Q, _ = quantization.quant_generic(self.Q, quantization.global_qb)
         
-        #self.U = torch.einsum("ab,bc->ac", (self.P, quantization.quant_w(self.weights, self.scale))) + quantization.quant_w(self.bias, self.scale)
 
         self.U = QSLinearFunctional.apply(self.P, self.weights, self.bias, self.scale) + self.R
         self.S = (self.U > self.thr).float()
@@ -267,40 +271,52 @@ class LIFDenseLayer(nn.Module):
         return self.S
 
 
-class QSConvFunctional(torch.autograd.Function):
+class QSConv2dFunctional(torch.autograd.Function):
     @staticmethod
-    def forward(ctx, input, weights, bias, scale, padding):
+    def forward(ctx, input, weights, bias, scale, padding = 0, pooling = None):
         w_quant = quantization.quant_w(weights, scale)
         bias_quant = quantization.quant_w(bias, scale)
+        ctx.padding = padding
+        ctx.pooling = pooling 
+        ctx.size_pool = None
+        pool_indices = torch.ones(0)
+
+        output = F.conv2d(input = input, weight = w_quant, bias = bias_quant, padding = ctx.padding)
         
-        output = F.conv2d(input = input, weight = w_quant, bias = bias_quant, padding = padding) + bias_quant
-        
-        ctx.save_for_backward(input, w_quant, bias_quant, padding)
+        if ctx.pooling is not None:
+            mpool = nn.MaxPool2d(kernel_size = ctx.pooling, stride = ctx.pooling, padding = (ctx.pooling-1)//2, return_indices=True)
+            ctx.size_pool = output.shape
+            output, pool_indices = mpool(output)
+
+        ctx.save_for_backward(input, w_quant, bias_quant, pool_indices)
         return output
 
     @staticmethod
     def backward(ctx, grad_output):
-        input, w_quant, bias_quant, padding = ctx.saved_tensors
-        grad_input = grad_weight = grad_bias = None
-        quant_error = quantization.quant_err(grad_output) 
+        input, w_quant, bias_quant, pool_indices = ctx.saved_tensors
+        grad_input = grad_weight = grad_bias = None 
+        unmpool = nn.MaxUnpool2d(ctx.pooling, stride = ctx.pooling, padding = (ctx.pooling-1)//2)
+
+        if ctx.pooling is not None:
+            grad_output = unmpool(grad_output, pool_indices, output_size = torch.Size(ctx.size_pool))
+        quant_error = quantization.quant_err(grad_output)
 
         # compute quantized error
         if ctx.needs_input_grad[0]:
-            grad_input = torch.nn.grad.conv2d_input(input.shape, w_quant, quant_error, padding = padding)
+            grad_input = torch.nn.grad.conv2d_input(input.shape, w_quant, quant_error, padding = ctx.padding)
         # computed quantized gradient
         if ctx.needs_input_grad[1]:
-            grad_weight = quant_grad(torch.nn.grad.conv2d_weight(input, w_quant.shape, quant_error, padding = padding)).float()
+            grad_weight = quantization.quant_grad(torch.nn.grad.conv2d_weight(input, w_quant.shape, quant_error, padding = ctx.padding)).float()
         # computed quantized bias
-        if bias is not None and ctx.needs_input_grad[2]:
-            grad_bias = quantization.quant_grad(quant_error.sum(0).squeeze(0)).float()
+        if bias_quant is not None and ctx.needs_input_grad[2]:
+            grad_bias = quantization.quant_grad(torch.einsum("abcd->b",(quant_error))).float()
 
-        return grad_input, grad_weight, grad_bias, None, None
+        return grad_input, grad_weight, grad_bias, None, None, None
 
 
-class LIFConvLayer(nn.Module):
+class LIFConv2dLayer(nn.Module):
     def __init__(self, inp_shape, kernel_size, out_channels, tau_syn, tau_mem, tau_ref, delta_t, pooling = 1, padding = 0, bias=True, thr = 1, device=torch.device("cpu"), dtype = torch.float):
-        super(LIFConvLayer, self).__init__()   
-        self.bias_active = bias  
+        super(LIFConv2dLayer, self).__init__()   
         self.inp_shape = inp_shape
         self.kernel_size = kernel_size
         self.out_channels = out_channels  
@@ -312,10 +328,7 @@ class LIFConvLayer(nn.Module):
 
         self.padding = padding
         self.pooling = pooling
-
-        self.mpoolF = nn.MaxPool2d(kernel_size = self.pooling, stride = self.pooling, padding = (self.pooling-1)//2, return_indices=False) 
-        
-        
+                
         self.weights = nn.Parameter(torch.empty((self.out_channels, inp_shape[0],  self.kernel_size, self.kernel_size),  device=device, dtype=dtype, requires_grad=True))
         torch.nn.init.uniform_(self.weights, a = -self.L, b = self.L)
 
@@ -325,7 +338,7 @@ class LIFConvLayer(nn.Module):
         else:
             self.register_parameter('bias', None)
 
-        self.out_shape = self.mpoolF(F.conv2d(input = torch.zeros((1,)+self.inp_shape).to(device), weight = self.weights, bias=self.bias, padding = self.padding)).shape[1:]
+        self.out_shape = QSConv2dFunctional.apply(torch.zeros((1,)+self.inp_shape).to(device), self.weights, self.bias, self.scale, self.padding, self.pooling).shape[1:]
         self.thr = thr
 
         if tau_syn.shape[0] == 2:
@@ -342,6 +355,11 @@ class LIFConvLayer(nn.Module):
         else:
             self.gamma = torch.Tensor([torch.exp( - delta_t / tau_ref)]).to(device)
 
+        with torch.no_grad():
+            self.weights.data = quantization.clip(quantization.quant_generic(self.weights.data, quantization.global_gb)[0], quantization.global_wb)
+            if self.bias is not None:
+                self.bias.data = quantization.clip(quantization.quant_generic(self.bias.data, quantization.global_gb)[0], quantization.global_wb)
+
     def state_init(self, batch_size):
         self.P = torch.zeros((batch_size,) + self.inp_shape).detach().to(device)
         self.Q = torch.zeros((batch_size,) + self.inp_shape).detach().to(device)
@@ -353,7 +371,7 @@ class LIFConvLayer(nn.Module):
     def forward(self, input_t):
         with torch.no_grad():
             self.weights.data = quantization.clip(self.weights.data, quantization.global_wb)
-            if self.bias_active:
+            if self.bias is not None:
                 self.bias.data = quantization.clip(self.bias.data, quantization.global_wb)
 
         self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.gamma * self.R - self.S, self.beta * self.Q + input_t
@@ -362,10 +380,7 @@ class LIFConvLayer(nn.Module):
         self.P, _ = quantization.quant_generic(self.P, quantization.global_pb)
         self.Q, _ = quantization.quant_generic(self.Q, quantization.global_qb)
 
-        # conv part should be forward backward part
-        #self.U = self.mpoolF(F.conv2d(input = self.P, weight = quantization.quant_w(self.weights, self.scale), bias = quantization.quant_w(self.bias, self.scale), padding = self.padding)) + self.R
-
-        self.U = self.mpoolF(QSConvFunctional.apply(self.P, self.weights, self.bias, self.scale, self.padding)) + self.R
+        self.U = QSConv2dFunctional.apply(self.P, self.weights, self.bias, self.scale, self.padding, self.pooling) + self.R
         self.S = (self.U > self.thr).float()
 
         # quantize U
@@ -452,13 +467,13 @@ lambda2 = .1
 
 dropout_learning = nn.Dropout(p=.5)
 
-layer1 = LIFConvLayer(inp_shape = x_train.shape[1:], kernel_size = 7, out_channels = 16, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device).to(device)
+layer1 = LIFConv2dLayer(inp_shape = x_train.shape[1:], kernel_size = 7, out_channels = 16, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device).to(device)
 random_readout1 = QLinearLayerSign(np.prod(layer1.out_shape), output_neurons).to(device)
 
-layer2 = LIFConvLayer(inp_shape = layer1.out_shape, kernel_size = 7, out_channels = 24, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 1, padding = 2, thr = thr, device = device).to(device)
+layer2 = LIFConv2dLayer(inp_shape = layer1.out_shape, kernel_size = 7, out_channels = 24, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 1, padding = 2, thr = thr, device = device).to(device)
 random_readout2 = QLinearLayerSign(np.prod(layer2.out_shape), output_neurons).to(device)
 
-layer3 = LIFConvLayer(inp_shape = layer2.out_shape, kernel_size = 7, out_channels = 32, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device).to(device)
+layer3 = LIFConv2dLayer(inp_shape = layer2.out_shape, kernel_size = 7, out_channels = 32, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device).to(device)
 random_readout3 = QLinearLayerSign(np.prod(layer3.out_shape), output_neurons).to(device)
 
 layer4 = LIFDenseLayer(in_channels = np.prod(layer3.out_shape), out_channels = output_neurons, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
@@ -467,17 +482,22 @@ log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
 nll_loss = torch.nn.NLLLoss()
 
 # shall I train this every time upfront?
-global_lr = 3.3246e-4
-opt1 = torch.optim.Adam(layer1.parameters(), lr=global_lr, betas=[0., .95])
-opt2 = torch.optim.Adam(layer2.parameters(), lr=global_lr, betas=[0., .95])
-opt3 = torch.optim.Adam(layer3.parameters(), lr=global_lr, betas=[0., .95])
-opt4 = torch.optim.Adam(layer4.parameters(), lr=global_lr, betas=[0., .95])
+# global_lr = 3.3246e-4
+# opt1 = torch.optim.Adam(layer1.parameters(), lr=global_lr, betas=[0., .95])
+# opt2 = torch.optim.Adam(layer2.parameters(), lr=global_lr, betas=[0., .95])
+# opt3 = torch.optim.Adam(layer3.parameters(), lr=global_lr, betas=[0., .95])
+# opt4 = torch.optim.Adam(layer4.parameters(), lr=global_lr, betas=[0., .95])
+
+opt1 = torch.optim.SGD(layer1.parameters(), lr=1)
+opt2 = torch.optim.SGD(layer2.parameters(), lr=1)
+opt3 = torch.optim.SGD(layer3.parameters(), lr=1)
+opt4 = torch.optim.SGD(layer4.parameters(), lr=1)
 scheduler1 = torch.optim.lr_scheduler.StepLR(opt1, step_size=20, gamma=0.5)
 scheduler2 = torch.optim.lr_scheduler.StepLR(opt2, step_size=20, gamma=0.5)
 scheduler3 = torch.optim.lr_scheduler.StepLR(opt3, step_size=20, gamma=0.5)
 scheduler4 = torch.optim.lr_scheduler.StepLR(opt4, step_size=20, gamma=0.5)
 
-print("WPQU Quantization: {0}".format(quantization.global_wb))
+print("WPQUEG Quantization: {0}".format(quantization.global_wb))
 
 for e in range(60):
     correct = 0

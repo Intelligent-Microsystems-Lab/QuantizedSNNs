@@ -17,7 +17,7 @@ global_pb = 8
 global_rb = 16
 
 global_beta = 1.5
-global_lr = 8
+global_lr = 1 #8
 
 
 # Quant Functions
