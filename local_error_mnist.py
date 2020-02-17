@@ -289,9 +289,9 @@ class LIFDenseLayer(nn.Module):
             #self.weights.data = quantization.clip(quantization.quant_generic(self.weights.data, quantization.global_gb)[0], quantization.global_wb)
             #self.bias.data = quantization.clip(quantization.quant_generic(self.bias.data, quantization.global_gb)[0], quantization.global_wb)
 
-            self.weights.data = quantization.clip(self.weights.data, quantization.global_wb)
+            self.weights.data = quantization.clip(self.weights.data, quantization.global_gb)
             if self.bias is not None:
-                self.bias.data = quantization.clip(self.bias.data, quantization.global_wb)
+                self.bias.data = quantization.clip(self.bias.data, quantization.global_gb)
 
             # check whether quantized weights are really quantized
             # if np.logical_not(np.isin(self.weights.data.cpu(), quantization.valid_g_vals.cpu())).sum() != 0:
@@ -462,9 +462,9 @@ class LIFConv2dLayer(nn.Module):
     
     def forward(self, input_t):
         with torch.no_grad():
-            self.weights.data = quantization.clip(self.weights.data, quantization.global_wb)
+            self.weights.data = quantization.clip(self.weights.data, quantization.global_gb)
             if self.bias is not None:
-                self.bias.data = quantization.clip(self.bias.data, quantization.global_wb)
+                self.bias.data = quantization.clip(self.bias.data, quantization.global_gb)
             
             # check whether quantized weights are really quantized
             # if np.logical_not(np.isin(self.weights.data.cpu(), quantization.valid_g_vals.cpu())).sum() != 0:
@@ -626,16 +626,16 @@ log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
 nll_loss = torch.nn.NLLLoss()
 
 # shall I train this every time upfront?
-global_lr = 3.3246e-4
-opt1 = torch.optim.Adam(layer1.parameters(), lr=global_lr, betas=[0., .95])
-opt2 = torch.optim.Adam(layer2.parameters(), lr=global_lr, betas=[0., .95])
-opt3 = torch.optim.Adam(layer3.parameters(), lr=global_lr, betas=[0., .95])
-opt4 = torch.optim.Adam(layer4.parameters(), lr=global_lr, betas=[0., .95])
+# global_lr = 3.3246e-4
+# opt1 = torch.optim.Adam(layer1.parameters(), lr=global_lr, betas=[0., .95])
+# opt2 = torch.optim.Adam(layer2.parameters(), lr=global_lr, betas=[0., .95])
+# opt3 = torch.optim.Adam(layer3.parameters(), lr=global_lr, betas=[0., .95])
+# opt4 = torch.optim.Adam(layer4.parameters(), lr=global_lr, betas=[0., .95])
 
-# opt1 = torch.optim.SGD(layer1.parameters(), lr=1)
-# opt2 = torch.optim.SGD(layer2.parameters(), lr=1)
-# opt3 = torch.optim.SGD(layer3.parameters(), lr=1)
-# opt4 = torch.optim.SGD(layer4.parameters(), lr=1)
+opt1 = torch.optim.SGD(layer1.parameters(), lr=1)
+opt2 = torch.optim.SGD(layer2.parameters(), lr=1)
+opt3 = torch.optim.SGD(layer3.parameters(), lr=1)
+opt4 = torch.optim.SGD(layer4.parameters(), lr=1)
 scheduler1 = torch.optim.lr_scheduler.StepLR(opt1, step_size=20, gamma=0.5)
 scheduler2 = torch.optim.lr_scheduler.StepLR(opt2, step_size=20, gamma=0.5)
 scheduler3 = torch.optim.lr_scheduler.StepLR(opt3, step_size=20, gamma=0.5)
