@@ -81,6 +81,7 @@ def quant_generic(x, cb):
 
 
 def quant_grad(x):
+    import pdb; pdb.set_trace()
     xmax = torch.max(torch.abs(x))
     x = x / shift(xmax)
 
