@@ -8,3 +8,5 @@ Loading python/3.7.3
   Loading requirement: tcl/8.6.8 gcc/8.3.0
 hello
 script_name_: Undefined variable.
+script_name_: Undefined variable.
+script_name_: Undefined variable.
