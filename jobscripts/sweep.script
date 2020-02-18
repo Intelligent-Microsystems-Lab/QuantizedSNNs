@@ -1,7 +1,7 @@
 #!/bin/csh
 
-setenv script_name test.py
-setenv gpu gpu@@joshi
+setenv script_name local_error_mnist_sweep.py
+setenv gpu gpu@qa-rtx6k-040.crc.nd.edu #gpu@@joshi
 
 setenv date_string `date +"%m-%d-%y_%H.%M.%S"`
 mkdir experiments/"$script_name"_"$date_string"

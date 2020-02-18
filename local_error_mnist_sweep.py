@@ -18,12 +18,12 @@ args = vars(ap.parse_args())
 
 def run_main(xta, xte, yta, yte, resf_name, bit_change):
 
-    shuffle_idx = torch.randperm(len(yta))
-    x_train = xta[shuffle_idx]
-    y_train = yta[shuffle_idx]
-    shuffle_idx = torch.randperm(len(yte))
-    x_test = xte[shuffle_idx]
-    y_test = yte[shuffle_idx]
+    shuffle_idx_ta = torch.randperm(len(yta))
+    x_train = xta[shuffle_idx_ta]
+    y_train = yta[shuffle_idx_ta]
+    shuffle_idx_te = torch.randperm(len(yte))
+    x_test = xte[shuffle_idx_te]
+    y_test = yte[shuffle_idx_te]
 
     # fixed subsampling
     # train: 300 samples per class -> 3000
@@ -34,6 +34,8 @@ def run_main(xta, xte, yta, yte, resf_name, bit_change):
     index_list_train = []
     index_list_test = []
     for i in range(10):
+
+
         index_list_train.append((y_train == i).nonzero()[:int(train_samples/num_classes)])
         index_list_test.append((y_test == i).nonzero()[:int(test_samples/num_classes)])
     index_list_train = torch.cat(index_list_train).reshape([train_samples])
@@ -109,6 +111,9 @@ def run_main(xta, xte, yta, yte, resf_name, bit_change):
         tcorrect = 0
         ttotal = 0
         loss_hist = []
+        loss_hist2 = []
+        loss_hist3 = []
+        loss_hist4 = []
         start_time = time.time()
 
         for x_local, y_local in sparse_data_generator(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, samples = train_samples, max_hertz = 50, shuffle = True, device = device):
@@ -162,6 +167,9 @@ def run_main(xta, xte, yta, yte, resf_name, bit_change):
                 opt4.zero_grad()
 
                 loss_hist.append(loss_t4.item())
+                loss_hist2.append(loss_t3.item())
+                loss_hist3.append(loss_t2.item())
+                loss_hist4.append(loss_t1.item())
                 class_rec += out_spikes4
 
             correct += (torch.max(class_rec, dim = 1).indices == y_local).sum() 
@@ -199,7 +207,7 @@ def run_main(xta, xte, yta, yte, resf_name, bit_change):
 
 
     # saving results/weights
-    results = {'layer1':[layer1.weights, layer1.bias], 'layer2':[layer1.weights, layer1.bias], 'layer3':[layer1.weights, layer1.bias], 'layer4':[layer1.weights, layer1.bias], 'test_acc': test_acc, 'train_acc': train_acc}
+    results = {'layer1':[layer1.weights, layer1.bias], 'layer2':[layer1.weights, layer1.bias], 'layer3':[layer1.weights, layer1.bias], 'layer4':[layer1.weights, layer1.bias], 'test_acc': test_acc, 'train_acc': train_acc, 'loss':[loss_hist, loss_hist2, loss_his3, loss_hist4], 'train_idx':shuffle_idx_ta, 'test_idx':shuffle_idx_te}
     with open(resf_name + '.pkl', 'wb') as f:
         pickle.dump(results, f)
 
