@@ -50,8 +50,8 @@ def run_main(xta, xte, yta, yte, resf_name, bit_change):
     #quantization.global_beta = 1.5
     quantization.global_wb = 8
     quantization.global_ub = 8
-    quantization.global_qb = bit_change
-    quantization.global_pb = 8
+    quantization.global_qb = 8
+    quantization.global_pb = bit_change
     quantization.global_gb = 8
     quantization.global_eb = 8
     quantization.global_rb = 16
