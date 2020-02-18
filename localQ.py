@@ -194,7 +194,8 @@ class QSLinearFunctional(torch.autograd.Function):
 
 class LIFDenseLayer(nn.Module):
     def __init__(self, in_channels, out_channels, tau_syn, tau_mem, tau_ref, delta_t, bias=True, thr = 1, device=torch.device("cpu"), dtype = torch.float):
-        super(LIFDenseLayer, self).__init__()      
+        super(LIFDenseLayer, self).__init__()    
+        self.device = device  
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.thr = thr
@@ -234,11 +235,11 @@ class LIFDenseLayer(nn.Module):
                 self.bias.data = quantization.clip(quantization.quant_generic(self.bias.data, quantization.global_gb)[0], quantization.global_wb)
 
     def state_init(self, batch_size):
-        self.P = torch.zeros(batch_size, self.in_channels).detach().to(device)
-        self.Q = torch.zeros(batch_size, self.in_channels).detach().to(device)
-        self.R = torch.zeros(batch_size, self.out_channels).detach().to(device)
-        self.S = torch.zeros(batch_size, self.out_channels).detach().to(device)
-        self.U = torch.zeros(batch_size, self.out_channels).detach().to(device)
+        self.P = torch.zeros(batch_size, self.in_channels).detach().to(self.device)
+        self.Q = torch.zeros(batch_size, self.in_channels).detach().to(self.device)
+        self.R = torch.zeros(batch_size, self.out_channels).detach().to(self.device)
+        self.S = torch.zeros(batch_size, self.out_channels).detach().to(self.device)
+        self.U = torch.zeros(batch_size, self.out_channels).detach().to(self.device)
 
     
     def forward(self, input_t):
@@ -309,6 +310,7 @@ class QSConv2dFunctional(torch.autograd.Function):
 class LIFConv2dLayer(nn.Module):
     def __init__(self, inp_shape, kernel_size, out_channels, tau_syn, tau_mem, tau_ref, delta_t, pooling = 1, padding = 0, bias=True, thr = 1, device=torch.device("cpu"), dtype = torch.float):
         super(LIFConv2dLayer, self).__init__()   
+        self.device = device
         self.inp_shape = inp_shape
         self.kernel_size = kernel_size
         self.out_channels = out_channels  
@@ -353,11 +355,11 @@ class LIFConv2dLayer(nn.Module):
                 self.bias.data = quantization.clip(quantization.quant_generic(self.bias.data, quantization.global_gb)[0], quantization.global_wb)
 
     def state_init(self, batch_size):
-        self.P = torch.zeros((batch_size,) + self.inp_shape).detach().to(device)
-        self.Q = torch.zeros((batch_size,) + self.inp_shape).detach().to(device)
-        self.R = torch.zeros((batch_size,) + self.out_shape).detach().to(device)
-        self.S = torch.zeros((batch_size,) + self.out_shape).detach().to(device)
-        self.U = torch.zeros((batch_size,) + self.out_shape).detach().to(device)
+        self.P = torch.zeros((batch_size,) + self.inp_shape).detach().to(self.device)
+        self.Q = torch.zeros((batch_size,) + self.inp_shape).detach().to(self.device)
+        self.R = torch.zeros((batch_size,) + self.out_shape).detach().to(self.device)
+        self.S = torch.zeros((batch_size,) + self.out_shape).detach().to(self.device)
+        self.U = torch.zeros((batch_size,) + self.out_shape).detach().to(self.device)
 
     
     def forward(self, input_t):

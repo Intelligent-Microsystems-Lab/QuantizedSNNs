@@ -14,7 +14,6 @@ import quantization
 from localQ import sparse_data_generator, smoothstep, superspike, QLinearLayerSign, LIFDenseLayer, LIFConv2dLayer
 
 
-
 # Check whether a GPU is available
 if torch.cuda.is_available():
     device = torch.device("cuda")     
