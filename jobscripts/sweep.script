@@ -1,13 +1,13 @@
 #!/bin/csh
 
 setenv script_name local_error_mnist_sweep.py
-setenv gpu gpu@qa-rtx6k-041.crc.nd.edu #gpu@@joshi
+setenv gpu gpu@qa-rtx6k-041.crc.nd.edu # gpu@@joshi
 
 setenv date_string `date +"%m-%d-%y_%H.%M.%S"`
 mkdir experiments/"$script_name"_"$date_string"
 cp "$script_name" experiments/"$script_name"_"$date_string"
 
-echo "#\!/bin/csh\n#$ -M cschaef6@nd.edu \n#$ -m abe\n#$ -q "$gpu"\n#$ -l gpu_card=1\n#$ -N "$script_name"_"$date_string"\n#$ -o experiments/"$script_name"_"$date_string"/log.txt\n#$ -e experiments/"$script_name"_"$date_string"/error.txt\nmodule load python \nsetenv OMP_NUM_THREADS \044NSLOTS\npython $script_name -dir experiments/"$script_name"_"$date_string"" > temp"$date_string".script
+echo "#\!/bin/csh\n#$ -M cschaef6@nd.edu \n#$ -m abe\n#$ -q "$gpu"\n#$ -l gpu_card=1\n#$ -N "$script_name"_"$date_string"\n#$ -o experiments/"$script_name"_"$date_string"/log.txt\n#$ -e experiments/"$script_name"_"$date_string"/error.txt\nmodule load python \nsetenv OMP_NUM_THREADS \044NSLOTS\nCUDA_VISIBLE_DEVICES=2 python $script_name -dir experiments/"$script_name"_"$date_string"" > temp"$date_string".script
 
 qsub temp"$date_string".script
 rm temp"$date_string".script

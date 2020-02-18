@@ -747,5 +747,5 @@ for e in range(1):
 
 results = {'W': [quantization.valid_w_vals, quantization.count_w_vals], 'P': [quantization.valid_p_vals, quantization.count_p_vals], 'Q': [quantization.valid_q_vals, quantization.count_q_vals], 'U': [quantization.valid_u_vals, quantization.count_u_vals], 'E': [quantization.valid_e_vals, quantization.count_e_vals], 'G': [quantization.valid_g_vals, quantization.count_g_vals]}
 
-with open('results/quant_check.pkl', 'wb') as f:
+with open('quant_check.pkl', 'wb') as f:
     pickle.dump(results, f)
