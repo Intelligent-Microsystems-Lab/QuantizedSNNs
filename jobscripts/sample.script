@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/csh
 
 setenv script_name test.py
 setenv date_string `date +"%m-%d-%y_%H.%M.%S"`
