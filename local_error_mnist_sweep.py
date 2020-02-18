@@ -105,7 +105,7 @@ def run_main(xta, xte, yta, yte, resf_name, bit_change):
 
     train_acc = []
     test_acc = []
-    for e in range(1):
+    for e in range(50):
         correct = 0
         total = 0
         tcorrect = 0
