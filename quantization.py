@@ -81,17 +81,15 @@ def quant_generic(x, cb):
 
 
 def quant_grad(x):
-    import pdb; pdb.set_trace()
+    # those gonna be ternary, or we can tweak the lr
     xmax = torch.max(torch.abs(x))
-    x = x / shift(xmax)
-
-    norm = quant(global_lr * x, global_rb) * step_d(global_gb)
+    norm = global_lr * x / shift(xmax)
 
     norm_sign = torch.sign(norm)
     norm_abs = torch.abs(norm)
     norm_int = torch.floor(norm_abs)
-    norm_float = norm_abs - norm_int
-    rand_float = torch.FloatTensor(x.shape).uniform_(0,1).to(x.device)
+    norm_float = quant(norm_abs - norm_int, global_rb)
+    rand_float = quant(torch.FloatTensor(x.shape).uniform_(0,1).to(x.device), global_rb)
     #norm = norm_sign.double() * ( norm_int.double() + 0.5 * (torch.sign(norm_float.double() - rand_float.double()) + 1) )
     norm = norm_sign * ( norm_int + 0.5 * (torch.sign(norm_float - rand_float) + 1) )
 
