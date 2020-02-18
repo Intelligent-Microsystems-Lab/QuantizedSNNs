@@ -542,8 +542,8 @@ y_test = y_test[shuffle_idx]
 # fixed subsampling
 # train: 300 samples per class -> 3000
 # test: 103 samples per class -> 1030 (a wee more than 1024)
-train_samples = 1000
-test_samples = 500
+train_samples = 500
+test_samples = 300
 num_classes = 10
 index_list_train = []
 index_list_test = []
