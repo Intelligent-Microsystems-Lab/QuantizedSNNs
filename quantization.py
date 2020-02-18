@@ -93,6 +93,7 @@ def quant_grad(x):
     #norm = norm_sign.double() * ( norm_int.double() + 0.5 * (torch.sign(norm_float.double() - rand_float.double()) + 1) )
     norm = norm_sign * ( norm_int + 0.5 * (torch.sign(norm_float - rand_float) + 1) )
 
+    import pdb; pdb.set_trace()
     return norm / step_d(global_gb)
 
 def quant_err(x):
