@@ -233,5 +233,5 @@ y_test  = test_dataset.targets
 
 
 for i in [2,3,4,5,6,7,8]:
-    run_main(x_train, x_test, y_train, y_test, args['dir'] + '/qb{0}'.format(i), i)
+    run_main(x_train, x_test, y_train, y_test, args['dir'] + '/pb{0}'.format(i), i)
 
