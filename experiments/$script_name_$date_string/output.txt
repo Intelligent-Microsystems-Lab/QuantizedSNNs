@@ -4,3 +4,7 @@ Traceback (most recent call last):
   File "test.py", line 3, in <module>
     ap = argparse.ArgumentParser()
 NameError: name 'argparse' is not defined
+Loading python/3.7.3
+  Loading requirement: tcl/8.6.8 gcc/8.3.0
+hello
+script_name_: Undefined variable.
