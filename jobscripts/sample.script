@@ -3,7 +3,7 @@
 setenv script_name test.py
 setenv date_string `date +"%m-%d-%y_%H.%M.%S"`
 mkdir experiments/"$script_name"_"$date_string"
-cp "$script_name" "$script_name"_"$date_string"
+cp "$script_name" experiments/"$script_name"_"$date_string"
 
 #$ -M cschaef6@nd.edu	 # Email address for job notification
 #$ -m abe

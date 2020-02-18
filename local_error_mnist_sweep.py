@@ -6,6 +6,7 @@ import pickle
 import time
 import math
 import numpy as np
+import argparse
 
 import quantization
 from localQ import sparse_data_generator, smoothstep, superspike, QLinearLayerSign, LIFDenseLayer, LIFConv2dLayer

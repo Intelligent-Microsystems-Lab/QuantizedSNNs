@@ -1,4 +1,5 @@
 import pickle
+import argparse
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-dir", "--dir", type = str, help = "activation bits")
