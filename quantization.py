@@ -91,9 +91,10 @@ def quant_grad(x):
     norm_float = quant(norm_abs - norm_int, global_rb)
     rand_float = quant(torch.FloatTensor(x.shape).uniform_(0,1).to(x.device), global_rb)
     #norm = norm_sign.double() * ( norm_int.double() + 0.5 * (torch.sign(norm_float.double() - rand_float.double()) + 1) )
-    norm = norm_sign * ( norm_int + 0.5 * (torch.sign(norm_float - rand_float) + 1) )
+    zero_prevention_step = torch.sign(norm_float - rand_float)
+    zero_prevention_step[zero_prevention_step == 0] = 1
+    norm = norm_sign * ( norm_int + 0.5 * (zero_prevention_step + 1) )
 
-    import pdb; pdb.set_trace()
     return norm / step_d(global_gb)
 
 def quant_err(x):
