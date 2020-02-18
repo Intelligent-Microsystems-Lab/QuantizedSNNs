@@ -51,8 +51,8 @@ def run_main(xta, xte, yta, yte, resf_name, bit_change):
     quantization.global_wb = 8
     quantization.global_ub = 8
     quantization.global_qb = 8
-    quantization.global_pb = bit_change
-    quantization.global_gb = 8
+    quantization.global_pb = 8
+    quantization.global_gb = bit_change
     quantization.global_eb = 8
     quantization.global_rb = 16
     quantization.global_lr = 1
@@ -233,5 +233,5 @@ y_test  = test_dataset.targets
 
 
 for i in [2,3,4,5,6,7,8]:
-    run_main(x_train, x_test, y_train, y_test, args['dir'] + '/pb{0}'.format(i), i)
+    run_main(x_train, x_test, y_train, y_test, args['dir'] + '/gb{0}'.format(i), i)
 
