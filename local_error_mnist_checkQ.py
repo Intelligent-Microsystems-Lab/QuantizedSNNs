@@ -294,11 +294,11 @@ class LIFDenseLayer(nn.Module):
                 self.bias.data = quantization.clip(self.bias.data, quantization.global_gb)
 
             # check whether quantized weights are really quantized
-            if np.logical_not(np.isin(self.weights.data.cpu(), quantization.valid_g_vals.cpu())).sum() != 0:
+            if np.logical_not(np.isin(self.weights.data.cpu(), quantization.valid_w_vals.cpu())).sum() != 0:
                 print('Stored Weights not properly quantized')
                 import pdb; pdb.set_trace()
             else:
-                quantization.count_g_vals += torch.cat([self.weights.data.flatten().cpu(), quantization.valid_g_vals]).unique(return_counts = True)[1] - torch.ones_like(quantization.count_g_vals, dtype= int)
+                quantization.count_w_vals += torch.cat([self.weights.data.flatten().cpu(), quantization.valid_g_vals]).unique(return_counts = True)[1] - torch.ones_like(quantization.count_w_vals, dtype= int)
 
 
         self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.gamma * self.R - self.S, self.beta * self.Q + input_t
@@ -471,7 +471,7 @@ class LIFConv2dLayer(nn.Module):
                 print('Stored Weights not properly quantized')
                 import pdb; pdb.set_trace()
             else:
-                quantization.count_g_vals += torch.cat([self.weights.data.flatten().cpu(), quantization.valid_g_vals]).unique(return_counts = True)[1] - torch.ones_like(quantization.count_g_vals, dtype= int)
+                quantization.count_w_vals += torch.cat([self.weights.data.flatten().cpu(), quantization.valid_g_vals]).unique(return_counts = True)[1] - torch.ones_like(quantization.count_w_vals, dtype= int)
 
         self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.gamma * self.R - self.S, self.beta * self.Q + input_t
 
@@ -745,7 +745,7 @@ for e in range(1):
 # ta1000, te500, b128
 # Epoch 1 | Loss: 1.6940 Train Acc: 0.9460 Test Acc: 0.8960 Train Time: 62.1373s Inference Time: 27.2974s
 
-results = {'W': [quantization.valid_w_vals, quantization.count_w_vals], 'P': [quantization.valid_p_vals, quantization.count_p_vals], 'Q': [quantization.valid_q_vals, quantization.count_q_vals], 'U': [quantization.valid_u_vals, quantization.count_u_vals], 'E': [quantization.valid_e_vals, quantization.count_e_vals], 'G': [quantization.valid_g_vals, quantization.count_g_vals]}
+results = {'W': [quantization.valid_w_vals.detach().cpu(), quantization.count_w_vals.detach().cpu()], 'P': [quantization.valid_p_vals.detach().cpu(), quantization.count_p_vals.detach().cpu()], 'Q': [quantization.valid_q_vals.detach().cpu(), quantization.count_q_vals.detach().cpu()], 'U': [quantization.valid_u_vals.detach().cpu(), quantization.count_u_vals.detach().cpu()], 'E': [quantization.valid_e_vals.detach().cpu(), quantization.count_e_vals.detach().cpu()], 'G': [quantization.valid_g_vals.detach().cpu(), quantization.count_g_vals.detach().cpu()]}
 
 with open('quant_check.pkl', 'wb') as f:
     pickle.dump(results, f)

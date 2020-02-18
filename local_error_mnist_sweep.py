@@ -207,7 +207,7 @@ def run_main(xta, xte, yta, yte, resf_name, bit_change):
 
 
     # saving results/weights
-    results = {'layer1':[layer1.weights, layer1.bias], 'layer2':[layer1.weights, layer1.bias], 'layer3':[layer1.weights, layer1.bias], 'layer4':[layer1.weights, layer1.bias], 'test_acc': test_acc, 'train_acc': train_acc, 'loss':[loss_hist, loss_hist2, loss_hist3, loss_hist4], 'train_idx':shuffle_idx_ta, 'test_idx':shuffle_idx_te}
+    results = {'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer2':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer3':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer4':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'test_acc': test_acc, 'train_acc': train_acc, 'loss':[loss_hist, loss_hist2, loss_hist3, loss_hist4], 'train_idx':shuffle_idx_ta, 'test_idx':shuffle_idx_te}
     with open(resf_name + '.pkl', 'wb') as f:
         pickle.dump(results, f)
 
