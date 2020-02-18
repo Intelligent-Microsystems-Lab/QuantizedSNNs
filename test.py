@@ -8,5 +8,5 @@ args = vars(ap.parse_args())
 
 print("hello")
 
-with open(args['dir'] + '/test.pkl', 'wb') as f:
+with open(args['dir'] + '/test_output.pkl', 'wb') as f:
     pickle.dump({"foo":"bar"}, f)
