@@ -596,7 +596,7 @@ ms = 1e-3
 delta_t = 1*ms
 
 T = 500*ms
-T_test = 1000*ms
+T_test = 500*ms
 burnin = 50*ms
 batch_size = 128
 output_neurons = 10
