@@ -48,12 +48,12 @@ def run_main(xta, xte, yta, yte, resf_name, bit_change):
 
 
     #quantization.global_beta = 1.5
-    quantization.global_wb = 8
+    quantization.global_wb = bit_change
     quantization.global_ub = 8
     quantization.global_qb = 8
     quantization.global_pb = 8
     quantization.global_gb = 8
-    quantization.global_eb = bit_change
+    quantization.global_eb = 8
     quantization.global_rb = 16
     quantization.global_lr = 1
     quantization.global_beta = 1.5 #quantization.step_d(quantization.global_wb)-.5
@@ -233,5 +233,5 @@ y_test  = test_dataset.targets
 
 
 for i in [2,3,4,5,6,7,8]:
-    run_main(x_train, x_test, y_train, y_test, args['dir'] + '/eb{0}'.format(i), i)
+    run_main(x_train, x_test, y_train, y_test, args['dir'] + '/wb{0}'.format(i), i)
 
