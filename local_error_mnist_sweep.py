@@ -12,7 +12,7 @@ import quantization
 from localQ import sparse_data_generator, smoothstep, superspike, QLinearLayerSign, LIFDenseLayer, LIFConv2dLayer
 
 ap = argparse.ArgumentParser()
-ap.add_argument("-dir", "--dir", type = str, help = "activation bits")
+ap.add_argument("-dir", "--dir", type = str, help = "output dir")
 args = vars(ap.parse_args())
 
 
@@ -96,10 +96,6 @@ def run_main(xta, xte, yta, yte, resf_name, bit_change):
     opt2 = torch.optim.SGD(layer2.parameters(), lr=1)
     opt3 = torch.optim.SGD(layer3.parameters(), lr=1)
     opt4 = torch.optim.SGD(layer4.parameters(), lr=1)
-    # scheduler1 = torch.optim.lr_scheduler.StepLR(opt1, step_size=20, gamma=0.5)
-    # scheduler2 = torch.optim.lr_scheduler.StepLR(opt2, step_size=20, gamma=0.5)
-    # scheduler3 = torch.optim.lr_scheduler.StepLR(opt3, step_size=20, gamma=0.5)
-    # scheduler4 = torch.optim.lr_scheduler.StepLR(opt4, step_size=20, gamma=0.5)
 
     print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb))
 
@@ -196,10 +192,6 @@ def run_main(xta, xte, yta, yte, resf_name, bit_change):
             ttotal += len(y_local)
         inf_time = time.time()
 
-        # scheduler1.step()
-        # scheduler2.step()
-        # scheduler3.step()
-        # scheduler4.step()
 
         train_acc.append(correct.item()/total)
         test_acc.append(tcorrect.item()/ttotal)

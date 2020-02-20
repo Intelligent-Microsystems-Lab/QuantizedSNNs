@@ -6,10 +6,93 @@ import pickle
 import time
 import math
 import numpy as np
+import pandas as pd
 import argparse
 
 import quantization
 from localQ import sparse_data_generator, smoothstep, superspike, QLinearLayerSign, LIFDenseLayer, LIFConv2dLayer
+
+
+def sparse_data_generator(X, y, batch_size, nb_steps, samples, max_hertz, shuffle=True, device=torch.device("cpu")):
+    """ This generator takes datasets in analog format and generates spiking network input as sparse tensors. 
+
+    Args:
+        X: The data ( sample x event x 2 ) the last dim holds (time,neuron) tuples
+        y: The labels
+    """
+    sample_idx = torch.randperm(len(X))[:samples]
+    number_of_batches = int(np.ceil(samples/batch_size))
+    nb_steps = int(nb_steps)
+
+    counter = 0
+    while counter<number_of_batches:
+        if counter == number_of_batches:
+            cur_sample = sample_idx[batch_size*counter:]
+        else:
+            cur_sample = sample_idx[batch_size*counter:batch_size*(counter+1)]
+
+        X_batch = np.zeros((cur_sample.shape[0],) + X.shape[1:] + (nb_steps,))
+        for i,idx in enumerate(cur_sample):
+            X_batch[i] = clee_spikes(T = nb_steps, rates=max_hertz*X[idx,:]).astype(np.float32)
+
+        X_batch = torch.from_numpy(X_batch).float()
+        y_batch = y[cur_sample]
+        try:
+            yield X_batch.to(device), y_batch.to(device)
+            counter += 1
+        except StopIteration:
+            return
+
+
+def sparse_data_generator_DVS(X, y, batch_size, nb_steps, shuffle, device):
+    """ This generator takes datasets in analog format and generates spiking network input as sparse tensors. 
+
+    Args:
+        X: The data ( sample x event x 2 ) the last dim holds (time,neuron) tuples
+        y: The labels
+    """
+
+    try:
+        labels_ = np.array(y.cpu(),dtype=np.int)
+    except:
+        labels_ = np.array(y,dtype=np.int)
+    number_of_batches = len(y)//batch_size
+    sample_index = np.arange(len(y))
+
+
+    if shuffle:
+        np.random.shuffle(sample_index)
+
+    total_batch_count = 0
+    counter = 0
+    while counter<number_of_batches:
+        batch_index = sample_index[batch_size*counter:batch_size*(counter+1)]
+
+        coo = [ [] for i in range(3) ]
+        for bc,idx in enumerate(batch_index):
+            
+            temp = X[X['batch'] == idx]
+
+            batch = [bc for _ in range(len(temp['ts']))]
+            coo[0].extend(batch)
+            coo[1].extend(temp['ts'].tolist())
+            coo[2].extend(temp['unit'].tolist())
+
+
+        i = torch.LongTensor(coo)#.to(device)
+        v = torch.FloatTensor(np.ones(len(coo[0])))#.to(device)
+
+        X_batch = torch.sparse.FloatTensor(i, v, torch.Size([batch_size,300,128*128]))#.to(device)
+        y_batch = torch.tensor(labels_[batch_index])
+
+        try:
+            yield X_batch.to(device=device), y_batch.to(device=device)
+            counter += 1
+        except StopIteration:
+            return
+
+
+
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-dir", "--dir", type = str, help = "output dir")
@@ -23,6 +106,21 @@ else:
 dtype = torch.float
 
 # load data
+
+test_dataset = pd.read_pickle('../DVS/test_complete.pkl')
+y_test = torch.tensor(test_dataset['label'], device=device, dtype=dtype)
+train_dataset = pd.read_pickle('../DVS/train_complete.pkl')
+y_train = torch.tensor(train_dataset['label'], device=device, dtype=dtype)
+with open('../DVS_prep/full_data_train.pkl', 'rb') as f:
+   train_data = pickle.load(f)
+with open('../DVS_prep/full_data_test.pkl', 'rb') as f:
+    test_data = pickle.load(f)
+x_test = pd.DataFrame({'batch':test_data[0],'ts':test_data[1],'unit':test_data[2]})
+x_test = x_test.drop_duplicates()
+x_train = pd.DataFrame({'batch':train_data[0],'ts':train_data[1],'unit':train_data[2]})
+x_train = x_train.drop_duplicates()
+
+
 train_dataset = torchvision.datasets.MNIST('../data', train=True, transform=None, target_transform=None, download=True)
 test_dataset = torchvision.datasets.MNIST('../data', train=False, transform=None, target_transform=None, download=True)
 
@@ -79,7 +177,7 @@ ms = 1e-3
 delta_t = 1*ms
 
 T = 500*ms
-T_test = 1000*ms
+T_test = 1800*ms
 burnin = 50*ms
 batch_size = 128
 output_neurons = 10
@@ -198,11 +296,12 @@ for e in range(50):
         layer4.state_init(x_local.shape[0])
 
         for t in range(int(T_test/ms)):
-            out_spikes1 = layer1.forward(x_local[:,:,:,:,t])
-            out_spikes2 = layer2.forward(out_spikes1)
-            out_spikes3 = layer3.forward(out_spikes2)
+            # dropout kept active -> decolle note
+            out_spikes1 = dropout_learning(layer1.forward(x_local[:,:,:,:,t])) 
+            out_spikes2 = dropout_learning(layer2.forward(out_spikes1)) 
+            out_spikes3 = dropout_learning(layer3.forward(out_spikes2))
             out_spikes3 = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
-            out_spikes4 = layer4.forward(out_spikes3)
+            out_spikes4 = dropout_learning(layer4.forward(out_spikes3))
             class_rec += out_spikes4
         tcorrect += (torch.max(class_rec, dim = 1).indices == y_local).sum() 
         ttotal += len(y_local)
