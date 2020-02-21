@@ -110,21 +110,21 @@ with open('test_dvs_gesture.pickle', 'wb') as handle:
 
 
 
-# visualize
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
+# # visualize
+# import matplotlib.pyplot as plt
+# import matplotlib.animation as animation
 
 
-plt.clf()
-fig1 = plt.figure()
+# plt.clf()
+# fig1 = plt.figure()
 
-ims = []
-for i in np.arange(sparse_matrix.shape[0]):
-    ims.append((plt.imshow( sparse_matrix[i,:,:]), ))
+# ims = []
+# for i in np.arange(sparse_matrix.shape[0]):
+#     ims.append((plt.imshow( sparse_matrix[i,:,:]), ))
 
-im_ani = animation.ArtistAnimation(fig1, ims, interval=1, repeat_delay=2000,
-                                   blit=True)
-plt.show()
+# im_ani = animation.ArtistAnimation(fig1, ims, interval=1, repeat_delay=2000,
+#                                    blit=True)
+# plt.show()
 
-#im_ani.save('gesture.mp4', metadata={'artist':'Clemens'})
+# #im_ani.save('gesture.mp4', metadata={'artist':'Clemens'})
 
