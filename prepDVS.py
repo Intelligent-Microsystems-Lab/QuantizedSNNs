@@ -6,6 +6,8 @@ import pickle
 
 
 def read_aedat31(filename, labels_f, test_set = False):
+    # https://inivation.com/support/software/fileformat/#aedat-31
+    # http://research.ibm.com/dvsgesture/
     gestures_full = []
     labels_full = []
 
@@ -54,7 +56,6 @@ def read_aedat31(filename, labels_f, test_set = False):
     # dataArray[6]                # eventValid
 
     stim = np.array([allTs, x, y, polarity]).T#.astype(int)
-    stim[stim[:, 3] == 0, 3] = -1
 
     for i in labels:
         # record label

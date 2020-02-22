@@ -13,35 +13,6 @@ import quantization
 from localQ import sparse_data_generator, smoothstep, superspike, QLinearLayerSign, LIFDenseLayer, LIFConv2dLayer
 
 
-def sparse_data_generator(X, y, batch_size, nb_steps, samples, max_hertz, shuffle=True, device=torch.device("cpu")):
-    """ This generator takes datasets in analog format and generates spiking network input as sparse tensors. 
-
-    Args:
-        X: The data ( sample x event x 2 ) the last dim holds (time,neuron) tuples
-        y: The labels
-    """
-    sample_idx = torch.randperm(len(X))[:samples]
-    number_of_batches = int(np.ceil(samples/batch_size))
-    nb_steps = int(nb_steps)
-
-    counter = 0
-    while counter<number_of_batches:
-        if counter == number_of_batches:
-            cur_sample = sample_idx[batch_size*counter:]
-        else:
-            cur_sample = sample_idx[batch_size*counter:batch_size*(counter+1)]
-
-        X_batch = np.zeros((cur_sample.shape[0],) + X.shape[1:] + (nb_steps,))
-        for i,idx in enumerate(cur_sample):
-            X_batch[i] = clee_spikes(T = nb_steps, rates=max_hertz*X[idx,:]).astype(np.float32)
-
-        X_batch = torch.from_numpy(X_batch).float()
-        y_batch = y[cur_sample]
-        try:
-            yield X_batch.to(device), y_batch.to(device)
-            counter += 1
-        except StopIteration:
-            return
 
 
 def sparse_data_generator_DVS(X, y, batch_size, nb_steps, shuffle, device):
@@ -51,11 +22,6 @@ def sparse_data_generator_DVS(X, y, batch_size, nb_steps, shuffle, device):
         X: The data ( sample x event x 2 ) the last dim holds (time,neuron) tuples
         y: The labels
     """
-
-    try:
-        labels_ = np.array(y.cpu(),dtype=np.int)
-    except:
-        labels_ = np.array(y,dtype=np.int)
     number_of_batches = len(y)//batch_size
     sample_index = np.arange(len(y))
 
@@ -68,15 +34,27 @@ def sparse_data_generator_DVS(X, y, batch_size, nb_steps, shuffle, device):
     while counter<number_of_batches:
         batch_index = sample_index[batch_size*counter:batch_size*(counter+1)]
 
-        coo = [ [] for i in range(3) ]
+        
+        #coo = [ [] for i in range(3) ]
         for bc,idx in enumerate(batch_index):
-            
+            import pdb; pdb.set_trace()
+            start_ts = np.random.choice(np.arange(np.max(X[batch_index[idx]][:,0]) - nb_steps),1)
+            temp = X[idx][X[idx][0] >= start_ts]
+            temp = temp[temp[0] <= start_ts+500]
+
             temp = X[X['batch'] == idx]
 
             batch = [bc for _ in range(len(temp['ts']))]
             coo[0].extend(batch)
             coo[1].extend(temp['ts'].tolist())
             coo[2].extend(temp['unit'].tolist())
+
+        # to matrix
+        #sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(single_gesture[:,[True, True, True, False]].T), torch.FloatTensor(single_gesture[:,3])).to_dense()
+
+        # quick trick...
+        #sparse_matrix[sparse_matrix < 0] = -1
+        #sparse_matrix[sparse_matrix > 0] = 1
 
 
         i = torch.LongTensor(coo)#.to(device)
@@ -106,59 +84,11 @@ else:
 dtype = torch.float
 
 # load data
+with open('../train_dvs_gesture.pickle', 'rb') as f:
+    data = pickle.load(f)
+x_train = data[0]
+y_train = data[0]
 
-test_dataset = pd.read_pickle('../DVS/test_complete.pkl')
-y_test = torch.tensor(test_dataset['label'], device=device, dtype=dtype)
-train_dataset = pd.read_pickle('../DVS/train_complete.pkl')
-y_train = torch.tensor(train_dataset['label'], device=device, dtype=dtype)
-with open('../DVS_prep/full_data_train.pkl', 'rb') as f:
-   train_data = pickle.load(f)
-with open('../DVS_prep/full_data_test.pkl', 'rb') as f:
-    test_data = pickle.load(f)
-x_test = pd.DataFrame({'batch':test_data[0],'ts':test_data[1],'unit':test_data[2]})
-x_test = x_test.drop_duplicates()
-x_train = pd.DataFrame({'batch':train_data[0],'ts':train_data[1],'unit':train_data[2]})
-x_train = x_train.drop_duplicates()
-
-
-train_dataset = torchvision.datasets.MNIST('../data', train=True, transform=None, target_transform=None, download=True)
-test_dataset = torchvision.datasets.MNIST('../data', train=False, transform=None, target_transform=None, download=True)
-
-# standardize data
-x_train = train_dataset.data.type(dtype)/255
-x_train = x_train.reshape((x_train.shape[0],) + (1,) + x_train.shape[1:])
-x_test = test_dataset.data.type(dtype)/255
-x_test = x_test.reshape((x_test.shape[0],) + (1,) + x_test.shape[1:])
-y_train = train_dataset.targets
-y_test  = test_dataset.targets
-
-shuffle_idx_ta = torch.randperm(len(y_train))
-x_train = x_train[shuffle_idx_ta]
-y_train = y_train[shuffle_idx_ta]
-shuffle_idx_te = torch.randperm(len(y_test))
-x_test = x_test[shuffle_idx_te]
-y_test = y_test[shuffle_idx_te]
-
-# fixed subsampling
-# train: 300 samples per class -> 3000
-# test: 103 samples per class -> 1030 (a wee more than 1024)
-train_samples = 3000
-test_samples = 1030
-num_classes = 10
-index_list_train = []
-index_list_test = []
-for i in range(10):
-
-
-    index_list_train.append((y_train == i).nonzero()[:int(train_samples/num_classes)])
-    index_list_test.append((y_test == i).nonzero()[:int(test_samples/num_classes)])
-index_list_train = torch.cat(index_list_train).reshape([train_samples])
-index_list_test = torch.cat(index_list_test).reshape([test_samples])
-
-x_train = x_train[index_list_train, :]
-x_test = x_test[index_list_test, :]
-y_train = y_train[index_list_train]
-y_test = y_test[index_list_test]
 
 
 #quantization.global_beta = 1.5
@@ -179,7 +109,7 @@ delta_t = 1*ms
 T = 500*ms
 T_test = 1800*ms
 burnin = 50*ms
-batch_size = 128
+batch_size = 2
 output_neurons = 10
 
 tau_mem = torch.Tensor([5*ms, 35*ms]).to(device)
@@ -192,24 +122,24 @@ lambda2 = .1
 
 dropout_learning = nn.Dropout(p=.5)
 
-layer1 = LIFConv2dLayer(inp_shape = x_train.shape[1:], kernel_size = 7, out_channels = 16, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device).to(device)
-random_readout1 = QLinearLayerSign(np.prod(layer1.out_shape), output_neurons).to(device)
+# layer1 = LIFConv2dLayer(inp_shape = (128, 128), kernel_size = 7, out_channels = 16, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device).to(device)
+# random_readout1 = QLinearLayerSign(np.prod(layer1.out_shape), output_neurons).to(device)
 
-layer2 = LIFConv2dLayer(inp_shape = layer1.out_shape, kernel_size = 7, out_channels = 24, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 1, padding = 2, thr = thr, device = device).to(device)
-random_readout2 = QLinearLayerSign(np.prod(layer2.out_shape), output_neurons).to(device)
+# layer2 = LIFConv2dLayer(inp_shape = layer1.out_shape, kernel_size = 7, out_channels = 24, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 1, padding = 2, thr = thr, device = device).to(device)
+# random_readout2 = QLinearLayerSign(np.prod(layer2.out_shape), output_neurons).to(device)
 
-layer3 = LIFConv2dLayer(inp_shape = layer2.out_shape, kernel_size = 7, out_channels = 32, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device).to(device)
-random_readout3 = QLinearLayerSign(np.prod(layer3.out_shape), output_neurons).to(device)
+# layer3 = LIFConv2dLayer(inp_shape = layer2.out_shape, kernel_size = 7, out_channels = 32, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device).to(device)
+# random_readout3 = QLinearLayerSign(np.prod(layer3.out_shape), output_neurons).to(device)
 
-layer4 = LIFDenseLayer(in_channels = np.prod(layer3.out_shape), out_channels = output_neurons, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
+# layer4 = LIFDenseLayer(in_channels = np.prod(layer3.out_shape), out_channels = output_neurons, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
 
 log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
 nll_loss = torch.nn.NLLLoss()
 
-opt1 = torch.optim.SGD(layer1.parameters(), lr=1)
-opt2 = torch.optim.SGD(layer2.parameters(), lr=1)
-opt3 = torch.optim.SGD(layer3.parameters(), lr=1)
-opt4 = torch.optim.SGD(layer4.parameters(), lr=1)
+# opt1 = torch.optim.SGD(layer1.parameters(), lr=1)
+# opt2 = torch.optim.SGD(layer2.parameters(), lr=1)
+# opt3 = torch.optim.SGD(layer3.parameters(), lr=1)
+# opt4 = torch.optim.SGD(layer4.parameters(), lr=1)
 
 print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb))
 
@@ -226,7 +156,7 @@ for e in range(50):
     loss_hist4 = []
     start_time = time.time()
 
-    for x_local, y_local in sparse_data_generator(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, samples = train_samples, max_hertz = 50, shuffle = True, device = device):
+    for x_local, y_local in sparse_data_generator_DVS(x_train, y_train, batch_size = batch_size, nb_steps = T / ms,shuffle = True, device = device):
         class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
 
         layer1.state_init(x_local.shape[0])
