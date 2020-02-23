@@ -9,8 +9,8 @@ import numpy as np
 import pandas as pd
 import argparse
 
-import quantization
-from localQ import sparse_data_generator, smoothstep, superspike, QLinearLayerSign, LIFDenseLayer, LIFConv2dLayer
+#import quantization
+#from localQ import sparse_data_generator, smoothstep, superspike, QLinearLayerSign, LIFDenseLayer, LIFConv2dLayer
 
 
 
@@ -24,7 +24,8 @@ def sparse_data_generator_DVS(X, y, batch_size, nb_steps, shuffle, device):
     """
     number_of_batches = len(y)//batch_size
     sample_index = np.arange(len(y))
-
+    nb_steps = nb_steps -1
+    y = np.array(y)
 
     if shuffle:
         np.random.shuffle(sample_index)
@@ -33,42 +34,55 @@ def sparse_data_generator_DVS(X, y, batch_size, nb_steps, shuffle, device):
     counter = 0
     while counter<number_of_batches:
         batch_index = sample_index[batch_size*counter:batch_size*(counter+1)]
+        all_events = np.array([[],[],[],[],[]]).T
 
-        
-        #coo = [ [] for i in range(3) ]
         for bc,idx in enumerate(batch_index):
-            import pdb; pdb.set_trace()
-            start_ts = np.random.choice(np.arange(np.max(X[batch_index[idx]][:,0]) - nb_steps),1)
-            temp = X[idx][X[idx][0] >= start_ts]
-            temp = temp[temp[0] <= start_ts+500]
-
-            temp = X[X['batch'] == idx]
-
-            batch = [bc for _ in range(len(temp['ts']))]
-            coo[0].extend(batch)
-            coo[1].extend(temp['ts'].tolist())
-            coo[2].extend(temp['unit'].tolist())
+            start_ts = np.random.choice(np.arange(np.max(X[idx][:,0]) - nb_steps),1)
+            temp = X[idx][X[idx][:,0] >= start_ts]
+            temp = temp[temp[:,0] <= start_ts+nb_steps]
+            temp = np.append(np.ones((temp.shape[0], 1))*bc, temp, axis=1)
+            temp[:,1] = temp[:,1] - start_ts
+            all_events = np.append(all_events, temp, axis = 0)
 
         # to matrix
-        #sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(single_gesture[:,[True, True, True, False]].T), torch.FloatTensor(single_gesture[:,3])).to_dense()
+        all_events[:,4][all_events[:,4] == 0] = -1
+        all_events = all_events[:,[0,2,3,1,4]]
+        sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(all_events[:,[True, True, True, True, False]].T), torch.FloatTensor(all_events[:,4])).to_dense()
 
         # quick trick...
-        #sparse_matrix[sparse_matrix < 0] = -1
-        #sparse_matrix[sparse_matrix > 0] = 1
+        sparse_matrix[sparse_matrix < 0] = -1
+        sparse_matrix[sparse_matrix > 0] = 1
 
+        sparse_matrix = sparse_matrix.reshape(torch.Size([sparse_matrix.shape[0], 1, sparse_matrix.shape[1], sparse_matrix.shape[2], sparse_matrix.shape[3]]))
 
-        i = torch.LongTensor(coo)#.to(device)
-        v = torch.FloatTensor(np.ones(len(coo[0])))#.to(device)
-
-        X_batch = torch.sparse.FloatTensor(i, v, torch.Size([batch_size,300,128*128]))#.to(device)
-        y_batch = torch.tensor(labels_[batch_index])
-
+        y_batch = torch.tensor(y[batch_index])
         try:
-            yield X_batch.to(device=device), y_batch.to(device=device)
+            yield sparse_matrix.to(device=device), y_batch.to(device=device)
             counter += 1
         except StopIteration:
             return
 
+# load data
+with open('train_dvs_gesture.pickle', 'rb') as f:
+    data = pickle.load(f)
+x_train = data[0]
+y_train = data[1]
+
+# visualize
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+
+for x_local, y_local in sparse_data_generator_DVS(x_train, y_train, batch_size = 1, nb_steps = T / ms, shuffle = True, device = device):
+
+    plt.clf()
+    fig1 = plt.figure()
+
+    ims = []
+    for i in np.arange(x_local.shape[4]):
+        ims.append((plt.imshow( x_local[0,0,:,:,i]), ))
+
+    im_ani = animation.ArtistAnimation(fig1, ims, interval=1, repeat_delay=2000, blit=True)
+    plt.show()
 
 
 
@@ -87,8 +101,7 @@ dtype = torch.float
 with open('../train_dvs_gesture.pickle', 'rb') as f:
     data = pickle.load(f)
 x_train = data[0]
-y_train = data[0]
-
+y_train = data[1]
 
 
 #quantization.global_beta = 1.5
@@ -109,7 +122,7 @@ delta_t = 1*ms
 T = 500*ms
 T_test = 1800*ms
 burnin = 50*ms
-batch_size = 2
+batch_size = 2 # 72
 output_neurons = 10
 
 tau_mem = torch.Tensor([5*ms, 35*ms]).to(device)
@@ -156,7 +169,8 @@ for e in range(50):
     loss_hist4 = []
     start_time = time.time()
 
-    for x_local, y_local in sparse_data_generator_DVS(x_train, y_train, batch_size = batch_size, nb_steps = T / ms,shuffle = True, device = device):
+    for x_local, y_local in sparse_data_generator_DVS(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = True, device = device):
+        import pdb; pdb.set_trace()
         class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
 
         layer1.state_init(x_local.shape[0])
@@ -247,6 +261,5 @@ for e in range(50):
 results = {'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer2':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer3':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer4':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'test_acc': test_acc, 'train_acc': train_acc, 'loss':[loss_hist, loss_hist2, loss_hist3, loss_hist4], 'train_idx':shuffle_idx_ta, 'test_idx':shuffle_idx_te}
 with open(args['dir'] + '/hello.pkl', 'wb') as f:
     pickle.dump(results, f)
-
 
 

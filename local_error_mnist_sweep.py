@@ -114,7 +114,6 @@ def run_main(xta, xte, yta, yte, resf_name, bit_change):
 
         for x_local, y_local in sparse_data_generator(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, samples = train_samples, max_hertz = 50, shuffle = True, device = device):
             class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
-
             layer1.state_init(x_local.shape[0])
             layer2.state_init(x_local.shape[0])
             layer3.state_init(x_local.shape[0])

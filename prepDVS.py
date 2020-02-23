@@ -83,16 +83,16 @@ def read_aedat31(filename, labels_f, test_set = False):
     return gestures_full, labels_full
 
 
-gestures_full = []
-labels_full = []
-with open('trials_to_train.txt') as fp:
-    for cnt, line in enumerate(fp):
-        gestures_temp, labels_temp = read_aedat31(line.split(".")[0] + ".aedat", line.split(".")[0] + "_labels.csv")
-        gestures_full += gestures_temp
-        labels_full += labels_temp
+# gestures_full = []
+# labels_full = []
+# with open('trials_to_train.txt') as fp:
+#     for cnt, line in enumerate(fp):
+#         gestures_temp, labels_temp = read_aedat31(line.split(".")[0] + ".aedat", line.split(".")[0] + "_labels.csv")
+#         gestures_full += gestures_temp
+#         labels_full += labels_temp
 
-with open('train_dvs_gesture.pickle', 'wb') as handle:
-    pickle.dump((gestures_full, labels_full), handle)
+# with open('train_dvs_gesture.pickle', 'wb') as handle:
+#     pickle.dump((gestures_full, labels_full), handle)
 
 
 
@@ -127,5 +127,5 @@ with open('test_dvs_gesture.pickle', 'wb') as handle:
 #                                    blit=True)
 # plt.show()
 
-# #im_ani.save('gesture.mp4', metadata={'artist':'Clemens'})
+#im_ani.save('gesture.mp4', metadata={'artist':'Clemens'})
 
