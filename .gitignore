@@ -2,3 +2,5 @@ __pycache__/*
 results/*
 .DS_Store
 .README.md.icloud
+data/train_dvs_gesture.pickle
+data/test_dvs_gesture.pickle
