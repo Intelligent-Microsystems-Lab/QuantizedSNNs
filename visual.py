@@ -221,3 +221,102 @@ def aux_plot_i_u_s(inputs, rec_u, rec_s, batches, filename = ''):
     else:
         print('Bad number of batches to display')
 
+
+
+# random stuff
+
+# import pickle
+# import matplotlib.pyplot as plt
+# import numpy as np
+
+
+# # # Quant Check
+# # with open('quant_check.pkl', 'rb') as f:
+# #     data = pickle.load(f)
+
+# # for i in ['W', 'P', 'Q', 'U', 'E', 'G']:
+# #   plt.clf()
+# #   plt.title(i)
+# #   plt.scatter(x = np.arange(len(data[i][1]) )[(data[i][1] != 0).nonzero()], y = data[i][1][(data[i][1] != 0).nonzero()])
+# #   plt.show()
+
+
+# # Quant Check
+
+# max_test = []
+# stddev = []
+# for i in [2,3,4,5,6,7,8]:
+
+#     with open('eb'+str(i)+'.pkl', 'rb') as f:
+#         data = pickle.load(f)
+#     max_test.append(max(data['test_acc']))
+#     stddev.append(np.std(data['test_acc']))
+
+
+
+# plt.clf()
+# plt.errorbar([2,3,4,5,6,7,8], max_test, stddev, label="test")
+# plt.legend()
+# plt.title('E Sweep W8 P8 Q8 U8 E8 G8 R16')
+# plt.show()
+
+
+# # Check whether a GPU is available
+# if torch.cuda.is_available():
+#     device = torch.device("cuda")     
+# else:
+#     device = torch.device("cpu")
+# dtype = torch.float
+
+# #visual check
+# ms = 1e-3
+# delta_t = 1*ms
+
+# T = 500*ms
+# T_test = 1800*ms
+# burnin = 50*ms
+# batch_size = 2 # 72
+# output_neurons = 10
+
+# # load data
+# with open('data/small_train_dvs_gesture.pickle', 'rb') as f:
+#     data = pickle.load(f)
+# x_train = data[0]
+# y_train = data[1]
+
+# with open('data/small_test_dvs_gesture.pickle', 'rb') as f:
+#     data = pickle.load(f)
+# x_test = data[0]
+# y_test = data[1]
+
+
+# # visualize
+# import matplotlib.pyplot as plt
+# import matplotlib.animation as animation
+
+# for x_local, y_local in sparse_data_generator_DVS(x_train, y_train, batch_size = 1, nb_steps = T / ms, shuffle = True, device = device):
+
+#     plt.clf()
+#     fig1 = plt.figure()
+
+#     ims = []
+#     for i in np.arange(x_local.shape[4]):
+#         ims.append((plt.imshow( x_local[0,0,:,:,i]), ))
+
+#     im_ani = animation.ArtistAnimation(fig1, ims, interval=1, repeat_delay=2000, blit=True)
+#     plt.show()
+
+# for x_local, y_local in sparse_data_generator_DVS(x_test, y_test, batch_size = 1, nb_steps = T / ms, shuffle = True, device = device):
+
+#     plt.clf()
+#     fig1 = plt.figure()
+
+#     ims = []
+#     for i in np.arange(x_local.shape[4]):
+#         ims.append((plt.imshow( x_local[0,0,:,:,i]), ))
+
+#     im_ani = animation.ArtistAnimation(fig1, ims, interval=1, repeat_delay=2000, blit=True)
+#     plt.show()
+
+
+

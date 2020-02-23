@@ -15,6 +15,54 @@ def clee_spikes(T, rates):
     spikes[np.random.binomial(1, (1000. - rates.flatten())/1000, size=(T, np.prod(rates.shape))).astype('bool')] = 0
     return spikes.T.reshape((rates.shape + (T,)))
 
+
+def sparse_data_generator_DVS(X, y, batch_size, nb_steps, shuffle, device):
+    """ This generator takes datasets in analog format and generates spiking network input as sparse tensors. 
+
+    Args:
+        X: The data ( sample x event x 2 ) the last dim holds (time,neuron) tuples
+        y: The labels
+    """
+    number_of_batches = len(y)//batch_size
+    sample_index = np.arange(len(y))
+    nb_steps = nb_steps -1
+    y = np.array(y)
+
+    if shuffle:
+        np.random.shuffle(sample_index)
+
+    total_batch_count = 0
+    counter = 0
+    while counter<number_of_batches:
+        batch_index = sample_index[batch_size*counter:batch_size*(counter+1)]
+        all_events = np.array([[],[],[],[],[]]).T
+
+        for bc,idx in enumerate(batch_index):
+            start_ts = np.random.choice(np.arange(np.max(X[idx][:,0]) - nb_steps),1)
+            temp = X[idx][X[idx][:,0] >= start_ts]
+            temp = temp[temp[:,0] <= start_ts+nb_steps]
+            temp = np.append(np.ones((temp.shape[0], 1))*bc, temp, axis=1)
+            temp[:,1] = temp[:,1] - start_ts
+            all_events = np.append(all_events, temp, axis = 0)
+
+        # to matrix
+        all_events[:,4][all_events[:,4] == 0] = -1
+        all_events = all_events[:,[0,2,3,1,4]]
+        sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(all_events[:,[True, True, True, True, False]].T), torch.FloatTensor(all_events[:,4])).to_dense()
+
+        # quick trick...
+        sparse_matrix[sparse_matrix < 0] = -1
+        sparse_matrix[sparse_matrix > 0] = 1
+
+        sparse_matrix = sparse_matrix.reshape(torch.Size([sparse_matrix.shape[0], 1, sparse_matrix.shape[1], sparse_matrix.shape[2], sparse_matrix.shape[3]]))
+
+        y_batch = torch.tensor(y[batch_index])
+        try:
+            yield sparse_matrix.to(device=device), y_batch.to(device=device)
+            counter += 1
+        except StopIteration:
+            return
+
 def sparse_data_generator(X, y, batch_size, nb_steps, samples, max_hertz, shuffle=True, device=torch.device("cpu")):
     """ This generator takes datasets in analog format and generates spiking network input as sparse tensors. 
 
