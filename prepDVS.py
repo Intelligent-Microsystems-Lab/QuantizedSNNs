@@ -83,6 +83,7 @@ def read_aedat31(filename, labels_f, test_set = False):
     return gestures_full, labels_full
 
 
+# full set
 # gestures_full = []
 # labels_full = []
 # with open('trials_to_train.txt') as fp:
@@ -97,6 +98,33 @@ def read_aedat31(filename, labels_f, test_set = False):
 
 
 
+# gestures_full = []
+# labels_full = []
+# with open('trials_to_test.txt') as fp:
+#     for cnt, line in enumerate(fp):
+#         gestures_temp, labels_temp = read_aedat31(line.split(".")[0] + ".aedat", line.split(".")[0] + "_labels.csv", test_set = True)
+#         gestures_full += gestures_temp
+#         labels_full += labels_temp
+
+# with open('test_dvs_gesture.pickle', 'wb') as handle:
+#     pickle.dump((gestures_full, labels_full), handle)
+
+
+gestures_full = []
+labels_full = []
+with open('trials_to_train.txt') as fp:
+    for cnt, line in enumerate(fp):
+        gestures_temp, labels_temp = read_aedat31(line.split(".")[0] + ".aedat", line.split(".")[0] + "_labels.csv")
+        gestures_full += gestures_temp
+        labels_full += labels_temp
+        break
+
+with open('small_train_dvs_gesture.pickle', 'wb') as handle:
+    pickle.dump((gestures_full, labels_full), handle)
+
+
+
+
 gestures_full = []
 labels_full = []
 with open('trials_to_test.txt') as fp:
@@ -104,10 +132,10 @@ with open('trials_to_test.txt') as fp:
         gestures_temp, labels_temp = read_aedat31(line.split(".")[0] + ".aedat", line.split(".")[0] + "_labels.csv", test_set = True)
         gestures_full += gestures_temp
         labels_full += labels_temp
+        break
 
-with open('test_dvs_gesture.pickle', 'wb') as handle:
+with open('small_test_dvs_gesture.pickle', 'wb') as handle:
     pickle.dump((gestures_full, labels_full), handle)
-
 
 
 
