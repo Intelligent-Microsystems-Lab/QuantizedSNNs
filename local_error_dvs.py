@@ -9,8 +9,8 @@ import numpy as np
 import pandas as pd
 import argparse
 
-#import quantization
-#from localQ import sparse_data_generator, smoothstep, superspike, QLinearLayerSign, LIFDenseLayer, LIFConv2dLayer
+import quantization
+from localQ import sparse_data_generator, smoothstep, superspike, QLinearLayerSign, LIFDenseLayer, LIFConv2dLayer
 
 
 
@@ -63,7 +63,7 @@ def sparse_data_generator_DVS(X, y, batch_size, nb_steps, shuffle, device):
             return
 
 # load data
-with open('train_dvs_gesture.pickle', 'rb') as f:
+with open('data/train_dvs_gesture.pickle', 'rb') as f:
     data = pickle.load(f)
 x_train = data[0]
 y_train = data[1]
@@ -98,7 +98,7 @@ else:
 dtype = torch.float
 
 # load data
-with open('../train_dvs_gesture.pickle', 'rb') as f:
+with open('../small_train_dvs_gesture.pickle', 'rb') as f:
     data = pickle.load(f)
 x_train = data[0]
 y_train = data[1]
