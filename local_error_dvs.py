@@ -63,14 +63,32 @@ def sparse_data_generator_DVS(X, y, batch_size, nb_steps, shuffle, device):
             return
 
 # load data
-with open('data/train_dvs_gesture.pickle', 'rb') as f:
+with open('../small_train_dvs_gesture.pickle', 'rb') as f:
     data = pickle.load(f)
 x_train = data[0]
 y_train = data[1]
 
+with open('../small_test_dvs_gesture.pickle', 'rb') as f:
+    data = pickle.load(f)
+x_test = data[0]
+y_test = data[1]
+
+
 # visualize
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+
+for x_local, y_local in sparse_data_generator_DVS(x_train, y_train, batch_size = 1, nb_steps = T / ms, shuffle = True, device = device):
+
+    plt.clf()
+    fig1 = plt.figure()
+
+    ims = []
+    for i in np.arange(x_local.shape[4]):
+        ims.append((plt.imshow( x_local[0,0,:,:,i]), ))
+
+    im_ani = animation.ArtistAnimation(fig1, ims, interval=1, repeat_delay=2000, blit=True)
+    plt.show()
 
 for x_local, y_local in sparse_data_generator_DVS(x_train, y_train, batch_size = 1, nb_steps = T / ms, shuffle = True, device = device):
 
@@ -103,6 +121,10 @@ with open('../small_train_dvs_gesture.pickle', 'rb') as f:
 x_train = data[0]
 y_train = data[1]
 
+with open('../small_test_dvs_gesture.pickle', 'rb') as f:
+    data = pickle.load(f)
+x_test = data[0]
+y_test = data[1]
 
 #quantization.global_beta = 1.5
 quantization.global_wb = 3
@@ -170,7 +192,6 @@ for e in range(50):
     start_time = time.time()
 
     for x_local, y_local in sparse_data_generator_DVS(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = True, device = device):
-        import pdb; pdb.set_trace()
         class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
 
         layer1.state_init(x_local.shape[0])
@@ -232,7 +253,7 @@ for e in range(50):
 
 
     # compute test accuracy
-    for x_local, y_local in sparse_data_generator(x_test, y_test, batch_size = batch_size, nb_steps = T_test/ms, samples = test_samples, max_hertz = 50, shuffle = True, device = device):
+    for x_local, y_local in sparse_data_generator_DVS(x_test, y_test, batch_size = batch_size, nb_steps = T_test / ms, shuffle = True, device = device):
         class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
         layer1.state_init(x_local.shape[0])
         layer2.state_init(x_local.shape[0])

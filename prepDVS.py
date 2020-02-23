@@ -110,21 +110,21 @@ def read_aedat31(filename, labels_f, test_set = False):
 #     pickle.dump((gestures_full, labels_full), handle)
 
 
+# gestures_full = []
+# labels_full = []
+# gestures_temp, labels_temp = read_aedat31("user01_led.aedat", "user01_led_labels.csv", test_set = True)
+# gestures_full += gestures_temp
+# labels_full += labels_temp
+
+# with open('small_train_dvs_gesture.pickle', 'wb') as handle:
+#     pickle.dump((gestures_full, labels_full), handle)
+
+
+
+
 gestures_full = []
 labels_full = []
-gestures_temp, labels_temp = read_aedat31("user01_led.aedat", "user01_led_labels.csv", test_set = True)
-gestures_full += gestures_temp
-labels_full += labels_temp
-
-with open('small_train_dvs_gesture.pickle', 'wb') as handle:
-    pickle.dump((gestures_full, labels_full), handle)
-
-
-
-
-gestures_full = []
-labels_full = []
-gestures_temp, labels_temp = read_aedat31("user29_fluorescent_led.aedat", "user29_fluorescent_led.aedat_labels.csv", test_set = True)
+gestures_temp, labels_temp = read_aedat31("user29_fluorescent_led.aedat", "user29_fluorescent_led_labels.csv", test_set = True)
 gestures_full += gestures_temp
 labels_full += labels_temp
 
