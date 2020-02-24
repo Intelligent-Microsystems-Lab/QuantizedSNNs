@@ -30,7 +30,7 @@ with open('data/small_train_dvs_gesture.pickle', 'rb') as f:
 x_train = data[0]
 y_train = data[1]
 
-with open('data/small_test_dvs_gesture.pickle', 'rb') as f:
+with open('data/test_dvs_gesture.pickle', 'rb') as f:
     data = pickle.load(f)
 x_test = data[0]
 y_test = data[1]
@@ -53,7 +53,7 @@ delta_t = 1*ms
 T = 500*ms
 T_test = 1800*ms
 burnin = 50*ms
-batch_size = 2 # 72
+batch_size = 72
 output_neurons = 11
 
 tau_mem = torch.Tensor([20*ms]).to(device)#torch.Tensor([5*ms, 35*ms]).to(device)
@@ -173,6 +173,7 @@ for e in range(50):
             opt3.step()
             opt3.zero_grad()
 
+            # flattening for spiking readout layer
             out_spikes3 = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
             out_spikes4 = layer4.forward(out_spikes3)
             y_log_p4 = log_softmax_fn(smoothstep(layer4.U))
