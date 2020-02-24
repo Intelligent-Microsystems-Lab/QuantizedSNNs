@@ -35,8 +35,8 @@ with open('data/small_test_dvs_gesture.pickle', 'rb') as f:
 x_test = data[0]
 y_test = data[1]
 
-#quantization.global_beta = 1.5
-quantization.global_wb = 3
+# set quant level
+quantization.global_wb = 8
 quantization.global_ub = 8
 quantization.global_qb = 8
 quantization.global_pb = 8
@@ -45,8 +45,8 @@ quantization.global_eb = 8
 quantization.global_rb = 16
 quantization.global_lr = 1
 quantization.global_beta = 1.5 #quantization.step_d(quantization.global_wb)-.5
-# effect of global beta 
 
+# set parameters
 ms = 1e-3
 delta_t = 1*ms
 
@@ -64,17 +64,19 @@ thr = torch.Tensor([.4]).to(device)
 lambda1 = .2 
 lambda2 = .1
 
+
+# construct layers
 dropout_learning = nn.Dropout(p=.5)
 
 downsample = nn.AvgPool2d(kernel_size = 4, stride = 4)
 
-layer1 = LIFConv2dLayer(inp_shape = (2, 32, 32), kernel_size = 7, out_channels = 16, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device).to(device)
+layer1 = LIFConv2dLayer(inp_shape = (2, 32, 32), kernel_size = 7, out_channels = 64, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device).to(device)
 random_readout1 = QLinearLayerSign(np.prod(layer1.out_shape), output_neurons).to(device)
 
-layer2 = LIFConv2dLayer(inp_shape = layer1.out_shape, kernel_size = 7, out_channels = 24, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 1, padding = 2, thr = thr, device = device).to(device)
+layer2 = LIFConv2dLayer(inp_shape = layer1.out_shape, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 1, padding = 2, thr = thr, device = device).to(device)
 random_readout2 = QLinearLayerSign(np.prod(layer2.out_shape), output_neurons).to(device)
 
-layer3 = LIFConv2dLayer(inp_shape = layer2.out_shape, kernel_size = 7, out_channels = 32, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device).to(device)
+layer3 = LIFConv2dLayer(inp_shape = layer2.out_shape, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device).to(device)
 random_readout3 = QLinearLayerSign(np.prod(layer3.out_shape), output_neurons).to(device)
 
 layer4 = LIFDenseLayer(in_channels = np.prod(layer3.out_shape), out_channels = output_neurons, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
@@ -82,15 +84,17 @@ layer4 = LIFDenseLayer(in_channels = np.prod(layer3.out_shape), out_channels = o
 log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
 nll_loss = torch.nn.NLLLoss()
 
+# initlialize optimizier
 opt1 = torch.optim.SGD(layer1.parameters(), lr=1)
 opt2 = torch.optim.SGD(layer2.parameters(), lr=1)
 opt3 = torch.optim.SGD(layer3.parameters(), lr=1)
 opt4 = torch.optim.SGD(layer4.parameters(), lr=1)
 
-print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb))
-
 train_acc = []
 test_acc = []
+
+print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb))
+
 for e in range(50):
     correct = 0
     total = 0
@@ -103,6 +107,7 @@ for e in range(50):
     start_time = time.time()
 
     for x_local, y_local in sparse_data_generator_DVS(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = True, device = device):
+        y_local = y_local -1
         class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
 
         layer1.state_init(x_local.shape[0])
@@ -146,7 +151,6 @@ for e in range(50):
 
             out_spikes1 = layer1.forward(down_spikes)
             rreadout1 = random_readout1(dropout_learning(smoothstep(layer1.U.reshape([x_local.shape[0], np.prod(layer1.out_shape)]))))
-            import pdb; pdb.set_trace()
             y_log_p1 = log_softmax_fn(rreadout1)
             loss_t1 = nll_loss(y_log_p1, y_local) + lambda1 * F.relu(layer1.U+.01).mean() + lambda2 * F.relu(thr-layer1.U).mean()
             loss_t1.backward()
@@ -188,8 +192,9 @@ for e in range(50):
     train_time = time.time()
 
 
-    # compute test accuracy
-    for x_local, y_local in sparse_data_generator_DVS(x_test, y_test, batch_size = batch_size, nb_steps = T_test / ms, shuffle = True, device = device):
+    # test accuracy
+    for x_local, y_local in sparse_data_generator_DVS(x_test, y_test, batch_size = batch_size, nb_steps = T_test / ms, shuffle = True, device = device, test = True):
+        y_local = y_local -1
         class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
         layer1.state_init(x_local.shape[0])
         layer2.state_init(x_local.shape[0])
@@ -210,7 +215,7 @@ for e in range(50):
             down_spikes[mask2] = 1
 
             # dropout kept active -> decolle note
-            out_spikes1 = dropout_learning(layer1.forward(x_local[:,:,:,:,t])) 
+            out_spikes1 = dropout_learning(layer1.forward(down_spikes)) 
             out_spikes2 = dropout_learning(layer2.forward(out_spikes1)) 
             out_spikes3 = dropout_learning(layer3.forward(out_spikes2))
             out_spikes3 = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
