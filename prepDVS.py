@@ -58,7 +58,6 @@ def read_aedat31(filename, labels_f, test_set = False):
     stim = np.array([allTs, x, y, polarity]).T#.astype(int)
 
     for i in labels:
-        import pdb; pdb.set_trace()
 
         # chop things right
         single_gesture = stim[stim[:, 0] >= i[1]]

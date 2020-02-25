@@ -36,13 +36,13 @@ x_test = data[0]
 y_test = data[1]
 
 # set quant level
-quantization.global_wb = 16
-quantization.global_ub = 16
-quantization.global_qb = 16
-quantization.global_pb = 16
-quantization.global_gb = 16
-quantization.global_eb = 16
-quantization.global_rb = 16
+quantization.global_wb = 8
+quantization.global_ub = 8
+quantization.global_qb = 8
+quantization.global_pb = 8
+quantization.global_gb = 8
+quantization.global_eb = 8
+quantization.global_rb = 8
 quantization.global_lr = 1
 quantization.global_beta = 1.5 #quantization.step_d(quantization.global_wb)-.5
 
@@ -172,7 +172,7 @@ for e in range(50):
             rreadout1 = random_readout1(dropout_learning(smoothstep(layer1.U.reshape([x_local.shape[0], np.prod(layer1.out_shape)]))) * dropout_p)
             _, predicted = torch.max(rreadout1.data, 1)
             correct1_train += (predicted == y_local).sum().item()
-            gen_loss += sl1_loss(rreadout1 / rreadout1.abs().max(), y_onehot) #+ lambda1 * F.relu(layer1.U+.01).mean() + lambda2 * F.relu(thr-layer1.U).mean()
+            gen_loss += sl1_loss(((rreadout1 / rreadout1.abs().max())+1)*.5, y_onehot) #+ lambda1 * F.relu(layer1.U+.01).mean() + lambda2 * F.relu(thr-layer1.U).mean()
             #loss_t1.backward()
             #opt1.step()
             #opt1.zero_grad()
@@ -181,7 +181,7 @@ for e in range(50):
             rreadout2 = random_readout2(dropout_learning(smoothstep(layer2.U.reshape([x_local.shape[0], np.prod(layer2.out_shape)]))) * dropout_p)
             _, predicted = torch.max(rreadout2.data, 1)
             correct2_train += (predicted == y_local).sum().item()
-            gen_loss +=  sl1_loss(rreadout2 / rreadout2.abs().max(), y_onehot) #+ lambda1 * F.relu(layer2.U+.01).mean() + lambda2 * F.relu(thr-layer2.U).mean()
+            gen_loss +=  sl1_loss( ((rreadout2 / rreadout2.abs().max())+1)*.5, y_onehot) #+ lambda1 * F.relu(layer2.U+.01).mean() + lambda2 * F.relu(thr-layer2.U).mean()
             #loss_t2.backward()
             #opt2.step()
             #opt2.zero_grad()
@@ -190,7 +190,7 @@ for e in range(50):
             rreadout3 = random_readout3(dropout_learning(smoothstep(layer3.U.reshape([x_local.shape[0], np.prod(layer3.out_shape)]))) * dropout_p)
             _, predicted = torch.max(rreadout1.data, 1)
             correct3_train += (predicted == y_local).sum().item()
-            gen_loss +=  sl1_loss(rreadout3 / rreadout3.abs().max(), y_onehot) #+ lambda1 * F.relu(layer3.U+.01).mean() + lambda2 * F.relu(thr-layer3.U).mean()
+            gen_loss +=  sl1_loss( ((rreadout3 / rreadout3.abs().max())+1)*.5, y_onehot) #+ lambda1 * F.relu(layer3.U+.01).mean() + lambda2 * F.relu(thr-layer3.U).mean()
             #loss_t3.backward()
             #opt3.step()
             #opt3.zero_grad()
