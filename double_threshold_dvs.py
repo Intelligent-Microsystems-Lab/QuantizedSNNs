@@ -432,3 +432,5 @@ with open(args['dir'] + '/hello.pkl', 'wb') as f:
 
 
 #'train_idx':shuffle_idx_ta, 'test_idx':shuffle_idx_te
+
+#test
