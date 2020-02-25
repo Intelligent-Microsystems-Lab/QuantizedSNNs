@@ -7,6 +7,7 @@ from matplotlib.gridspec import GridSpec
 import seaborn as sns
 
 import torch
+# test
 
 def mnist_train_curve(loss_train, loss_test, train_acc, test_acc, fig_title, file_name):
     
