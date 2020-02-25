@@ -99,7 +99,7 @@ test_acc = []
 
 print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb))
 
-for e in range(2):
+for e in range(50):
     correct = 0
     total = 0
     tcorrect = 0
@@ -273,7 +273,7 @@ for e in range(2):
 
 
 # saving results/weights
-results = {'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer2':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer3':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer4':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'loss':[loss_hist], 'train_idx':shuffle_idx_ta, 'test_idx':shuffle_idx_te} # 'test_acc': test_acc, 'train_acc': train_acc,
+results = {'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer2':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer3':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer4':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'loss':[loss_hist]} # 'test_acc': test_acc, 'train_acc': train_acc, , 'train_idx':shuffle_idx_ta, 'test_idx':shuffle_idx_te
 with open(args['dir'] + '/hello.pkl', 'wb') as f:
     pickle.dump(results, f)
 
