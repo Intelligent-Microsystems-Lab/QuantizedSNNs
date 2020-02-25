@@ -10,7 +10,7 @@ import pandas as pd
 import argparse
 
 import quantization
-from localQ import sparse_data_generator_DVS, QLinearLayerSign, QSConv2dFunctional
+from localQ import sparse_data_generator_DVS, QLinearLayerSign, QSConv2dFunctional, QSLinearFunctional
 
 
 class DTNSmoothStep(torch.autograd.Function):
