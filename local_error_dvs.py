@@ -86,7 +86,7 @@ random_readout3 = QLinearLayerSign(np.prod(layer3.out_shape), output_neurons).to
 #nll_loss = torch.nn.NLLLoss()
 sl1_loss = torch.nn.SmoothL1Loss()
 
-all_parameters = list(layer1.parameters()) + list(layer2.parameters()) + list(layer3.parameters()) + list(layer4.parameters())
+all_parameters = list(layer1.parameters()) + list(layer2.parameters()) + list(layer3.parameters())
 
 # initlialize optimizier
 opt1 = torch.optim.SGD(all_parameters, lr=1)
