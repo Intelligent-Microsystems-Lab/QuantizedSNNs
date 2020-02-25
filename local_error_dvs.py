@@ -25,12 +25,12 @@ else:
 dtype = torch.float
 
 # load data
-with open('data/small_train_dvs_gesture.pickle', 'rb') as f:
+with open('data/train_dvs_gesture.pickle', 'rb') as f:
     data = pickle.load(f)
 x_train = data[0]
 y_train = data[1]
 
-with open('data/small_test_dvs_gesture.pickle', 'rb') as f:
+with open('data/test_dvs_gesture.pickle', 'rb') as f:
     data = pickle.load(f)
 x_test = data[0]
 y_test = data[1]
@@ -53,7 +53,7 @@ delta_t = 1*ms
 T = 500*ms
 T_test = 1800*ms
 burnin = 50*ms
-batch_size = 2 #72
+batch_size = 72
 output_neurons = 11
 
 tau_mem = torch.Tensor([20*ms]).to(device)#torch.Tensor([5*ms, 35*ms]).to(device)
