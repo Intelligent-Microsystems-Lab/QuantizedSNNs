@@ -58,8 +58,7 @@ def read_aedat31(filename, labels_f, test_set = False):
     stim = np.array([allTs, x, y, polarity]).T#.astype(int)
 
     for i in labels:
-        # record label
-        labels_full.append(i[0])
+        import pdb; pdb.set_trace()
 
         # chop things right
         single_gesture = stim[stim[:, 0] >= i[1]]
@@ -72,14 +71,12 @@ def read_aedat31(filename, labels_f, test_set = False):
         if test_set:
             single_gesture = single_gesture[single_gesture[:,0] <= 1800]
 
-        # to matrix
-        #sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(single_gesture[:,[True, True, True, False]].T), torch.FloatTensor(single_gesture[:,3])).to_dense()
-
-        # quick trick...
-        #sparse_matrix[sparse_matrix < 0] = -1
-        #sparse_matrix[sparse_matrix > 0] = 1
-
-        gestures_full.append(single_gesture)
+        if i[0] in labels_full:
+            gestures_full[labels_full.index(i[0])] = np.vstack((gestures_full[labels_full.index(i[0])], single_gesture))
+        else:
+            gestures_full.append(single_gesture)
+            # record label
+            labels_full.append(i[0])
     return gestures_full, labels_full
 
 
@@ -114,6 +111,9 @@ with open('train_dvs_gesture.pickle', 'wb') as handle:
 
 # with open('test_dvs_gesture.pickle', 'wb') as handle:
 #     pickle.dump((gestures_full, labels_full), handle)
+
+
+
 
 
 # gestures_full = []
