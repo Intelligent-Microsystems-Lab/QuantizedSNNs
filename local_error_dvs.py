@@ -54,7 +54,7 @@ delta_t = 1*ms
 T = 500*ms
 T_test = 1800*ms
 burnin = 50*ms
-batch_size = 5#72
+batch_size = 1#72
 output_neurons = 11
 
 tau_mem = torch.Tensor([20*ms]).to(device)#torch.Tensor([5*ms, 35*ms]).to(device)
@@ -129,7 +129,7 @@ def save_vid_of_input(x_temp, y_temp):
     im_ani = animation.ArtistAnimation(fig1, ims, interval=1, repeat_delay=2000, blit=True)
     im_ani.save('../dvs_gest_{date:%Y-%m-%d_%H:%M:%S}.mp4'.format( date=datetime.datetime.now()))
 
-for e in range(50):
+for e in range(2):
     correct = 0
     total = 0
     tcorrect = 0
@@ -152,10 +152,10 @@ for e in range(50):
 
     rec_video = True
     for x_local, y_local in sparse_data_generator_DVS(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = True, device = device):
-        if rec_video:
-            #record video of inputs
-            save_vid_of_input(x_local, y_local)
-            rec_video = False
+        #if rec_video:
+        #    #record video of inputs
+        save_vid_of_input(x_local, y_local)
+        #    rec_video = False
 
 
         y_local = y_local -1
