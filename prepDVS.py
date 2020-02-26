@@ -79,6 +79,9 @@ def read_aedat31(filename, labels_f, test_set = False):
     return gestures_full, labels_full
 
 
+# user02_lab_labels
+# user12_fluorescent_led_labels
+
 # full set
 gestures_full = []
 labels_full = []
