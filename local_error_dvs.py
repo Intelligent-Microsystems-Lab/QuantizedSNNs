@@ -54,7 +54,7 @@ delta_t = 1*ms
 T = 500*ms
 T_test = 1800*ms
 burnin = 50*ms
-batch_size = 2#72
+batch_size = 5#72
 output_neurons = 11
 
 tau_mem = torch.Tensor([20*ms]).to(device)#torch.Tensor([5*ms, 35*ms]).to(device)
