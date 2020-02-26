@@ -8,6 +8,7 @@ import math
 import numpy as np
 import pandas as pd
 import argparse
+import datetime
 
 import quantization
 from localQ import sparse_data_generator_DVS, smoothstep, superspike, QLinearLayerSign, LIFDenseLayer, LIFConv2dLayer
@@ -25,12 +26,12 @@ else:
 dtype = torch.float
 
 # load data
-with open('data/train_dvs_gesture.pickle', 'rb') as f:
+with open('data/small_train_dvs_gesture.pickle', 'rb') as f:
     data = pickle.load(f)
 x_train = data[0]
 y_train = data[1]
 
-with open('data/test_dvs_gesture.pickle', 'rb') as f:
+with open('data/small_test_dvs_gesture.pickle', 'rb') as f:
     data = pickle.load(f)
 x_test = data[0]
 y_test = data[1]
@@ -53,7 +54,7 @@ delta_t = 1*ms
 T = 500*ms
 T_test = 1800*ms
 burnin = 50*ms
-batch_size = 72
+batch_size = 2#72
 output_neurons = 11
 
 tau_mem = torch.Tensor([20*ms]).to(device)#torch.Tensor([5*ms, 35*ms]).to(device)
@@ -80,57 +81,94 @@ random_readout2 = QLinearLayerSign(np.prod(layer2.out_shape), output_neurons).to
 layer3 = LIFConv2dLayer(inp_shape = layer2.out_shape, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device).to(device)
 random_readout3 = QLinearLayerSign(np.prod(layer3.out_shape), output_neurons).to(device)
 
-#layer4 = LIFDenseLayer(in_channels = np.prod(layer3.out_shape), out_channels = output_neurons, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
+layer4 = LIFDenseLayer(in_channels = np.prod(layer3.out_shape), out_channels = output_neurons, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
 
 #log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
 #nll_loss = torch.nn.NLLLoss()
 sl1_loss = torch.nn.SmoothL1Loss()
 
-all_parameters = list(layer1.parameters()) + list(layer2.parameters()) + list(layer3.parameters())
+all_parameters = list(layer1.parameters()) + list(layer2.parameters()) + list(layer3.parameters()) + list(layer4.parameters())
 
 # initlialize optimizier
-opt1 = torch.optim.SGD(all_parameters, lr=1)
-#opt2 = torch.optim.SGD(layer2.parameters(), lr=1)
-#opt3 = torch.optim.SGD(layer3.parameters(), lr=1)
-#opt4 = torch.optim.SGD(layer4.parameters(), lr=1)
+opt = torch.optim.SGD(all_parameters, lr=1)
 
 train_acc = []
 test_acc = []
 
+
 print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb))
+
+def save_vid_of_input(x_temp, y_temp):
+    # # visualize
+    import matplotlib.pyplot as plt
+    import matplotlib.animation as animation
+
+    gest_mapping = {
+        1:"hand_clapping",
+        2:"right_hand_wave",
+        3:"left_hand_wave",
+        4:"right_arm_clockwise",
+        5:"right_arm_counter_clockwise",
+        6:"left_arm_clockwise",
+        7:"left_arm_counter_clockwise",
+        8:"arm_roll",
+        9:"air_drums",
+        10:"air_guitar",
+        11:"other_gestures"
+    }
+
+
+    plt.clf()
+    fig1 = plt.figure()
+
+    ims = []
+    for j in np.arange(x_local.shape[0]):
+        for i in np.arange(x_local.shape[4]):
+            ims.append((plt.imshow( x_local[j,0,:,:,i].cpu()), plt.title(gest_mapping[y_temp[j].item()]), ))
+            
+    im_ani = animation.ArtistAnimation(fig1, ims, interval=1, repeat_delay=2000, blit=True)
+    im_ani.save('../dvs_gest_{date:%Y-%m-%d_%H:%M:%S}.mp4'.format( date=datetime.datetime.now()))
 
 for e in range(50):
     correct = 0
     total = 0
     tcorrect = 0
     ttotal = 0
-    loss_hist = []
-    #loss_hist2 = []
-    #loss_hist3 = []
-    #loss_hist4 = []
+
     correct1_train = 0 # note over all time steps now...
     correct2_train = 0
     correct3_train = 0
+    correct4_train = 0
     total_train = 0
     correct1_test = 0
     correct2_test = 0
     correct3_test = 0
+    correct4_test = 0
     total_test = 0
+    loss_gen = 0
+    loss_hist = []
+
     start_time = time.time()
 
+    rec_video = True
     for x_local, y_local in sparse_data_generator_DVS(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = True, device = device):
+        if rec_video:
+            #record video of inputs
+            save_vid_of_input(x_local, y_local)
+            rec_video = False
+
+
         y_local = y_local -1
         y_onehot = torch.Tensor(len(y_local), output_neurons).to(device)
         y_onehot.zero_()
         y_onehot.scatter_(1, y_local.reshape([y_local.shape[0],1]), 1)
 
-        #y_local = 
         class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
 
         layer1.state_init(x_local.shape[0])
         layer2.state_init(x_local.shape[0])
         layer3.state_init(x_local.shape[0])
-        #layer4.state_init(x_local.shape[0])
+        layer4.state_init(x_local.shape[0])
 
         # burnin
         for t in range(int(burnin/ms)):
@@ -146,11 +184,18 @@ for e in range(50):
             down_spikes[mask1] = 1 
             down_spikes[mask2] = 1
 
+            # same same but different
+            # down_spikes[down_spikes != 0] = 1
+
+            # bi directional
+
+            # DTN
+
             out_spikes1 = layer1.forward(down_spikes)
             out_spikes2 = layer2.forward(out_spikes1)
             out_spikes3 = layer3.forward(out_spikes2)
-            #out_spikes3 = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
-            #out_spikes4 = layer4.forward(out_spikes3)
+            out_spikes3 = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
+            out_spikes4 = layer4.forward(out_spikes3)
 
         # training
         for t in range(int(burnin/ms), int(T/ms)):
@@ -172,61 +217,49 @@ for e in range(50):
             rreadout1 = random_readout1(dropout_learning(smoothstep(layer1.U.reshape([x_local.shape[0], np.prod(layer1.out_shape)]))) * dropout_p)
             _, predicted = torch.max(rreadout1.data, 1)
             correct1_train += (predicted == y_local).sum().item()
-            gen_loss += sl1_loss(((rreadout1 / rreadout1.abs().max())+1)*.5, y_onehot) #+ lambda1 * F.relu(layer1.U+.01).mean() + lambda2 * F.relu(thr-layer1.U).mean()
-            #loss_t1.backward()
-            #opt1.step()
-            #opt1.zero_grad()
+            loss_gen = sl1_loss(((rreadout1 / rreadout1.abs().max())+1)*.5, y_onehot) #+ lambda1 * F.relu(layer1.U+.01).mean() + lambda2 * F.relu(thr-layer1.U).mean()
 
             out_spikes2 = layer2.forward(out_spikes1)
             rreadout2 = random_readout2(dropout_learning(smoothstep(layer2.U.reshape([x_local.shape[0], np.prod(layer2.out_shape)]))) * dropout_p)
             _, predicted = torch.max(rreadout2.data, 1)
             correct2_train += (predicted == y_local).sum().item()
-            gen_loss +=  sl1_loss( ((rreadout2 / rreadout2.abs().max())+1)*.5, y_onehot) #+ lambda1 * F.relu(layer2.U+.01).mean() + lambda2 * F.relu(thr-layer2.U).mean()
-            #loss_t2.backward()
-            #opt2.step()
-            #opt2.zero_grad()
+            loss_gen =  sl1_loss( ((rreadout2 / rreadout2.abs().max())+1)*.5, y_onehot) #+ lambda1 * F.relu(layer2.U+.01).mean() + lambda2 * F.relu(thr-layer2.U).mean()
 
             out_spikes3 = layer3.forward(out_spikes2)
             rreadout3 = random_readout3(dropout_learning(smoothstep(layer3.U.reshape([x_local.shape[0], np.prod(layer3.out_shape)]))) * dropout_p)
             _, predicted = torch.max(rreadout1.data, 1)
             correct3_train += (predicted == y_local).sum().item()
-            gen_loss +=  sl1_loss( ((rreadout3 / rreadout3.abs().max())+1)*.5, y_onehot) #+ lambda1 * F.relu(layer3.U+.01).mean() + lambda2 * F.relu(thr-layer3.U).mean()
-            #loss_t3.backward()
-            #opt3.step()
-            #opt3.zero_grad()
+            loss_gen =  sl1_loss( ((rreadout3 / rreadout3.abs().max())+1)*.5, y_onehot) #+ lambda1 * F.relu(layer3.U+.01).mean() + lambda2 * F.relu(thr-layer3.U).mean()
 
             # flattening for spiking readout layer
-            #out_spikes3 = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
-            #out_spikes4 = layer4.forward(out_spikes3)
+            out_spikes3 = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
+            out_spikes4 = layer4.forward(out_spikes3)
+            loss_gen = sl1_loss(smoothstep(layer4.U), y_onehot)
+            _, predicted = torch.max(out_spikes4, 1)
+            correct4_train += (predicted == y_local).sum().item()
             #y_log_p4 = log_softmax_fn(smoothstep(layer4.U))
             #gen_loss +=  sl1_loss(smoothstep(layer4.U), y_onehot) + lambda1 * F.relu(layer4.U+.01).mean() + lambda2 * F.relu(.1-layer4.U).mean()
-            #loss_t4.backward()
-            #opt4.step()
-            #opt4.zero_grad()
 
-            gen_loss.backward()
-            opt1.step()
-            opt1.zero_grad()
+            loss_gen.backward()
+            opt.step()
+            opt.zero_grad()
 
-            loss_hist.append(gen_loss.item())
-            #loss_hist2.append(loss_t3.item())
-            #loss_hist3.append(loss_t2.item())
-            #loss_hist4.append(loss_t1.item())
-            #class_rec += out_spikes4
+            loss_hist.append(loss_gen.item())
+            class_rec += out_spikes4
 
-        #correct += (torch.max(class_rec, dim = 1).indices == y_local).sum() 
-        #total += len(y_local)
+        correct += (torch.max(class_rec, dim = 1).indices == y_local).sum() 
+        total += len(y_local)
     train_time = time.time()
 
 
     # test accuracy
     for x_local, y_local in sparse_data_generator_DVS(x_test, y_test, batch_size = batch_size, nb_steps = T_test / ms, shuffle = True, device = device, test = True):
         y_local = y_local -1
-        #class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
+        class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
         layer1.state_init(x_local.shape[0])
         layer2.state_init(x_local.shape[0])
         layer3.state_init(x_local.shape[0])
-        #layer4.state_init(x_local.shape[0])
+        layer4.state_init(x_local.shape[0])
 
         # burnin
         for t in range(int(burnin/ms)):
@@ -245,6 +278,8 @@ for e in range(50):
             out_spikes1 = layer1.forward(down_spikes)
             out_spikes2 = layer2.forward(out_spikes1)
             out_spikes3 = layer3.forward(out_spikes2)
+            out_spikes3 = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
+            out_spikes4 = layer4.forward(out_spikes3)
 
         # testing
         for t in range(int(burnin/ms), int(T_test/ms)):
@@ -277,18 +312,24 @@ for e in range(50):
             _, predicted = torch.max(rreadout1.data, 1)
             correct3_test += (predicted == y_local).sum().item()
 
-            #out_spikes3 = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
-            #out_spikes4 = dropout_learning(layer4.forward(out_spikes3))
-            #class_rec += out_spikes4
-        #tcorrect += (torch.max(class_rec, dim = 1).indices == y_local).sum() 
-        #ttotal += len(y_local)
+            out_spikes3 = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
+            out_spikes4 = layer4.forward(out_spikes3)
+            _, predicted = torch.max(out_spikes4, 1)
+            correct4_test += (predicted == y_local).sum().item()
+
+            class_rec += out_spikes4
+        tcorrect += (torch.max(class_rec, dim = 1).indices == y_local).sum() 
+        ttotal += len(y_local)
     inf_time = time.time()
 
 
-    #train_acc.append(correct.item()/total)
-    #test_acc.append(tcorrect.item()/ttotal)
+    correct = correct.item()
+    tcorrect = tcorrect.item()
+    train_acc.append(correct/total)
+    test_acc.append(tcorrect/ttotal)
     #print("Epoch {0} | Loss: {1:.4f} Train Acc: {2:.4f} Test Acc: {3:.4f} Train Time: {4:.4f}s Inference Time: {5:.4f}s".format(e+1, np.mean(loss_hist), correct.item()/total, tcorrect.item()/ttotal, train_time-start_time, inf_time - train_time)) 
-    print("Epoch {0} | Loss: {1:.4f} Train Acc 1: {2:.4f} Test Acc 1: {3:.4f} Train Acc 2: {4:.4f} Test Acc 2: {5:.4f} Train Acc 3: {6:.4f} Test Acc 3: {7:.4f} Train Time: {8:.4f}s Inference Time: {9:.4f}s".format(e+1, np.mean(loss_hist), correct1_train/total_train, correct1_test/total_train, correct2_train/total_train, correct2_test/total_train, correct3_train/total_train, correct3_test/total_train, train_time-start_time, inf_time - train_time))
+    #np.mean(loss_hist2), np.mean(loss_hist3), np.mean(loss_hist4),
+    print("Epoch {0} | Loss: {1:.4f}, {2:.0f}, {3:.0f}, {4:.0f} Train Acc 1: {5:.4f} Test Acc 1: {6:.4f} Train Acc 2: {7:.4f} Test Acc 2: {8:.4f} Train Acc 3: {9:.4f} Test Acc 3: {10:.4f} Train Acc 4: {11:.4f} Test Acc 4: {12:.4f}  TRAIN_ACC: {13:.4f} TEST_ACC: {14:.4f}  Train Time: {15:.4f}s Inference Time: {16:.4f}s".format(e+1, np.mean(loss_hist), -1, -1, -1, correct1_train/total_train, correct1_test/total_train, correct2_train/total_train, correct2_test/total_train, correct3_train/total_train, correct3_test/total_train, correct4_train/total_train, correct4_test/total_train, correct/total, tcorrect/ttotal, train_time-start_time, inf_time - train_time))
 
 
 # saving results/weights
