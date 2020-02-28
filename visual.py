@@ -320,4 +320,47 @@ def aux_plot_i_u_s(inputs, rec_u, rec_s, batches, filename = ''):
 #     plt.show()
 
 
+def save_vid_of_input(x_temp, y_temp):
+    # # visualize
+    import matplotlib.pyplot as plt
+    import matplotlib.animation as animation
+
+    gest_mapping = {
+        1:"hand_clapping",
+        2:"right_hand_wave",
+        3:"left_hand_wave",
+        4:"right_arm_clockwise",
+        5:"right_arm_counter_clockwise",
+        6:"left_arm_clockwise",
+        7:"left_arm_counter_clockwise",
+        8:"arm_roll",
+        9:"air_drums",
+        10:"air_guitar",
+        11:"other_gestures"
+    }
+
+
+    plt.clf()
+    fig1 = plt.figure()
+
+    ims = []
+    for j in np.arange(x_local.shape[0]):
+        #temp_show = downsample(x_local[:,:,:,:,j])*16
+        for i in np.arange(x_local.shape[4]):
+
+            temp_show = downsample(x_local[:,:,:,:,i])*16
+
+            temp_show = torch.cat((temp_show, temp_show), dim = 1)
+            mask1 = (temp_show > 0) # this might change
+            mask2 = (temp_show < 0)
+            mask1[:,0,:,:] = False
+            mask2[:,1,:,:] = False
+            temp_show = torch.zeros_like(temp_show)
+            temp_show[mask1] = 1 
+            temp_show[mask2] = 1
+
+            ims.append((plt.imshow( temp_show[j,1,:,:].cpu()), plt.text(.5, .1, gest_mapping[y_temp[j].item()], fontsize=12), ))
+            
+    im_ani = animation.ArtistAnimation(fig1, ims, interval=1, repeat_delay=2000, blit=True)
+    im_ani.save('../dvs_gest1_{date:%Y-%m-%d_%H:%M:%S}.mp4'.format( date=datetime.datetime.now()))
 
