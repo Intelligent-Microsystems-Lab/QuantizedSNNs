@@ -37,14 +37,14 @@ x_test = data[0]
 y_test = data[1]
 
 # set quant level
-quantization.global_wb = 32
-quantization.global_ub = 32
-quantization.global_qb = 32
-quantization.global_pb = 32
-quantization.global_gb = 32
-quantization.global_eb = 32
+quantization.global_wb = 8
+quantization.global_ub = 8
+quantization.global_qb = 8
+quantization.global_pb = 8
+quantization.global_gb = 8
+quantization.global_eb = 8
 quantization.global_rb = 16
-quantization.global_lr = 4
+quantization.global_lr = 1
 quantization.global_beta = 1.5 #quantization.step_d(quantization.global_wb)-.5
 
 # set parameters
@@ -72,13 +72,13 @@ dropout_learning = nn.Dropout(p=dropout_p)
 
 downsample = nn.AvgPool2d(kernel_size = 4, stride = 4)
 
-layer1 = LIFConv2dLayer(inp_shape = (2, 32, 32), kernel_size = 5, out_channels = 64, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device).to(device)
+layer1 = LIFConv2dLayer(inp_shape = (2, 128, 128), kernel_size = 5, out_channels = 16, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device).to(device)
 random_readout1 = QLinearLayerSign(np.prod(layer1.out_shape), output_neurons).to(device)
 
-layer2 = LIFConv2dLayer(inp_shape = layer1.out_shape, kernel_size = 5, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device).to(device)
+layer2 = LIFConv2dLayer(inp_shape = layer1.out_shape, kernel_size = 5, out_channels = 32, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device).to(device)
 random_readout2 = QLinearLayerSign(np.prod(layer2.out_shape), output_neurons).to(device)
 
-layer3 = LIFConv2dLayer(inp_shape = layer2.out_shape, kernel_size = 5, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device).to(device)
+layer3 = LIFConv2dLayer(inp_shape = layer2.out_shape, kernel_size = 5, out_channels = 32, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device).to(device)
 random_readout3 = QLinearLayerSign(np.prod(layer3.out_shape), output_neurons).to(device)
 
 layer4 = LIFDenseLayer(in_channels = np.prod(layer3.out_shape), out_channels = output_neurons, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
@@ -135,11 +135,11 @@ for e in range(50):
 
         # burnin
         for t in range(int(burnin/ms)):
-            down_spikes = downsample(x_local[:,:,:,:,t])*16
+            #down_spikes = downsample(x_local[:,:,:,:,t])*16
 
             # two channel trick
-            down_spikes = torch.cat((down_spikes, down_spikes), dim = 1)
-            #down_spikes = torch.cat((x_local[:,:,:,:,t], x_local[:,:,:,:,t]), dim = 1)
+            #down_spikes = torch.cat((down_spikes, down_spikes), dim = 1)
+            down_spikes = torch.cat((x_local[:,:,:,:,t], x_local[:,:,:,:,t]), dim = 1)
             mask1 = (down_spikes > 0) # this might change
             mask2 = (down_spikes < 0)
             mask1[:,0,:,:] = False
@@ -166,11 +166,11 @@ for e in range(50):
         for t in range(int(burnin/ms), int(T/ms)):
             total_train += y_local.size(0)
             loss_gen = 0
-            down_spikes = downsample(x_local[:,:,:,:,t])*16
+            #down_spikes = downsample(x_local[:,:,:,:,t])*16
 
             # two channel trick
-            down_spikes = torch.cat((down_spikes, down_spikes), dim = 1)
-            #down_spikes = torch.cat((x_local[:,:,:,:,t], x_local[:,:,:,:,t]), dim = 1)
+            #down_spikes = torch.cat((down_spikes, down_spikes), dim = 1)
+            down_spikes = torch.cat((x_local[:,:,:,:,t], x_local[:,:,:,:,t]), dim = 1)
             mask1 = (down_spikes > 0) # this might change
             mask2 = (down_spikes < 0)
             mask1[:,0,:,:] = False
@@ -229,11 +229,11 @@ for e in range(50):
 
         # burnin
         for t in range(int(burnin/ms)):
-            down_spikes = downsample(x_local[:,:,:,:,t])*16
+            #down_spikes = downsample(x_local[:,:,:,:,t])*16
 
             # two channel trick
-            down_spikes = torch.cat((down_spikes, down_spikes), dim = 1)
-            #down_spikes = torch.cat((x_local[:,:,:,:,t], x_local[:,:,:,:,t]), dim = 1)
+            #down_spikes = torch.cat((down_spikes, down_spikes), dim = 1)
+            down_spikes = torch.cat((x_local[:,:,:,:,t], x_local[:,:,:,:,t]), dim = 1)
             mask1 = (down_spikes > 0) # this might change
             mask2 = (down_spikes < 0)
             mask1[:,0,:,:] = False
@@ -251,11 +251,11 @@ for e in range(50):
         # testing
         for t in range(int(burnin/ms), int(T_test/ms)):
             total_test += y_local.size(0)
-            down_spikes = downsample(x_local[:,:,:,:,t])*16
+            #down_spikes = downsample(x_local[:,:,:,:,t])*16
 
             # two channel trick
-            down_spikes = torch.cat((down_spikes, down_spikes), dim = 1)
-            #down_spikes = torch.cat((x_local[:,:,:,:,t], x_local[:,:,:,:,t]), dim = 1)
+            #down_spikes = torch.cat((down_spikes, down_spikes), dim = 1)
+            down_spikes = torch.cat((x_local[:,:,:,:,t], x_local[:,:,:,:,t]), dim = 1)
             mask1 = (down_spikes > 0) # this might change
             mask2 = (down_spikes < 0)
             mask1[:,0,:,:] = False
