@@ -89,7 +89,11 @@ labels_full = []
 for idx,cur_file in enumerate(file_list):
     stim_cur = dat2mat(cur_file, 128, False)
     for i in np.arange(len(start_ts)):
-        cards_full.append(stim_cur[int(start_ts[i]):int(end_ts[i]),:])
+        import pdb; pdb.set_trace()
+        temp_cur = stim_cur[stim_cur[:,0] >= start_ts[i]]
+        temp_cur = temp_cur[temp_cur[:,0] < end_ts[i]]
+        temp_cur[:,0] = temp_cur[:,0]-start_ts[i]
+        cards_full.append(temp_cur)
     labels_full += [idx]*len(start_ts)
 
 #80/20 split train/test
