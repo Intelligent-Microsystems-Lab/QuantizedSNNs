@@ -50,7 +50,7 @@ def save_vid_of_input(x_temp, y_temp):
             temp_show[mask1] = 1 
             temp_show[mask2] = 1
 
-            ims.append((plt.imshow( temp_show[j,1,:,:].cpu()), plt.text(.5, .1, gest_mapping[y_temp[j].item()], fontsize=12), ))
+            ims.append((plt.imshow( temp_show[j,0,:,:].cpu()), plt.text(.5, .1, gest_mapping[y_temp[j].item()], fontsize=12), ))
             
     im_ani = animation.ArtistAnimation(fig1, ims, interval=1, repeat_delay=2000, blit=True)
     im_ani.save('../dvs_poker_{date:%Y-%m-%d_%H:%M:%S}.mp4'.format( date=datetime.datetime.now()))
