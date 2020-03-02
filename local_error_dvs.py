@@ -203,7 +203,9 @@ for e in range(50):
 
     rec_video = True
     for x_local, y_local in sparse_data_generator_DVSPoker(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = True, device = device):
+        print("creating video")
         save_vid_of_input(x_local, y_local)
+        print("video done")
         y_onehot = torch.Tensor(len(y_local), output_neurons).to(device)
         y_onehot.zero_()
         y_onehot.scatter_(1, y_local.reshape([y_local.shape[0],1]), 1)
