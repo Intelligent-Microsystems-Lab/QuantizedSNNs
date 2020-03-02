@@ -78,8 +78,8 @@ def dat2mat(filename, retinaSizeX, only_pos=False):
   
 
 chunk_size = 700
-chunk_size = 1500
-chunk_size = 2500
+#chunk_size = 1500
+#chunk_size = 2500
 file_list = ["RetinaTeresa2-club_long.aedat", "RetinaTeresa2-diamond_long.aedat", "RetinaTeresa2-heart_long.aedat", "RetinaTeresa2-spade_long.aedat"]
 start_ts = np.arange(0,180000/chunk_size)*chunk_size
 end_ts = np.arange(0,180000/chunk_size)*chunk_size + chunk_size
@@ -92,9 +92,18 @@ for idx,cur_file in enumerate(file_list):
         cards_full.append(stim_cur[int(start_ts[i]):int(end_ts[i]),:])
     labels_full += [idx]*len(start_ts)
 
+#80/20 split train/test
+cards_full = np.array(cards_full)
+labels_full = np.array(labels_full)
+shuffle_idx = np.arange(len(labels_full))
+np.random.shuffle(shuffle_idx)
+cards_full = cards_full[shuffle_idx]
+labels_full = labels_full[shuffle_idx]
 
-with open('slow_poker_'+str(chunk_size)+'.pickle', 'wb') as handle:
-    pickle.dump((cards_full, labels_full), handle)
 
-print(len(labels_full))
+with open('slow_poker_'+str(chunk_size)+'_train.pickle', 'wb') as handle:
+    pickle.dump((cards_full[:int(len(labels_full)*.8)  ], labels_full[:int(len(labels_full)*.8)  ]), handle)
+with open('slow_poker_'+str(chunk_size)+'_test.pickle', 'wb') as handle:
+    pickle.dump((cards_full[int(len(labels_full)*.8):], labels_full[int(len(labels_full)*.8):]), handle)
+
 

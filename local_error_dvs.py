@@ -26,12 +26,12 @@ else:
 dtype = torch.float
 
 # load data
-with open('data/train_dvs_gesture.pickle', 'rb') as f:
+with open('data/slow_poker_700.pickle', 'rb') as f:
     data = pickle.load(f)
 x_train = data[0]
 y_train = data[1]
 
-with open('data/test_dvs_gesture.pickle', 'rb') as f:
+with open('data/slow_poker_700.pickle', 'rb') as f:
     data = pickle.load(f)
 x_test = data[0]
 y_test = data[1]
