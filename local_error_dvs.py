@@ -13,6 +13,88 @@ import datetime
 import quantization
 from localQ import sparse_data_generator_DVS, smoothstep, superspike, QLinearLayerSign, LIFDenseLayer, LIFConv2dLayer
 
+
+
+
+
+def save_vid_of_input(x_temp, y_temp):
+    # # visualize
+    import matplotlib.pyplot as plt
+    import matplotlib.animation as animation
+
+    gest_mapping = {
+        0:"club",
+        1:"diamond",
+        2:"heart",
+        3:"spade",
+    }
+
+
+    plt.clf()
+    fig1 = plt.figure()
+
+    ims = []
+    for j in np.arange(x_local.shape[0]):
+        #temp_show = downsample(x_local[:,:,:,:,j])*16
+        for i in np.arange(x_local.shape[4]):
+
+            #temp_show = downsample(x_local[:,:,:,:,i])*16
+
+            #temp_show = torch.cat((temp_show, temp_show), dim = 1)
+            temp_show = torch.cat((x_local[:,:,:,:,i], x_local[:,:,:,:,i]), dim = 1)
+            mask1 = (temp_show > 0) # this might change
+            mask2 = (temp_show < 0)
+            mask1[:,0,:,:] = False
+            mask2[:,1,:,:] = False
+            temp_show = torch.zeros_like(temp_show)
+            temp_show[mask1] = 1 
+            temp_show[mask2] = 1
+
+            ims.append((plt.imshow( temp_show[j,1,:,:].cpu()), plt.text(.5, .1, gest_mapping[y_temp[j].item()], fontsize=12), ))
+            
+    im_ani = animation.ArtistAnimation(fig1, ims, interval=1, repeat_delay=2000, blit=True)
+    im_ani.save('../dvs_poker_{date:%Y-%m-%d_%H:%M:%S}.mp4'.format( date=datetime.datetime.now()))
+
+
+
+def sparse_data_generator_DVSPoker(X, y, batch_size, nb_steps, shuffle, device, test = False):
+    number_of_batches = len(y)//batch_size
+    sample_index = np.arange(len(y))
+    nb_steps = nb_steps -1
+    y = np.array(y)
+
+    if shuffle:
+        np.random.shuffle(sample_index)
+
+    total_batch_count = 0
+    counter = 0
+    while counter<number_of_batches:
+        batch_index = sample_index[batch_size*counter:batch_size*(counter+1)]
+        all_events = np.array([[],[],[],[],[],[],[]]).T
+
+
+        for bc,idx in enumerate(batch_index):
+            temp = np.append(np.ones((X[idx].shape[0], 1))*bc, X[idx], axis=1)
+            all_events = np.append(all_events, temp, axis = 0)
+
+        # to matrix
+        all_events = all_events[:,[0,4,5,1,6]]
+        sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(all_events[:,[True, True, True, True, False]].T), torch.FloatTensor(all_events[:,4])).to_dense()
+
+        # quick trick...
+        sparse_matrix[sparse_matrix < 0] = -1
+        sparse_matrix[sparse_matrix > 0] = 1
+
+        sparse_matrix = sparse_matrix.reshape(torch.Size([sparse_matrix.shape[0], 1, sparse_matrix.shape[1], sparse_matrix.shape[2], sparse_matrix.shape[3]]))
+
+        y_batch = torch.tensor(y[batch_index], dtype = int)
+        try:
+            yield sparse_matrix.to(device=device), y_batch.to(device=device)
+            counter += 1
+        except StopIteration:
+            return
+
+
 verbose_output = False
 ap = argparse.ArgumentParser()
 ap.add_argument("-dir", "--dir", type = str, help = "output dir")
@@ -26,12 +108,12 @@ else:
 dtype = torch.float
 
 # load data
-with open('data/slow_poker_700.pickle', 'rb') as f:
+with open('../slow_poker_500_train.pickle', 'rb') as f:
     data = pickle.load(f)
 x_train = data[0]
 y_train = data[1]
 
-with open('data/slow_poker_700.pickle', 'rb') as f:
+with open('../slow_poker_500_test.pickle', 'rb') as f:
     data = pickle.load(f)
 x_test = data[0]
 y_test = data[1]
@@ -52,10 +134,10 @@ ms = 1e-3
 delta_t = 1*ms
 
 T = 500*ms
-T_test = 1800*ms
+T_test = 500*ms
 burnin = 50*ms
-batch_size = 72
-output_neurons = 11
+batch_size = 8
+output_neurons = 4
 
 tau_mem = torch.Tensor([20*ms]).to(device)#torch.Tensor([5*ms, 35*ms]).to(device)
 tau_syn = torch.Tensor([7.5*ms]).to(device)#torch.Tensor([5*ms, 10*ms]).to(device)
@@ -120,8 +202,8 @@ for e in range(50):
     start_time = time.time()
 
     rec_video = True
-    for x_local, y_local in sparse_data_generator_DVS(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = True, device = device):
-        y_local = y_local -1
+    for x_local, y_local in sparse_data_generator_DVSPoker(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = True, device = device):
+        save_vid_of_input(x_local, y_local)
         y_onehot = torch.Tensor(len(y_local), output_neurons).to(device)
         y_onehot.zero_()
         y_onehot.scatter_(1, y_local.reshape([y_local.shape[0],1]), 1)
@@ -219,7 +301,7 @@ for e in range(50):
 
 
     # test accuracy
-    for x_local, y_local in sparse_data_generator_DVS(x_test, y_test, batch_size = batch_size, nb_steps = T_test / ms, shuffle = True, device = device, test = True):
+    for x_local, y_local in sparse_data_generator_DVSPoker(x_test, y_test, batch_size = batch_size, nb_steps = T_test / ms, shuffle = True, device = device, test = True):
         y_local = y_local -1
         class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
         layer1.state_init(x_local.shape[0])

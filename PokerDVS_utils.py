@@ -72,7 +72,7 @@ def dat2mat(filename, retinaSizeX, only_pos=False):
 
     # bin them 1ms
     res_stim[:,0] = np.floor(res_stim[:,0]/1000)
-    res_stim[:,0] = res_stim[:,0] - np.min(res_stim[:,0])
+    #res_stim[:,0] = res_stim[:,0] - np.min(res_stim[:,0])
 
     return res_stim
   
@@ -81,17 +81,18 @@ chunk_size = 700
 #chunk_size = 1500
 #chunk_size = 2500
 file_list = ["RetinaTeresa2-club_long.aedat", "RetinaTeresa2-diamond_long.aedat", "RetinaTeresa2-heart_long.aedat", "RetinaTeresa2-spade_long.aedat"]
-start_ts = np.arange(0,180000/chunk_size)*chunk_size
-end_ts = np.arange(0,180000/chunk_size)*chunk_size + chunk_size
+start_ts = np.arange(0,121000/chunk_size)*chunk_size
+end_ts = np.arange(0,121000/chunk_size)*chunk_size + chunk_size #its not 3min... one recording is just 2min!
 cards_full = []
 labels_full = []
 
 for idx,cur_file in enumerate(file_list):
     stim_cur = dat2mat(cur_file, 128, False)
     for i in np.arange(len(start_ts)):
-        import pdb; pdb.set_trace()
         temp_cur = stim_cur[stim_cur[:,0] >= start_ts[i]]
         temp_cur = temp_cur[temp_cur[:,0] < end_ts[i]]
+        if(len(temp_cur) == 0):
+            import pdb; pdb.set_trace()
         temp_cur[:,0] = temp_cur[:,0]-start_ts[i]
         cards_full.append(temp_cur)
     labels_full += [idx]*len(start_ts)
