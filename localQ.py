@@ -296,7 +296,7 @@ class LIFDenseLayer(nn.Module):
         
 
         self.U = QSLinearFunctional.apply(self.P, self.weights, self.bias, self.scale) + self.R
-        self.S = (self.U > self.thr).float()
+        self.S = (self.U >= self.thr).float()
 
         # quantize U
         self.U, _ = quantization.quant_generic(self.U, quantization.global_ub)
@@ -415,7 +415,7 @@ class LIFConv2dLayer(nn.Module):
         self.Q, _ = quantization.quant_generic(self.Q, quantization.global_qb)
 
         self.U = QSConv2dFunctional.apply(self.P, self.weights, self.bias, self.scale, self.padding, self.pooling) + self.R
-        self.S = (self.U > self.thr).float()
+        self.S = (self.U >= self.thr).float()
 
         # quantize U
         self.U, _ = quantization.quant_generic(self.U, quantization.global_ub)
