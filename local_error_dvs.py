@@ -107,11 +107,12 @@ def prep_input(x_local, input_mode):
         down_spikes[mask2] = 1
         return down_spikes
     # same same but different
-    if input_mode == 2:
-        down_spikes = x_local[x_local != 0] = 1
+    if input_mode == 1:
+        down_spikes = x_local
+        down_spikes[down_spikes != 0] = 1
         return down_spikes
     #bi directional
-    if input_mode == 3:
+    if input_mode == 2:
         return x_local
     else:
         print("No valid input mode")
@@ -148,7 +149,7 @@ quantization.global_pb = 8
 quantization.global_gb = 8
 quantization.global_eb = 8
 quantization.global_rb = 16
-quantization.global_lr = 1
+quantization.global_lr = 8
 quantization.global_beta = 1.5 #quantization.step_d(quantization.global_wb)-.5
 
 # set parameters
@@ -166,18 +167,18 @@ tau_syn = torch.Tensor([7.5*ms]).to(device)#torch.Tensor([5*ms, 10*ms]).to(devic
 tau_ref = torch.Tensor([0*ms]).to(device)
 thr = torch.Tensor([.4]).to(device)
 
-lambda1 = .2 
-lambda2 = .1
+lambda1 = .1
+lambda2 = .05
 
-input_mode = 0 #two channel trick, down sample etc.
+input_mode = 2 #two channel trick, down sample etc.
 
 # construct layers
-dropout_p = .99
+dropout_p = .5
 dropout_learning = nn.Dropout(p=dropout_p)
 
 downsample_l = nn.AvgPool2d(kernel_size = 4, stride = 4)
 
-layer1 = LIFConv2dLayer(inp_shape = (2, 128, 128), kernel_size = 5, out_channels = 16, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device).to(device)
+layer1 = LIFConv2dLayer(inp_shape = (2, 32, 32), kernel_size = 5, out_channels = 16, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device).to(device)
 random_readout1 = QLinearLayerSign(np.prod(layer1.out_shape), output_neurons).to(device)
 
 layer2 = LIFConv2dLayer(inp_shape = layer1.out_shape, kernel_size = 5, out_channels = 32, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device).to(device)
@@ -205,7 +206,9 @@ test_acc = []
 print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb))
 
 
-for e in range(50):
+for e in range(15):
+    if (e%5 == 0) and (e != 0):
+        quantization.globalc_lr = quantization.global_lr/2
     correct = 0
     total = 0
     tcorrect = 0
@@ -226,6 +229,7 @@ for e in range(50):
     start_time = time.time()
 
     rec_video = True
+    import pdb; pdb.set_trace()
     for x_local, y_local in sparse_data_generator_DVSPoker(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = True, device = device):
         #print("creating video")
         #save_vid_of_input(x_local, y_local)
@@ -244,7 +248,7 @@ for e in range(50):
         # burnin
         for t in range(int(burnin/ms)):
             spikes_t = prep_input(x_local[:,:,:,:,t], input_mode)
-            #spikes_t = downsample_l(spikes_t)*16
+            spikes_t = downsample_l(spikes_t)*16
             out_spikes1 = layer1.forward(spikes_t)
             out_spikes2 = layer2.forward(out_spikes1)
             out_spikes3 = layer3.forward(out_spikes2)
@@ -256,46 +260,47 @@ for e in range(50):
             total_train += y_local.size(0)
             loss_gen = 0
 
-            import pdb; pdb.set_trace()
-
             spikes_t = prep_input(x_local[:,:,:,:,t], input_mode)
-            #spikes_t = downsample_l(spikes_t)*16
+            spikes_t = downsample_l(spikes_t)*16
             out_spikes1 = layer1.forward(spikes_t)
-            #rreadout1 = random_readout1(dropout_learning(smoothstep(layer1.U-thr).reshape([x_local.shape[0], np.prod(layer1.out_shape)]))) * dropout_p)
-            rreadout1 = random_readout1(dropout_learning(smoothstep(layer1.U.reshape([x_local.shape[0], np.prod(layer1.out_shape)]))) * dropout_p)
+            rreadout1 = random_readout1(dropout_learning( smoothstep(layer1.U-thr).reshape([x_local.shape[0], np.prod(layer1.out_shape)])) * dropout_p)
+            #rreadout1 = random_readout1(dropout_learning(smoothstep(layer1.U.reshape([x_local.shape[0], np.prod(layer1.out_shape)]))) * dropout_p)
             _, predicted = torch.max(rreadout1.data, 1)
             correct1_train += (predicted == y_local).sum().item()
             #import pdb; pdb.set_trace()
-            loss_gen += sl1_loss(softmax_fn(rreadout1), y_onehot)
+            loss_gen += sl1_loss(softmax_fn(rreadout1), y_onehot) + lambda1 * F.relu(layer1.U+.01).mean() + lambda2 * F.relu(thr-layer1.U).mean()
             #loss_gen += sl1_loss(((rreadout1 / rreadout1.abs().max())+1)*.5, y_onehot) #+ lambda1 * F.relu(layer1.U+.01).mean() + lambda2 * F.relu(thr-layer1.U).mean()
 
             out_spikes2 = layer2.forward(out_spikes1)
-            rreadout2 = random_readout2(dropout_learning(smoothstep(layer2.U.reshape([x_local.shape[0], np.prod(layer2.out_shape)]))) * dropout_p)
+            rreadout2 = random_readout2(dropout_learning( smoothstep(layer2.U-thr).reshape([x_local.shape[0], np.prod(layer2.out_shape)])) * dropout_p)
+            #rreadout2 = random_readout2(dropout_learning(smoothstep(layer2.U.reshape([x_local.shape[0], np.prod(layer2.out_shape)]))) * dropout_p)
             _, predicted = torch.max(rreadout2.data, 1)
             correct2_train += (predicted == y_local).sum().item()
-            loss_gen += sl1_loss(softmax_fn(rreadout2), y_onehot)
+            loss_gen += sl1_loss(softmax_fn(rreadout2), y_onehot) + lambda1 * F.relu(layer2.U+.01).mean() + lambda2 * F.relu(thr-layer2.U).mean()
             #loss_gen += sl1_loss( ((rreadout2 / rreadout2.abs().max())+1)*.5, y_onehot) #+ lambda1 * F.relu(layer2.U+.01).mean() + lambda2 * F.relu(thr-layer2.U).mean()
 
             out_spikes3 = layer3.forward(out_spikes2)
-            rreadout3 = random_readout3(dropout_learning(smoothstep(layer3.U.reshape([x_local.shape[0], np.prod(layer3.out_shape)]))) * dropout_p)
+            rreadout3 = random_readout3(dropout_learning( smoothstep(layer3.U-thr).reshape([x_local.shape[0], np.prod(layer3.out_shape)])) * dropout_p)
+            #rreadout3 = random_readout3(dropout_learning(smoothstep(layer3.U.reshape([x_local.shape[0], np.prod(layer3.out_shape)]))) * dropout_p)
             _, predicted = torch.max(rreadout1.data, 1)
             correct3_train += (predicted == y_local).sum().item()
-            loss_gen += sl1_loss(softmax_fn(rreadout3), y_onehot)
+            loss_gen += sl1_loss(softmax_fn(rreadout3), y_onehot) + lambda1 * F.relu(layer3.U+.01).mean() + lambda2 * F.relu(thr-layer3.U).mean()
             #loss_gen += sl1_loss( ((rreadout3 / rreadout3.abs().max())+1)*.5, y_onehot) #+ lambda1 * F.relu(layer3.U+.01).mean() + lambda2 * F.relu(thr-layer3.U).mean()
 
             # flattening for spiking readout layer
             out_spikes3 = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
             out_spikes4 = layer4.forward(out_spikes3)
-            loss_gen += sl1_loss(softmax_fn(smoothstep(layer4.U)), y_onehot)
+            loss_gen += sl1_loss(softmax_fn(smoothstep(layer4.U-thr)), y_onehot)
             #loss_gen += sl1_loss(smoothstep(layer4.U), y_onehot)
             _, predicted = torch.max(out_spikes4, 1)
-            correct4_train += (predicted == y_local).sum().item()
+            correct4_train += (predicted == y_local).sum().item() + lambda1 * F.relu(layer4.U+.01).mean() + lambda2 * F.relu(thr-layer4.U).mean()
             #y_log_p4 = log_softmax_fn(smoothstep(layer4.U))
             #gen_loss +=  sl1_loss(smoothstep(layer4.U), y_onehot) + lambda1 * F.relu(layer4.U+.01).mean() + lambda2 * F.relu(.1-layer4.U).mean()
 
             loss_gen.backward()
             opt.step()
             opt.zero_grad()
+            #print(loss_gen.item())
 
             loss_hist.append(loss_gen.item())
             class_rec += out_spikes4
@@ -317,7 +322,7 @@ for e in range(50):
         # burnin
         for t in range(int(burnin/ms)):
             spikes_t = prep_input(x_local[:,:,:,:,t], input_mode)
-            #spikes_t = downsample_l(spikes_t)*16
+            spikes_t = downsample_l(spikes_t)*16
             out_spikes1 = layer1.forward(spikes_t)
             out_spikes2 = layer2.forward(out_spikes1)
             out_spikes3 = layer3.forward(out_spikes2)
@@ -329,20 +334,20 @@ for e in range(50):
             total_test += y_local.size(0)
 
             spikes_t = prep_input(x_local[:,:,:,:,t], input_mode)
-            #spikes_t = downsample_l(spikes_t)*16
+            spikes_t = downsample_l(spikes_t)*16
             # dropout kept active -> decolle note
             out_spikes1 = layer1.forward(spikes_t)
-            rreadout1 = random_readout1(dropout_learning(smoothstep(layer1.U.reshape([x_local.shape[0], np.prod(layer1.out_shape)]))) * dropout_p)
+            rreadout1 = random_readout1(dropout_learning(out_spikes1.reshape([x_local.shape[0], np.prod(layer1.out_shape)])) * dropout_p)
             _, predicted = torch.max(rreadout1.data, 1)
             correct1_test += (predicted == y_local).sum().item()
 
             out_spikes2 = dropout_learning(layer2.forward(out_spikes1)) 
-            rreadout2 = random_readout2(dropout_learning(smoothstep(layer2.U.reshape([x_local.shape[0], np.prod(layer2.out_shape)]))) * dropout_p)
+            rreadout2 = random_readout2(dropout_learning(out_spikes2.reshape([x_local.shape[0], np.prod(layer2.out_shape)])) * dropout_p)
             _, predicted = torch.max(rreadout2.data, 1)
             correct2_test += (predicted == y_local).sum().item()
 
             out_spikes3 = dropout_learning(layer3.forward(out_spikes2))
-            rreadout3 = random_readout3(dropout_learning(smoothstep(layer3.U.reshape([x_local.shape[0], np.prod(layer3.out_shape)]))) * dropout_p)
+            rreadout3 = random_readout3(dropout_learning(out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])) * dropout_p)
             _, predicted = torch.max(rreadout1.data, 1)
             correct3_test += (predicted == y_local).sum().item()
 
@@ -352,6 +357,7 @@ for e in range(50):
             correct4_test += (predicted == y_local).sum().item()
 
             class_rec += out_spikes4
+
         tcorrect += (torch.max(class_rec, dim = 1).indices == y_local).sum() 
         ttotal += len(y_local)
     inf_time = time.time()
