@@ -206,7 +206,7 @@ def train_run(mem_tau, syn_tau, l1, l2):
     test_acc = []
 
 
-    print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb))
+    print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5} tau_mem {6} tau syn {7} l1 {8} l2 {9}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb, mem_tau, syn_tau, l1, l2))
 
 
     for e in range(2):
