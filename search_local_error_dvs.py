@@ -398,8 +398,8 @@ def objective(args):
 
 space = {
     'mem_tau' : 20,#hp.uniform('mem_tau', 1, 130), 
-    'syn_tau' : hp.uniform('syn_tau', 1, 130), 
-    'l1' :      .2,#hp.uniform('l1', 0, 1.5),
+    'syn_tau' : 7.5,#hp.uniform('syn_tau', 1, 130), 
+    'l1' :      hp.uniform('l1', 0, 1.5),
     'l2' :      .1,#hp.uniform('l2', 0, 1.5)
 }
 
