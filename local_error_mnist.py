@@ -64,7 +64,7 @@ y_test = y_test[index_list_test]
 
 
 #quantization.global_beta = 1.5
-quantization.global_wb = 3
+quantization.global_wb = 8
 quantization.global_ub = 8
 quantization.global_qb = 8
 quantization.global_pb = 8
@@ -197,8 +197,24 @@ for e in range(50):
         layer3.state_init(x_local.shape[0])
         layer4.state_init(x_local.shape[0])
 
-        for t in range(int(T_test/ms)):
+        # record activations
+        act_list = []
+        inp_list = []
+
+        # burnin
+        for t in range(int(burnin/ms)):
             out_spikes1 = layer1.forward(x_local[:,:,:,:,t])
+            out_spikes2 = layer2.forward(out_spikes1)
+            out_spikes3 = layer3.forward(out_spikes2)
+            out_spikes3 = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
+            out_spikes4 = layer4.forward(out_spikes3)
+
+        for t in range(int(burnin/ms), int(T_test/ms)):
+            out_spikes1 = layer1.forward(x_local[:,:,:,:,t])
+
+            act_list.append(out_spikes1)
+            inp_list.append(x_local[:,:,:,:,t])
+
             out_spikes2 = layer2.forward(out_spikes1)
             out_spikes3 = layer3.forward(out_spikes2)
             out_spikes3 = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
@@ -209,6 +225,8 @@ for e in range(50):
     inf_time = time.time()
 
 
+    with open('../mnist_act.pkl', 'wb') as f:
+        pickle.dump((act_list, inp_list), f)
     train_acc.append(correct.item()/total)
     test_acc.append(tcorrect.item()/ttotal)
     print("Epoch {0} | Loss: {1:.4f} Train Acc: {2:.4f} Test Acc: {3:.4f} Train Time: {4:.4f}s Inference Time: {5:.4f}s".format(e+1, np.mean(loss_hist), correct.item()/total, tcorrect.item()/ttotal, train_time-start_time, inf_time - train_time)) 

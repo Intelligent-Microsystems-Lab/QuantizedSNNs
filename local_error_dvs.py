@@ -149,7 +149,7 @@ quantization.global_pb = 8
 quantization.global_gb = 8
 quantization.global_eb = 8
 quantization.global_rb = 16
-quantization.global_lr = 8
+quantization.global_lr = 1
 quantization.global_beta = 1.5 #quantization.step_d(quantization.global_wb)-.5
 
 # set parameters
@@ -167,10 +167,10 @@ tau_syn = torch.Tensor([7.5*ms]).to(device)#torch.Tensor([5*ms, 10*ms]).to(devic
 tau_ref = torch.Tensor([0*ms]).to(device)
 thr = torch.Tensor([.4]).to(device)
 
-lambda1 = .1
-lambda2 = .05
+lambda1 = .2
+lambda2 = .1
 
-input_mode = 2 #two channel trick, down sample etc.
+input_mode = 0 #two channel trick, down sample etc.
 
 # construct layers
 dropout_p = .5
@@ -207,8 +207,8 @@ print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5}".format(quantization.global_wb, q
 
 
 for e in range(15):
-    if (e%5 == 0) and (e != 0):
-        quantization.globalc_lr = quantization.global_lr/2
+    #if (e%5 == 0) and (e != 0):
+    #    quantization.globalc_lr = quantization.global_lr/2
     correct = 0
     total = 0
     tcorrect = 0
@@ -328,6 +328,10 @@ for e in range(15):
             out_spikes3 = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
             out_spikes4 = layer4.forward(out_spikes3)
 
+        # record activations
+        act_list = []
+        inp_list = []
+
         # testing
         for t in range(int(burnin/ms), int(T_test/ms)):
             total_test += y_local.size(0)
@@ -339,6 +343,9 @@ for e in range(15):
             rreadout1 = random_readout1(dropout_learning(out_spikes1.reshape([x_local.shape[0], np.prod(layer1.out_shape)])) * dropout_p)
             _, predicted = torch.max(rreadout1.data, 1)
             correct1_test += (predicted == y_local).sum().item()
+
+            act_list.append(out_spikes1)
+            inp_list.append(spikes_t)
 
             out_spikes2 = dropout_learning(layer2.forward(out_spikes1)) 
             rreadout2 = random_readout2(dropout_learning(out_spikes2.reshape([x_local.shape[0], np.prod(layer2.out_shape)])) * dropout_p)
@@ -361,7 +368,8 @@ for e in range(15):
         ttotal += len(y_local)
     inf_time = time.time()
 
-
+    with open('../dvs_act.pkl', 'wb') as f:
+        pickle.dump((act_list, inp_list), f)
     correct = correct.item()
     tcorrect = tcorrect.item()
     train_acc.append(correct/total)
@@ -378,5 +386,6 @@ for e in range(15):
 results = {'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer2':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer3':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer4':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'loss':[loss_hist]} # 'test_acc': test_acc, 'train_acc': train_acc, , 'train_idx':shuffle_idx_ta, 'test_idx':shuffle_idx_te
 with open('hello.pkl', 'wb') as f:
     pickle.dump(results, f)
+
 
 # Epoch 41 | Loss: 2.6689 Train Acc: 0.0816 Test Acc: 0.0833 Train Time: 734.5396s Inference Time: 298.9132s

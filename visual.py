@@ -364,3 +364,22 @@ def save_vid_of_input(x_temp, y_temp):
     im_ani = animation.ArtistAnimation(fig1, ims, interval=1, repeat_delay=2000, blit=True)
     im_ani.save('../dvs_gest1_{date:%Y-%m-%d_%H:%M:%S}.mp4'.format( date=datetime.datetime.now()))
 
+
+
+final_plt = torch.zeros_like(act_list[1][0,:,:,:])
+for i in act_list:
+    final_plt += i[0,:,:,:]
+fig, axs = plt.subplots(4, 4)
+for i in range(4):
+    for j in range(4):
+        axs[i, j].imshow(final_plt[i*4+j,:,:].cpu())
+plt.savefig("../dvs_act.png")
+
+final_plt = torch.zeros_like(inp_list[1][0,:,:,:])
+for i in inp_list:
+    final_plt += i[0,:,:,:]
+fig, axs = plt.subplots(1, 2)
+axs[0].imshow(final_plt[0,:,:].cpu())
+axs[1].imshow(final_plt[0,:,:].cpu())
+plt.savefig("../dvs_inp.png")
+
