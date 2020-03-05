@@ -378,7 +378,8 @@ def train_run(mem_tau, syn_tau, l1, l2):
     return max(test_acc), {'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer2':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer3':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer4':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'loss':[loss_hist], 'train': train_acc, 'test': test_acc}
 
 
-#hello = train_run(20, 7.5, .2, .1)
+#lower bound tau_syn/tau_mem 2
+#hello = train_run(, 7.5, .2, .1)
 
 # saving results/weights
 #results = {'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer2':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer3':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer4':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'loss':[loss_hist]} # 'test_acc': test_acc, 'train_acc': train_acc, , 'train_idx':shuffle_idx_ta, 'test_idx':shuffle_idx_te
@@ -396,10 +397,10 @@ def objective(args):
 
 
 space = {
-    'mem_tau' : hp.uniform('mem_tau', 0, 50), 
-    'syn_tau' : hp.uniform('syn_tau', 1, 50), 
-    'l1' :      hp.uniform('l1', 0, 1.5),
-    'l2' :      hp.uniform('l2', 0, 1.5)
+    'mem_tau' : hp.uniform('mem_tau', 1, 130), 
+    'syn_tau' : 7.5,#hp.uniform('syn_tau', 1, 50), 
+    'l1' :      .2,#hp.uniform('l1', 0, 1.5),
+    'l2' :      .1,#hp.uniform('l2', 0, 1.5)
 }
 
 best = fmin(objective, space, algo=tpe.suggest, max_evals=75)
