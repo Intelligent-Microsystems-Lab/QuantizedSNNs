@@ -191,7 +191,7 @@ def train_run(mem_tau, syn_tau, l1, l2, var_perc):
     random_readout3 = QLinearLayerSign(np.prod(layer3.out_shape), output_neurons).to(device)
 
     layer4 = LIFDenseLayer(in_channels = np.prod(layer3.out_shape), out_channels = output_neurons, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device).to(device)
-    import pdb; pdb.set_trace()
+
     log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
     nll_loss = torch.nn.NLLLoss()
     softmax_fn = nn.Softmax(dim=1)
@@ -398,9 +398,9 @@ def objective(args):
 
 space = {
     'mem_tau' : 60,#hp.uniform('mem_tau', 1, 130), 
-    'syn_tau' : 10,#hp.uniform('syn_tau', 1, 130), 
-    'l1' :      0.2,#hp.uniform('l1', 0, 1.5),
-    'l2' :      0.1,#hp.uniform('l2', 0, 1.5),
+    'syn_tau' : 110,#hp.uniform('syn_tau', 1, 130), 
+    'l1' :      1.3,#hp.uniform('l1', 0, 1.5),
+    'l2' :      0.15,#hp.uniform('l2', 0, 1.5),
     'var_perc' : hp.uniform('l2', 0, .9)
 }
 
