@@ -375,11 +375,14 @@ class LIFConv2dLayer(nn.Module):
         self.out_shape = QSConv2dFunctional.apply(torch.zeros((1,)+self.inp_shape).to(device), self.weights, self.bias, self.scale, self.padding, self.pooling).shape[1:]
         self.thr = thr
 
+        import pdb; pdb.set_trace()
         if tau_syn.shape[0] == 2:
+        	# 2, 32, 32
             self.beta = torch.exp( -delta_t / torch.Tensor(self.inp_shape).uniform_(tau_syn[0], tau_syn[0]).to(device))
         else:
             self.beta = torch.Tensor([torch.exp( - delta_t / tau_syn)]).to(device)
         if tau_mem.shape[0] == 2:
+        	#2, 32, 32
             self.alpha = torch.exp( -delta_t / torch.Tensor(self.inp_shape).uniform_(tau_mem[0], tau_mem[0]).to(device))
         else:
             self.alpha = torch.Tensor([torch.exp( - delta_t / tau_mem)]).to(device)
@@ -408,7 +411,6 @@ class LIFConv2dLayer(nn.Module):
             if self.bias is not None:
                 self.bias.data = quantization.clip(self.bias.data, quantization.global_gb)
 
-        import pdb; pdb.set_trace()
         self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.gamma * self.R - self.S, self.beta * self.Q + input_t
 
         # quantize P, Q
