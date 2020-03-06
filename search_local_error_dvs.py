@@ -399,8 +399,8 @@ def objective(args):
 space = {
     'mem_tau' : 60,#hp.uniform('mem_tau', 1, 130), 
     'syn_tau' : 110,#hp.uniform('syn_tau', 1, 130), 
-    'l1' :      hp.uniform('l1', .5, 1.5),#1.3,#
-    'l2' :      hp.uniform('l2', .1, 1.5),#0.15,#
+    'l1' :      1.3,#hp.uniform('l1', .5, 1.5),#1.3,#
+    'l2' :      0.15,#hp.uniform('l2', .1, 1.5),#0.15,#
     'var_perc' : hp.uniform('var_perc', 0, .9)
 }
 
