@@ -168,9 +168,9 @@ thr = torch.Tensor([.4]).to(device)
 
 
 
-def train_run(mem_tau, syn_tau, l1, l2):
-    tau_mem = torch.Tensor([mem_tau*ms]).to(device)#torch.Tensor([5*ms, 35*ms]).to(device)
-    tau_syn = torch.Tensor([syn_tau*ms]).to(device)#torch.Tensor([5*ms, 10*ms]).to(device)
+def train_run(mem_tau, syn_tau, l1, l2, var_perc):
+    tau_mem = torch.Tensor([mem_tau*ms-mem_tau*ms*var_perc, mem_tau*ms-mem_tau*ms*var_perc]).to(device)#torch.Tensor([5*ms, 35*ms]).to(device)
+    tau_syn = torch.Tensor([syn_tau*ms-syn_tau*ms*var_perc, syn_tau*ms-syn_tau*ms*var_perc]).to(device)#torch.Tensor([5*ms, 10*ms]).to(device)
     lambda1 = l1
     lambda2 = l2
 
@@ -392,18 +392,23 @@ def train_run(mem_tau, syn_tau, l1, l2):
 from hyperopt import hp, fmin, tpe, space_eval
 
 def objective(args):
-    best_test, res_dict = train_run(args['mem_tau'], args['syn_tau'], args['l1'], args['l2'])
+    best_test, res_dict = train_run(args['mem_tau'], args['syn_tau'], args['l1'], args['l2'], args['var_perc'])
     return 1-best_test
 
 
 space = {
-    'mem_tau' : hp.uniform('mem_tau', 1, 130), 
-    'syn_tau' : hp.uniform('syn_tau', 1, 130), 
+    'mem_tau' : 5,#hp.uniform('mem_tau', 1, 130), 
+    'syn_tau' : 10,#hp.uniform('syn_tau', 1, 130), 
     'l1' :      0.2,#hp.uniform('l1', 0, 1.5),
-    'l2' :      0.1#hp.uniform('l2', 0, 1.5)
+    'l2' :      0.1,#hp.uniform('l2', 0, 1.5),
+    'var_perc' : 0.5
 }
 
 best = fmin(objective, space, algo=tpe.suggest, max_evals=75)
-
-
+print(best)
+# 100%|██████████████████████████████████████████████| 75/75 [11:42:42<00:00, 562.16s/it, best loss: 0.7265625]
+#{'l1': 0.0684335852531665,
+# 'l2': 1.1617847867426163,
+# 'mem_tau': 18.034992808871657,
+# 'syn_tau': 22.156518764463637}
 
