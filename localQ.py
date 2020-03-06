@@ -408,6 +408,7 @@ class LIFConv2dLayer(nn.Module):
             if self.bias is not None:
                 self.bias.data = quantization.clip(self.bias.data, quantization.global_gb)
 
+        import pdb; pdb.set_trace()
         self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.gamma * self.R - self.S, self.beta * self.Q + input_t
 
         # quantize P, Q

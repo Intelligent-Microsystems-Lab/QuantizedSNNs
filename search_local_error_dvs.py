@@ -401,7 +401,7 @@ space = {
     'syn_tau' : 10,#hp.uniform('syn_tau', 1, 130), 
     'l1' :      0.2,#hp.uniform('l1', 0, 1.5),
     'l2' :      0.1,#hp.uniform('l2', 0, 1.5),
-    'var_perc' : 0.5
+    'var_perc' : 0.5#hp.uniform('l2', 0, .9)
 }
 
 best = fmin(objective, space, algo=tpe.suggest, max_evals=75)
