@@ -169,8 +169,8 @@ thr = torch.Tensor([.4]).to(device)
 
 
 def train_run(mem_tau, syn_tau, l1, l2, var_perc):
-    tau_mem = torch.Tensor([mem_tau*ms-mem_tau*ms*var_perc, mem_tau*ms-mem_tau*ms*var_perc]).to(device)#torch.Tensor([5*ms, 35*ms]).to(device)
-    tau_syn = torch.Tensor([syn_tau*ms-syn_tau*ms*var_perc, syn_tau*ms-syn_tau*ms*var_perc]).to(device)#torch.Tensor([5*ms, 10*ms]).to(device)
+    tau_mem = torch.Tensor([mem_tau*ms-mem_tau*ms*var_perc, mem_tau*ms+mem_tau*ms*var_perc]).to(device)#torch.Tensor([5*ms, 35*ms]).to(device)
+    tau_syn = torch.Tensor([syn_tau*ms-syn_tau*ms*var_perc, syn_tau*ms+syn_tau*ms*var_perc]).to(device)#torch.Tensor([5*ms, 10*ms]).to(device)
     lambda1 = l1
     lambda2 = l2
 

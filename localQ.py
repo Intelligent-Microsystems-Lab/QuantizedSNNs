@@ -246,16 +246,16 @@ class LIFDenseLayer(nn.Module):
         self.scale = self.scale if self.scale > 1 else 1.0
 
         if tau_syn.shape[0] == 2:
-            self.beta = torch.exp( -delta_t / torch.Tensor(self.in_channels).uniform_(tau_syn[0], tau_syn[0]).to(device))
+            self.beta = torch.exp( -delta_t / torch.Tensor(self.in_channels).uniform_(tau_syn[0], tau_syn[1]).to(device))
         else:
             self.beta = torch.Tensor([torch.exp( - delta_t / tau_syn)]).to(device)
         if tau_mem.shape[0] == 2:
-            self.alpha = torch.exp( -delta_t / torch.Tensor(self.in_channels).uniform_(tau_mem[0], tau_mem[0]).to(device))
+            self.alpha = torch.exp( -delta_t / torch.Tensor(self.in_channels).uniform_(tau_mem[0], tau_mem[1]).to(device))
         else:
             self.alpha = torch.Tensor([torch.exp( - delta_t / tau_mem)]).to(device)
 
         if tau_ref.shape[0] == 2:
-            self.gamma = torch.exp( -delta_t / torch.Tensor(self.out_channels).uniform_(tau_ref[0], tau_ref[0]).to(device))
+            self.gamma = torch.exp( -delta_t / torch.Tensor(self.out_channels).uniform_(tau_ref[0], tau_ref[1]).to(device))
         else:
             self.gamma = torch.Tensor([torch.exp( - delta_t / tau_ref)]).to(device)
 
@@ -375,20 +375,18 @@ class LIFConv2dLayer(nn.Module):
         self.out_shape = QSConv2dFunctional.apply(torch.zeros((1,)+self.inp_shape).to(device), self.weights, self.bias, self.scale, self.padding, self.pooling).shape[1:]
         self.thr = thr
 
-        import pdb; pdb.set_trace()
         if tau_syn.shape[0] == 2:
-        	# 2, 32, 32
-            self.beta = torch.exp( -delta_t / torch.Tensor(self.inp_shape).uniform_(tau_syn[0], tau_syn[0]).to(device))
+            self.beta = torch.exp( -delta_t / torch.Tensor(torch.Size(self.inp_shape)).uniform_(tau_syn[0], tau_syn[1]).to(device))
         else:
             self.beta = torch.Tensor([torch.exp( - delta_t / tau_syn)]).to(device)
         if tau_mem.shape[0] == 2:
         	#2, 32, 32
-            self.alpha = torch.exp( -delta_t / torch.Tensor(self.inp_shape).uniform_(tau_mem[0], tau_mem[0]).to(device))
+            self.alpha = torch.exp( -delta_t / torch.Tensor(torch.Size(self.inp_shape)).uniform_(tau_mem[0], tau_mem[1]).to(device))
         else:
             self.alpha = torch.Tensor([torch.exp( - delta_t / tau_mem)]).to(device)
 
         if tau_ref.shape[0] == 2:
-            self.gamma = torch.exp( -delta_t / torch.Tensor(self.out_shape).uniform_(tau_ref[0], tau_ref[0]).to(device))
+            self.gamma = torch.exp( -delta_t / torch.Tensor(torch.Size(self.out_shape)).uniform_(tau_ref[0], tau_ref[1]).to(device))
         else:
             self.gamma = torch.Tensor([torch.exp( - delta_t / tau_ref)]).to(device)
 
