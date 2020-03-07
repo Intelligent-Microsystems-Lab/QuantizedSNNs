@@ -1,0 +1,232 @@
+
+In [1]: run search_local_error_dvs.py
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.6492 Train Acc 1: 0.4421 Test Acc 1: 0.0164 Train Acc 2: 0.7165 Test Acc 2: 0.0132 Train Acc 3: 0.4421 Test Acc 3: 0.0164 Train Acc 4: 0.2748 Test Acc 4: 0.0138  TRAIN_ACC: 0.2474 TEST_ACC: 0.0156  Train Time: 261.0286s Inference Time: 33.3117s
+Epoch 2 | Loss: 1.2668 Train Acc 1: 0.5184 Test Acc 1: 0.0194 Train Acc 2: 0.8802 Test Acc 2: 0.0143 Train Acc 3: 0.5184 Test Acc 3: 0.0194 Train Acc 4: 0.7715 Test Acc 4: 0.0016  TRAIN_ACC: 0.6523 TEST_ACC: 0.0156  Train Time: 261.2408s Inference Time: 29.1329s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.5924 Train Acc 1: 0.4829 Test Acc 1: 0.0184 Train Acc 2: 0.7376 Test Acc 2: 0.0125 Train Acc 3: 0.4829 Test Acc 3: 0.0184 Train Acc 4: 0.2452 Test Acc 4: 0.0391  TRAIN_ACC: 0.2578 TEST_ACC: 0.2344  Train Time: 244.6651s Inference Time: 35.3057s
+Epoch 2 | Loss: 1.4599 Train Acc 1: 0.5535 Test Acc 1: 0.0201 Train Acc 2: 0.8864 Test Acc 2: 0.0121 Train Acc 3: 0.5535 Test Acc 3: 0.0201 Train Acc 4: 0.2477 Test Acc 4: 0.0352  TRAIN_ACC: 0.2461 TEST_ACC: 0.2109  Train Time: 253.0363s Inference Time: 30.7719s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.8086 Train Acc 1: 0.4233 Test Acc 1: 0.0225 Train Acc 2: 0.6517 Test Acc 2: 0.0182 Train Acc 3: 0.4233 Test Acc 3: 0.0225 Train Acc 4: 0.2478 Test Acc 4: 0.0430  TRAIN_ACC: 0.2526 TEST_ACC: 0.2578  Train Time: 253.1758s Inference Time: 37.5398s
+Epoch 2 | Loss: 1.5640 Train Acc 1: 0.5094 Test Acc 1: 0.0190 Train Acc 2: 0.8693 Test Acc 2: 0.0128 Train Acc 3: 0.5094 Test Acc 3: 0.0190 Train Acc 4: 0.2438 Test Acc 4: 0.0391  TRAIN_ACC: 0.2422 TEST_ACC: 0.2344  Train Time: 260.2120s Inference Time: 34.4299s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.8078 Train Acc 1: 0.4597 Test Acc 1: 0.0235 Train Acc 2: 0.7238 Test Acc 2: 0.0167 Train Acc 3: 0.4597 Test Acc 3: 0.0235 Train Acc 4: 0.2464 Test Acc 4: 0.0352  TRAIN_ACC: 0.2461 TEST_ACC: 0.2109  Train Time: 237.5747s Inference Time: 34.1324s
+Epoch 2 | Loss: 1.4380 Train Acc 1: 0.5379 Test Acc 1: 0.0223 Train Acc 2: 0.8701 Test Acc 2: 0.0136 Train Acc 3: 0.5379 Test Acc 3: 0.0223 Train Acc 4: 0.2467 Test Acc 4: 0.0391  TRAIN_ACC: 0.2695 TEST_ACC: 0.2344  Train Time: 250.3974s Inference Time: 33.0719s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.5633 Train Acc 1: 0.4978 Test Acc 1: 0.0184 Train Acc 2: 0.7597 Test Acc 2: 0.0135 Train Acc 3: 0.4978 Test Acc 3: 0.0184 Train Acc 4: 0.2477 Test Acc 4: 0.0417  TRAIN_ACC: 0.2318 TEST_ACC: 0.2500  Train Time: 255.0093s Inference Time: 33.5203s
+Epoch 2 | Loss: 1.3766 Train Acc 1: 0.5656 Test Acc 1: 0.0179 Train Acc 2: 0.8888 Test Acc 2: 0.0111 Train Acc 3: 0.5656 Test Acc 3: 0.0179 Train Acc 4: 0.2464 Test Acc 4: 0.0326  TRAIN_ACC: 0.2448 TEST_ACC: 0.1953  Train Time: 238.5237s Inference Time: 37.1890s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.7455 Train Acc 1: 0.4562 Test Acc 1: 0.0216 Train Acc 2: 0.7210 Test Acc 2: 0.0150 Train Acc 3: 0.4562 Test Acc 3: 0.0216 Train Acc 4: 0.3061 Test Acc 4: 0.0273  TRAIN_ACC: 0.2552 TEST_ACC: 0.1641  Train Time: 251.0240s Inference Time: 36.7541s
+Epoch 2 | Loss: 1.3929 Train Acc 1: 0.5286 Test Acc 1: 0.0231 Train Acc 2: 0.8570 Test Acc 2: 0.0125 Train Acc 3: 0.5286 Test Acc 3: 0.0231 Train Acc 4: 0.4646 Test Acc 4: 0.0330  TRAIN_ACC: 0.3503 TEST_ACC: 0.2031  Train Time: 241.9328s Inference Time: 32.2011s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.5811 Train Acc 1: 0.4580 Test Acc 1: 0.0220 Train Acc 2: 0.7307 Test Acc 2: 0.0139 Train Acc 3: 0.4580 Test Acc 3: 0.0220 Train Acc 4: 0.3527 Test Acc 4: 0.0354  TRAIN_ACC: 0.2852 TEST_ACC: 0.2344  Train Time: 225.5227s Inference Time: 32.7397s
+Epoch 2 | Loss: 1.3303 Train Acc 1: 0.5327 Test Acc 1: 0.0206 Train Acc 2: 0.8819 Test Acc 2: 0.0120 Train Acc 3: 0.5327 Test Acc 3: 0.0206 Train Acc 4: 0.4557 Test Acc 4: 0.0358  TRAIN_ACC: 0.3529 TEST_ACC: 0.2344  Train Time: 238.0227s Inference Time: 33.7634s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.4651 Train Acc 1: 0.4672 Test Acc 1: 0.0187 Train Acc 2: 0.7159 Test Acc 2: 0.0145 Train Acc 3: 0.4672 Test Acc 3: 0.0187 Train Acc 4: 0.2465 Test Acc 4: 0.0378  TRAIN_ACC: 0.2448 TEST_ACC: 0.2266  Train Time: 253.0247s Inference Time: 30.5952s
+Epoch 2 | Loss: 1.3088 Train Acc 1: 0.5397 Test Acc 1: 0.0151 Train Acc 2: 0.8574 Test Acc 2: 0.0119 Train Acc 3: 0.5397 Test Acc 3: 0.0151 Train Acc 4: 0.2464 Test Acc 4: 0.0339  TRAIN_ACC: 0.2448 TEST_ACC: 0.2031  Train Time: 241.5071s Inference Time: 32.8071s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.7101 Train Acc 1: 0.4635 Test Acc 1: 0.0203 Train Acc 2: 0.7318 Test Acc 2: 0.0138 Train Acc 3: 0.4635 Test Acc 3: 0.0203 Train Acc 4: 0.2464 Test Acc 4: 0.0326  TRAIN_ACC: 0.2539 TEST_ACC: 0.1953  Train Time: 256.5396s Inference Time: 35.0979s
+Epoch 2 | Loss: 1.2978 Train Acc 1: 0.5516 Test Acc 1: 0.0223 Train Acc 2: 0.9124 Test Acc 2: 0.0135 Train Acc 3: 0.5516 Test Acc 3: 0.0223 Train Acc 4: 0.2451 Test Acc 4: 0.0378  TRAIN_ACC: 0.2435 TEST_ACC: 0.2266  Train Time: 239.2315s Inference Time: 33.8359s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.5513 Train Acc 1: 0.4740 Test Acc 1: 0.0167 Train Acc 2: 0.6886 Test Acc 2: 0.0127 Train Acc 3: 0.4740 Test Acc 3: 0.0167 Train Acc 4: 0.3282 Test Acc 4: 0.0224  TRAIN_ACC: 0.2552 TEST_ACC: 0.1953  Train Time: 246.7482s Inference Time: 32.7789s
+Epoch 2 | Loss: 1.2845 Train Acc 1: 0.5529 Test Acc 1: 0.0147 Train Acc 2: 0.8640 Test Acc 2: 0.0132 Train Acc 3: 0.5529 Test Acc 3: 0.0147 Train Acc 4: 0.5064 Test Acc 4: 0.0301  TRAIN_ACC: 0.3633 TEST_ACC: 0.2500  Train Time: 252.3925s Inference Time: 32.1620s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.6619 Train Acc 1: 0.4572 Test Acc 1: 0.0211 Train Acc 2: 0.6942 Test Acc 2: 0.0153 Train Acc 3: 0.4572 Test Acc 3: 0.0211 Train Acc 4: 0.2451 Test Acc 4: 0.0404  TRAIN_ACC: 0.2513 TEST_ACC: 0.2422  Train Time: 233.6632s Inference Time: 31.5939s
+Epoch 2 | Loss: 1.3532 Train Acc 1: 0.5281 Test Acc 1: 0.0183 Train Acc 2: 0.8270 Test Acc 2: 0.0122 Train Acc 3: 0.5281 Test Acc 3: 0.0183 Train Acc 4: 0.3051 Test Acc 4: 0.0337  TRAIN_ACC: 0.2604 TEST_ACC: 0.1953  Train Time: 230.0653s Inference Time: 34.2904s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.7126 Train Acc 1: 0.4271 Test Acc 1: 0.0238 Train Acc 2: 0.7059 Test Acc 2: 0.0135 Train Acc 3: 0.4271 Test Acc 3: 0.0238 Train Acc 4: 0.2438 Test Acc 4: 0.0393  TRAIN_ACC: 0.2448 TEST_ACC: 0.2266  Train Time: 253.0365s Inference Time: 35.1312s
+Epoch 2 | Loss: 1.3810 Train Acc 1: 0.4990 Test Acc 1: 0.0212 Train Acc 2: 0.8584 Test Acc 2: 0.0129 Train Acc 3: 0.4990 Test Acc 3: 0.0212 Train Acc 4: 0.2466 Test Acc 4: 0.0378  TRAIN_ACC: 0.2552 TEST_ACC: 0.2266  Train Time: 237.0604s Inference Time: 29.9669s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.6678 Train Acc 1: 0.4464 Test Acc 1: 0.0249 Train Acc 2: 0.7428 Test Acc 2: 0.0130 Train Acc 3: 0.4464 Test Acc 3: 0.0249 Train Acc 4: 0.2455 Test Acc 4: 0.0378  TRAIN_ACC: 0.2812 TEST_ACC: 0.2266  Train Time: 241.0998s Inference Time: 35.5275s
+Epoch 2 | Loss: 1.3885 Train Acc 1: 0.5196 Test Acc 1: 0.0231 Train Acc 2: 0.8768 Test Acc 2: 0.0118 Train Acc 3: 0.5196 Test Acc 3: 0.0231 Train Acc 4: 0.3839 Test Acc 4: 0.0241  TRAIN_ACC: 0.2565 TEST_ACC: 0.2266  Train Time: 246.0130s Inference Time: 33.5798s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.9233 Train Acc 1: 0.4337 Test Acc 1: 0.0238 Train Acc 2: 0.7198 Test Acc 2: 0.0131 Train Acc 3: 0.4337 Test Acc 3: 0.0238 Train Acc 4: 0.2451 Test Acc 4: 0.0352  TRAIN_ACC: 0.2435 TEST_ACC: 0.2109  Train Time: 245.1256s Inference Time: 30.6002s
+Epoch 2 | Loss: 1.5439 Train Acc 1: 0.5161 Test Acc 1: 0.0193 Train Acc 2: 0.8803 Test Acc 2: 0.0136 Train Acc 3: 0.5161 Test Acc 3: 0.0193 Train Acc 4: 0.2464 Test Acc 4: 0.0365  TRAIN_ACC: 0.2448 TEST_ACC: 0.2188  Train Time: 240.5641s Inference Time: 34.4229s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.5402 Train Acc 1: 0.4519 Test Acc 1: 0.0242 Train Acc 2: 0.7110 Test Acc 2: 0.0169 Train Acc 3: 0.4519 Test Acc 3: 0.0242 Train Acc 4: 0.2452 Test Acc 4: 0.0365  TRAIN_ACC: 0.2435 TEST_ACC: 0.2188  Train Time: 240.3321s Inference Time: 37.5094s
+Epoch 2 | Loss: 1.3933 Train Acc 1: 0.5358 Test Acc 1: 0.0233 Train Acc 2: 0.8744 Test Acc 2: 0.0148 Train Acc 3: 0.5358 Test Acc 3: 0.0233 Train Acc 4: 0.2464 Test Acc 4: 0.0391  TRAIN_ACC: 0.2448 TEST_ACC: 0.2344  Train Time: 240.7174s Inference Time: 29.0394s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.6321 Train Acc 1: 0.4778 Test Acc 1: 0.0173 Train Acc 2: 0.7303 Test Acc 2: 0.0122 Train Acc 3: 0.4778 Test Acc 3: 0.0173 Train Acc 4: 0.2640 Test Acc 4: 0.0417  TRAIN_ACC: 0.2591 TEST_ACC: 0.2500  Train Time: 237.7959s Inference Time: 34.3400s
+Epoch 2 | Loss: 1.3199 Train Acc 1: 0.5499 Test Acc 1: 0.0184 Train Acc 2: 0.8850 Test Acc 2: 0.0133 Train Acc 3: 0.5499 Test Acc 3: 0.0184 Train Acc 4: 0.3951 Test Acc 4: 0.0437  TRAIN_ACC: 0.3099 TEST_ACC: 0.2422  Train Time: 244.0767s Inference Time: 33.5188s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.8139 Train Acc 1: 0.4582 Test Acc 1: 0.0227 Train Acc 2: 0.7131 Test Acc 2: 0.0160 Train Acc 3: 0.4582 Test Acc 3: 0.0227 Train Acc 4: 0.2477 Test Acc 4: 0.0404  TRAIN_ACC: 0.2461 TEST_ACC: 0.2422  Train Time: 243.2110s Inference Time: 29.4614s
+Epoch 2 | Loss: 1.5002 Train Acc 1: 0.5464 Test Acc 1: 0.0179 Train Acc 2: 0.8613 Test Acc 2: 0.0147 Train Acc 3: 0.5464 Test Acc 3: 0.0179 Train Acc 4: 0.2451 Test Acc 4: 0.0352  TRAIN_ACC: 0.2435 TEST_ACC: 0.2109  Train Time: 230.2505s Inference Time: 33.4123s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.6781 Train Acc 1: 0.4462 Test Acc 1: 0.0246 Train Acc 2: 0.7413 Test Acc 2: 0.0180 Train Acc 3: 0.4462 Test Acc 3: 0.0246 Train Acc 4: 0.2473 Test Acc 4: 0.0417  TRAIN_ACC: 0.2435 TEST_ACC: 0.2500  Train Time: 229.4052s Inference Time: 33.6975s
+Epoch 2 | Loss: 1.3946 Train Acc 1: 0.5117 Test Acc 1: 0.0204 Train Acc 2: 0.8584 Test Acc 2: 0.0135 Train Acc 3: 0.5117 Test Acc 3: 0.0204 Train Acc 4: 0.4644 Test Acc 4: 0.0451  TRAIN_ACC: 0.3125 TEST_ACC: 0.2812  Train Time: 232.5231s Inference Time: 28.7586s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.8240 Train Acc 1: 0.4452 Test Acc 1: 0.0199 Train Acc 2: 0.7512 Test Acc 2: 0.0161 Train Acc 3: 0.4452 Test Acc 3: 0.0199 Train Acc 4: 0.2465 Test Acc 4: 0.0378  TRAIN_ACC: 0.2435 TEST_ACC: 0.2266  Train Time: 228.7398s Inference Time: 30.4567s
+Epoch 2 | Loss: 1.4189 Train Acc 1: 0.5570 Test Acc 1: 0.0178 Train Acc 2: 0.8885 Test Acc 2: 0.0136 Train Acc 3: 0.5570 Test Acc 3: 0.0178 Train Acc 4: 0.2451 Test Acc 4: 0.0365  TRAIN_ACC: 0.2435 TEST_ACC: 0.2188  Train Time: 243.9920s Inference Time: 32.7031s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.5610 Train Acc 1: 0.4217 Test Acc 1: 0.0258 Train Acc 2: 0.6995 Test Acc 2: 0.0144 Train Acc 3: 0.4217 Test Acc 3: 0.0258 Train Acc 4: 0.2575 Test Acc 4: 0.0389  TRAIN_ACC: 0.2721 TEST_ACC: 0.2266  Train Time: 235.9314s Inference Time: 33.7097s
+Epoch 2 | Loss: 1.3461 Train Acc 1: 0.4925 Test Acc 1: 0.0221 Train Acc 2: 0.8375 Test Acc 2: 0.0149 Train Acc 3: 0.4925 Test Acc 3: 0.0221 Train Acc 4: 0.4971 Test Acc 4: 0.0430  TRAIN_ACC: 0.3594 TEST_ACC: 0.2578  Train Time: 228.4519s Inference Time: 31.7809s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.6918 Train Acc 1: 0.4720 Test Acc 1: 0.0182 Train Acc 2: 0.7242 Test Acc 2: 0.0105 Train Acc 3: 0.4720 Test Acc 3: 0.0182 Train Acc 4: 0.2466 Test Acc 4: 0.0443  TRAIN_ACC: 0.2721 TEST_ACC: 0.2656  Train Time: 232.0538s Inference Time: 30.0964s
+Epoch 2 | Loss: 1.3891 Train Acc 1: 0.5392 Test Acc 1: 0.0190 Train Acc 2: 0.8716 Test Acc 2: 0.0114 Train Acc 3: 0.5392 Test Acc 3: 0.0190 Train Acc 4: 0.2451 Test Acc 4: 0.0312  TRAIN_ACC: 0.2435 TEST_ACC: 0.1875  Train Time: 239.7407s Inference Time: 33.6952s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.4312 Train Acc 1: 0.4289 Test Acc 1: 0.0238 Train Acc 2: 0.7321 Test Acc 2: 0.0118 Train Acc 3: 0.4289 Test Acc 3: 0.0238 Train Acc 4: 0.5335 Test Acc 4: 0.0153  TRAIN_ACC: 0.5430 TEST_ACC: 0.1484  Train Time: 233.7188s Inference Time: 31.2499s
+Epoch 2 | Loss: 1.2784 Train Acc 1: 0.4963 Test Acc 1: 0.0235 Train Acc 2: 0.8787 Test Acc 2: 0.0123 Train Acc 3: 0.4963 Test Acc 3: 0.0235 Train Acc 4: 0.8457 Test Acc 4: 0.0058  TRAIN_ACC: 0.9570 TEST_ACC: 0.0391  Train Time: 235.7906s Inference Time: 33.4761s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.7094 Train Acc 1: 0.4527 Test Acc 1: 0.0198 Train Acc 2: 0.7213 Test Acc 2: 0.0149 Train Acc 3: 0.4527 Test Acc 3: 0.0198 Train Acc 4: 0.2464 Test Acc 4: 0.0352  TRAIN_ACC: 0.2474 TEST_ACC: 0.2031  Train Time: 248.7624s Inference Time: 35.8625s
+Epoch 2 | Loss: 1.3044 Train Acc 1: 0.5498 Test Acc 1: 0.0188 Train Acc 2: 0.8849 Test Acc 2: 0.0138 Train Acc 3: 0.5498 Test Acc 3: 0.0188 Train Acc 4: 0.4446 Test Acc 4: 0.0255  TRAIN_ACC: 0.2891 TEST_ACC: 0.2422  Train Time: 236.0987s Inference Time: 35.0194s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.6333 Train Acc 1: 0.4415 Test Acc 1: 0.0213 Train Acc 2: 0.7447 Test Acc 2: 0.0120 Train Acc 3: 0.4415 Test Acc 3: 0.0213 Train Acc 4: 0.2464 Test Acc 4: 0.0352  TRAIN_ACC: 0.2448 TEST_ACC: 0.2109  Train Time: 231.2950s Inference Time: 33.8232s
+Epoch 2 | Loss: 1.3974 Train Acc 1: 0.5217 Test Acc 1: 0.0226 Train Acc 2: 0.8880 Test Acc 2: 0.0089 Train Acc 3: 0.5217 Test Acc 3: 0.0226 Train Acc 4: 0.2451 Test Acc 4: 0.0417  TRAIN_ACC: 0.2435 TEST_ACC: 0.2500  Train Time: 238.8948s Inference Time: 35.1714s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.8292 Train Acc 1: 0.4804 Test Acc 1: 0.0231 Train Acc 2: 0.7159 Test Acc 2: 0.0125 Train Acc 3: 0.4804 Test Acc 3: 0.0231 Train Acc 4: 0.2464 Test Acc 4: 0.0339  TRAIN_ACC: 0.2513 TEST_ACC: 0.2031  Train Time: 238.2379s Inference Time: 28.7720s
+Epoch 2 | Loss: 1.5418 Train Acc 1: 0.5522 Test Acc 1: 0.0238 Train Acc 2: 0.8800 Test Acc 2: 0.0135 Train Acc 3: 0.5522 Test Acc 3: 0.0238 Train Acc 4: 0.2438 Test Acc 4: 0.0365  TRAIN_ACC: 0.2422 TEST_ACC: 0.2188  Train Time: 235.9374s Inference Time: 35.2737s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.5312 Train Acc 1: 0.4694 Test Acc 1: 0.0176 Train Acc 2: 0.7712 Test Acc 2: 0.0130 Train Acc 3: 0.4694 Test Acc 3: 0.0176 Train Acc 4: 0.2465 Test Acc 4: 0.0404  TRAIN_ACC: 0.2656 TEST_ACC: 0.2422  Train Time: 238.4495s Inference Time: 33.7899s
+Epoch 2 | Loss: 1.3239 Train Acc 1: 0.5431 Test Acc 1: 0.0158 Train Acc 2: 0.8927 Test Acc 2: 0.0105 Train Acc 3: 0.5431 Test Acc 3: 0.0158 Train Acc 4: 0.2451 Test Acc 4: 0.0365  TRAIN_ACC: 0.2435 TEST_ACC: 0.2188  Train Time: 236.0680s Inference Time: 33.2998s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.6415 Train Acc 1: 0.4493 Test Acc 1: 0.0203 Train Acc 2: 0.7227 Test Acc 2: 0.0158 Train Acc 3: 0.4493 Test Acc 3: 0.0203 Train Acc 4: 0.2452 Test Acc 4: 0.0378  TRAIN_ACC: 0.2630 TEST_ACC: 0.2266  Train Time: 245.2326s Inference Time: 34.7748s
+Epoch 2 | Loss: 1.3594 Train Acc 1: 0.5370 Test Acc 1: 0.0192 Train Acc 2: 0.8768 Test Acc 2: 0.0154 Train Acc 3: 0.5370 Test Acc 3: 0.0192 Train Acc 4: 0.2451 Test Acc 4: 0.0299  TRAIN_ACC: 0.2435 TEST_ACC: 0.1797  Train Time: 245.2605s Inference Time: 34.7802s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.6190 Train Acc 1: 0.4540 Test Acc 1: 0.0202 Train Acc 2: 0.7528 Test Acc 2: 0.0151 Train Acc 3: 0.4540 Test Acc 3: 0.0202 Train Acc 4: 0.2741 Test Acc 4: 0.0349  TRAIN_ACC: 0.2539 TEST_ACC: 0.1875  Train Time: 238.0423s Inference Time: 33.9550s
+Epoch 2 | Loss: 1.3323 Train Acc 1: 0.5293 Test Acc 1: 0.0205 Train Acc 2: 0.8816 Test Acc 2: 0.0127 Train Acc 3: 0.5293 Test Acc 3: 0.0205 Train Acc 4: 0.6588 Test Acc 4: 0.0052  TRAIN_ACC: 0.5026 TEST_ACC: 0.0156  Train Time: 237.3453s Inference Time: 32.1479s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.6878 Train Acc 1: 0.4248 Test Acc 1: 0.0217 Train Acc 2: 0.6791 Test Acc 2: 0.0138 Train Acc 3: 0.4248 Test Acc 3: 0.0217 Train Acc 4: 0.3161 Test Acc 4: 0.0327  TRAIN_ACC: 0.2643 TEST_ACC: 0.1953  Train Time: 230.1420s Inference Time: 34.0564s
+Epoch 2 | Loss: 1.3218 Train Acc 1: 0.4850 Test Acc 1: 0.0211 Train Acc 2: 0.8361 Test Acc 2: 0.0127 Train Acc 3: 0.4850 Test Acc 3: 0.0211 Train Acc 4: 0.7878 Test Acc 4: 0.0050  TRAIN_ACC: 0.6901 TEST_ACC: 0.0156  Train Time: 252.2554s Inference Time: 37.0022s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.5556 Train Acc 1: 0.4305 Test Acc 1: 0.0295 Train Acc 2: 0.7474 Test Acc 2: 0.0143 Train Acc 3: 0.4305 Test Acc 3: 0.0295 Train Acc 4: 0.3044 Test Acc 4: 0.0323  TRAIN_ACC: 0.2682 TEST_ACC: 0.2188  Train Time: 259.2891s Inference Time: 34.7173s
+Epoch 2 | Loss: 1.4073 Train Acc 1: 0.5039 Test Acc 1: 0.0222 Train Acc 2: 0.8868 Test Acc 2: 0.0102 Train Acc 3: 0.5039 Test Acc 3: 0.0222 Train Acc 4: 0.4269 Test Acc 4: 0.0396  TRAIN_ACC: 0.2669 TEST_ACC: 0.2422  Train Time: 255.5923s Inference Time: 28.1509s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.9397 Train Acc 1: 0.4530 Test Acc 1: 0.0219 Train Acc 2: 0.6879 Test Acc 2: 0.0178 Train Acc 3: 0.4530 Test Acc 3: 0.0219 Train Acc 4: 0.2464 Test Acc 4: 0.0365  TRAIN_ACC: 0.2786 TEST_ACC: 0.2188  Train Time: 252.7938s Inference Time: 33.0395s
+Epoch 2 | Loss: 1.5084 Train Acc 1: 0.5435 Test Acc 1: 0.0255 Train Acc 2: 0.8585 Test Acc 2: 0.0127 Train Acc 3: 0.5435 Test Acc 3: 0.0255 Train Acc 4: 0.2464 Test Acc 4: 0.0417  TRAIN_ACC: 0.2513 TEST_ACC: 0.2500  Train Time: 253.5374s Inference Time: 32.3146s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.5898 Train Acc 1: 0.4609 Test Acc 1: 0.0148 Train Acc 2: 0.7509 Test Acc 2: 0.0132 Train Acc 3: 0.4609 Test Acc 3: 0.0148 Train Acc 4: 0.3968 Test Acc 4: 0.0124  TRAIN_ACC: 0.3555 TEST_ACC: 0.1250  Train Time: 237.6341s Inference Time: 36.1037s
+Epoch 2 | Loss: 1.3766 Train Acc 1: 0.5392 Test Acc 1: 0.0152 Train Acc 2: 0.8829 Test Acc 2: 0.0118 Train Acc 3: 0.5392 Test Acc 3: 0.0152 Train Acc 4: 0.5556 Test Acc 4: 0.0144  TRAIN_ACC: 0.5352 TEST_ACC: 0.1016  Train Time: 258.1978s Inference Time: 36.7191s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.4303 Train Acc 1: 0.4632 Test Acc 1: 0.0206 Train Acc 2: 0.7387 Test Acc 2: 0.0141 Train Acc 3: 0.4632 Test Acc 3: 0.0206 Train Acc 4: 0.4598 Test Acc 4: 0.0159  TRAIN_ACC: 0.3724 TEST_ACC: 0.0938  Train Time: 255.7256s Inference Time: 35.5631s
+Epoch 2 | Loss: 1.2946 Train Acc 1: 0.5359 Test Acc 1: 0.0199 Train Acc 2: 0.8809 Test Acc 2: 0.0120 Train Acc 3: 0.5359 Test Acc 3: 0.0199 Train Acc 4: 0.7673 Test Acc 4: 0.0096  TRAIN_ACC: 0.6445 TEST_ACC: 0.0859  Train Time: 240.5641s Inference Time: 33.3054s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.4940 Train Acc 1: 0.4874 Test Acc 1: 0.0161 Train Acc 2: 0.7661 Test Acc 2: 0.0130 Train Acc 3: 0.4874 Test Acc 3: 0.0161 Train Acc 4: 0.4346 Test Acc 4: 0.0398  TRAIN_ACC: 0.4023 TEST_ACC: 0.2188  Train Time: 238.6192s Inference Time: 29.6346s
+Epoch 2 | Loss: 1.2797 Train Acc 1: 0.5462 Test Acc 1: 0.0192 Train Acc 2: 0.8864 Test Acc 2: 0.0101 Train Acc 3: 0.5462 Test Acc 3: 0.0192 Train Acc 4: 0.6653 Test Acc 4: 0.0361  TRAIN_ACC: 0.5286 TEST_ACC: 0.1641  Train Time: 245.5892s Inference Time: 32.6788s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.6962 Train Acc 1: 0.4634 Test Acc 1: 0.0228 Train Acc 2: 0.7375 Test Acc 2: 0.0137 Train Acc 3: 0.4634 Test Acc 3: 0.0228 Train Acc 4: 0.2477 Test Acc 4: 0.0443  TRAIN_ACC: 0.2435 TEST_ACC: 0.2656  Train Time: 240.3733s Inference Time: 34.9630s
+Epoch 2 | Loss: 1.3246 Train Acc 1: 0.5417 Test Acc 1: 0.0218 Train Acc 2: 0.8907 Test Acc 2: 0.0121 Train Acc 3: 0.5417 Test Acc 3: 0.0218 Train Acc 4: 0.3364 Test Acc 4: 0.0455  TRAIN_ACC: 0.2956 TEST_ACC: 0.2734  Train Time: 236.9477s Inference Time: 28.7339s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.6587 Train Acc 1: 0.4718 Test Acc 1: 0.0251 Train Acc 2: 0.7386 Test Acc 2: 0.0127 Train Acc 3: 0.4718 Test Acc 3: 0.0251 Train Acc 4: 0.2451 Test Acc 4: 0.0378  TRAIN_ACC: 0.2539 TEST_ACC: 0.2266  Train Time: 252.7666s Inference Time: 32.8151s
+Epoch 2 | Loss: 1.3809 Train Acc 1: 0.5541 Test Acc 1: 0.0208 Train Acc 2: 0.8900 Test Acc 2: 0.0096 Train Acc 3: 0.5541 Test Acc 3: 0.0208 Train Acc 4: 0.2464 Test Acc 4: 0.0417  TRAIN_ACC: 0.2448 TEST_ACC: 0.2500  Train Time: 239.5791s Inference Time: 33.1954s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.5603 Train Acc 1: 0.4496 Test Acc 1: 0.0195 Train Acc 2: 0.6924 Test Acc 2: 0.0145 Train Acc 3: 0.4496 Test Acc 3: 0.0195 Train Acc 4: 0.3228 Test Acc 4: 0.0166  TRAIN_ACC: 0.2852 TEST_ACC: 0.0625  Train Time: 239.9042s Inference Time: 27.9924s
+Epoch 2 | Loss: 1.3504 Train Acc 1: 0.5319 Test Acc 1: 0.0202 Train Acc 2: 0.8563 Test Acc 2: 0.0146 Train Acc 3: 0.5319 Test Acc 3: 0.0202 Train Acc 4: 0.4282 Test Acc 4: 0.0168  TRAIN_ACC: 0.3451 TEST_ACC: 0.1250  Train Time: 237.0047s Inference Time: 33.5571s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.7677 Train Acc 1: 0.4401 Test Acc 1: 0.0226 Train Acc 2: 0.6682 Test Acc 2: 0.0170 Train Acc 3: 0.4401 Test Acc 3: 0.0226 Train Acc 4: 0.2445 Test Acc 4: 0.0326  TRAIN_ACC: 0.2318 TEST_ACC: 0.1953  Train Time: 240.6111s Inference Time: 33.0749s
+Epoch 2 | Loss: 1.5434 Train Acc 1: 0.5080 Test Acc 1: 0.0234 Train Acc 2: 0.8433 Test Acc 2: 0.0139 Train Acc 3: 0.5080 Test Acc 3: 0.0234 Train Acc 4: 0.2438 Test Acc 4: 0.0404  TRAIN_ACC: 0.2539 TEST_ACC: 0.2422  Train Time: 242.5023s Inference Time: 32.7562s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.4902 Train Acc 1: 0.4967 Test Acc 1: 0.0165 Train Acc 2: 0.7423 Test Acc 2: 0.0128 Train Acc 3: 0.4967 Test Acc 3: 0.0165 Train Acc 4: 0.2468 Test Acc 4: 0.0365  TRAIN_ACC: 0.2565 TEST_ACC: 0.2188  Train Time: 241.7993s Inference Time: 33.2571s
+Epoch 2 | Loss: 1.2927 Train Acc 1: 0.5739 Test Acc 1: 0.0158 Train Acc 2: 0.9016 Test Acc 2: 0.0112 Train Acc 3: 0.5739 Test Acc 3: 0.0158 Train Acc 4: 0.2464 Test Acc 4: 0.0365  TRAIN_ACC: 0.2448 TEST_ACC: 0.2188  Train Time: 237.0817s Inference Time: 33.2975s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.5886 Train Acc 1: 0.4195 Test Acc 1: 0.0287 Train Acc 2: 0.6980 Test Acc 2: 0.0173 Train Acc 3: 0.4195 Test Acc 3: 0.0287 Train Acc 4: 0.2438 Test Acc 4: 0.0404  TRAIN_ACC: 0.2396 TEST_ACC: 0.2422  Train Time: 241.0441s Inference Time: 32.9406s
+Epoch 2 | Loss: 1.3714 Train Acc 1: 0.4910 Test Acc 1: 0.0278 Train Acc 2: 0.8584 Test Acc 2: 0.0162 Train Acc 3: 0.4910 Test Acc 3: 0.0278 Train Acc 4: 0.2451 Test Acc 4: 0.0378  TRAIN_ACC: 0.2552 TEST_ACC: 0.2266  Train Time: 239.3921s Inference Time: 33.1985s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.7857 Train Acc 1: 0.4606 Test Acc 1: 0.0194 Train Acc 2: 0.7108 Test Acc 2: 0.0117 Train Acc 3: 0.4606 Test Acc 3: 0.0194 Train Acc 4: 0.2465 Test Acc 4: 0.0443  TRAIN_ACC: 0.2591 TEST_ACC: 0.2656  Train Time: 238.7141s Inference Time: 32.6693s
+Epoch 2 | Loss: 1.3236 Train Acc 1: 0.5376 Test Acc 1: 0.0190 Train Acc 2: 0.8648 Test Acc 2: 0.0105 Train Acc 3: 0.5376 Test Acc 3: 0.0190 Train Acc 4: 0.2469 Test Acc 4: 0.0404  TRAIN_ACC: 0.2448 TEST_ACC: 0.2422  Train Time: 238.8547s Inference Time: 33.2015s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.4249 Train Acc 1: 0.4931 Test Acc 1: 0.0212 Train Acc 2: 0.7760 Test Acc 2: 0.0143 Train Acc 3: 0.4931 Test Acc 3: 0.0212 Train Acc 4: 0.5109 Test Acc 4: 0.0205  TRAIN_ACC: 0.6237 TEST_ACC: 0.0703  Train Time: 244.4927s Inference Time: 32.9445s
+Epoch 2 | Loss: 1.3184 Train Acc 1: 0.5628 Test Acc 1: 0.0206 Train Acc 2: 0.9033 Test Acc 2: 0.0122 Train Acc 3: 0.5628 Test Acc 3: 0.0206 Train Acc 4: 0.6647 Test Acc 4: 0.0101  TRAIN_ACC: 0.7253 TEST_ACC: 0.0547  Train Time: 240.3166s Inference Time: 32.9828s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.5410 Train Acc 1: 0.4339 Test Acc 1: 0.0250 Train Acc 2: 0.7314 Test Acc 2: 0.0198 Train Acc 3: 0.4339 Test Acc 3: 0.0250 Train Acc 4: 0.3085 Test Acc 4: 0.0446  TRAIN_ACC: 0.2409 TEST_ACC: 0.2812  Train Time: 237.8682s Inference Time: 33.1514s
+Epoch 2 | Loss: 1.3717 Train Acc 1: 0.4959 Test Acc 1: 0.0210 Train Acc 2: 0.8514 Test Acc 2: 0.0148 Train Acc 3: 0.4959 Test Acc 3: 0.0210 Train Acc 4: 0.4520 Test Acc 4: 0.0377  TRAIN_ACC: 0.3503 TEST_ACC: 0.2266  Train Time: 242.0575s Inference Time: 32.8025s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.4887 Train Acc 1: 0.4608 Test Acc 1: 0.0240 Train Acc 2: 0.7004 Test Acc 2: 0.0144 Train Acc 3: 0.4608 Test Acc 3: 0.0240 Train Acc 4: 0.2639 Test Acc 4: 0.0391  TRAIN_ACC: 0.2812 TEST_ACC: 0.2344  Train Time: 242.6006s Inference Time: 27.8658s
+Epoch 2 | Loss: 1.3025 Train Acc 1: 0.5406 Test Acc 1: 0.0198 Train Acc 2: 0.8718 Test Acc 2: 0.0120 Train Acc 3: 0.5406 Test Acc 3: 0.0198 Train Acc 4: 0.3814 Test Acc 4: 0.0219  TRAIN_ACC: 0.2786 TEST_ACC: 0.0547  Train Time: 235.6819s Inference Time: 28.2750s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.8038 Train Acc 1: 0.4262 Test Acc 1: 0.0215 Train Acc 2: 0.6811 Test Acc 2: 0.0153 Train Acc 3: 0.4262 Test Acc 3: 0.0215 Train Acc 4: 0.2452 Test Acc 4: 0.0352  TRAIN_ACC: 0.2604 TEST_ACC: 0.2109  Train Time: 239.7572s Inference Time: 32.9250s
+Epoch 2 | Loss: 1.4077 Train Acc 1: 0.4884 Test Acc 1: 0.0165 Train Acc 2: 0.8398 Test Acc 2: 0.0128 Train Acc 3: 0.4884 Test Acc 3: 0.0165 Train Acc 4: 0.2438 Test Acc 4: 0.0391  TRAIN_ACC: 0.2422 TEST_ACC: 0.2344  Train Time: 241.7003s Inference Time: 32.8759s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.6423 Train Acc 1: 0.4591 Test Acc 1: 0.0183 Train Acc 2: 0.7217 Test Acc 2: 0.0144 Train Acc 3: 0.4591 Test Acc 3: 0.0183 Train Acc 4: 0.2937 Test Acc 4: 0.0311  TRAIN_ACC: 0.2396 TEST_ACC: 0.2031  Train Time: 238.6912s Inference Time: 32.5290s
+Epoch 2 | Loss: 1.3614 Train Acc 1: 0.5292 Test Acc 1: 0.0194 Train Acc 2: 0.8696 Test Acc 2: 0.0137 Train Acc 3: 0.5292 Test Acc 3: 0.0194 Train Acc 4: 0.4488 Test Acc 4: 0.0341  TRAIN_ACC: 0.3229 TEST_ACC: 0.2188  Train Time: 234.4417s Inference Time: 33.2488s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.8677 Train Acc 1: 0.4305 Test Acc 1: 0.0243 Train Acc 2: 0.6521 Test Acc 2: 0.0154 Train Acc 3: 0.4305 Test Acc 3: 0.0243 Train Acc 4: 0.2464 Test Acc 4: 0.0443  TRAIN_ACC: 0.2500 TEST_ACC: 0.2656  Train Time: 241.6135s Inference Time: 33.0190s
+Epoch 2 | Loss: 1.4854 Train Acc 1: 0.5131 Test Acc 1: 0.0252 Train Acc 2: 0.8352 Test Acc 2: 0.0130 Train Acc 3: 0.5131 Test Acc 3: 0.0252 Train Acc 4: 0.2451 Test Acc 4: 0.0417  TRAIN_ACC: 0.2435 TEST_ACC: 0.2500  Train Time: 240.5761s Inference Time: 33.0618s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.6749 Train Acc 1: 0.4810 Test Acc 1: 0.0228 Train Acc 2: 0.6913 Test Acc 2: 0.0157 Train Acc 3: 0.4810 Test Acc 3: 0.0228 Train Acc 4: 0.2452 Test Acc 4: 0.0378  TRAIN_ACC: 0.2422 TEST_ACC: 0.2266  Train Time: 240.3981s Inference Time: 32.4589s
+Epoch 2 | Loss: 1.3585 Train Acc 1: 0.5620 Test Acc 1: 0.0231 Train Acc 2: 0.8759 Test Acc 2: 0.0114 Train Acc 3: 0.5620 Test Acc 3: 0.0231 Train Acc 4: 0.2477 Test Acc 4: 0.0443  TRAIN_ACC: 0.2461 TEST_ACC: 0.2656  Train Time: 236.8489s Inference Time: 32.7281s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.6457 Train Acc 1: 0.4663 Test Acc 1: 0.0195 Train Acc 2: 0.7132 Test Acc 2: 0.0124 Train Acc 3: 0.4663 Test Acc 3: 0.0195 Train Acc 4: 0.2478 Test Acc 4: 0.0352  TRAIN_ACC: 0.2565 TEST_ACC: 0.2109  Train Time: 242.8770s Inference Time: 33.2105s
+Epoch 2 | Loss: 1.3704 Train Acc 1: 0.5322 Test Acc 1: 0.0197 Train Acc 2: 0.8691 Test Acc 2: 0.0117 Train Acc 3: 0.5322 Test Acc 3: 0.0197 Train Acc 4: 0.2451 Test Acc 4: 0.0365  TRAIN_ACC: 0.2435 TEST_ACC: 0.2188  Train Time: 241.6011s Inference Time: 32.5617s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.6083 Train Acc 1: 0.4601 Test Acc 1: 0.0217 Train Acc 2: 0.6740 Test Acc 2: 0.0176 Train Acc 3: 0.4601 Test Acc 3: 0.0217 Train Acc 4: 0.2466 Test Acc 4: 0.0417  TRAIN_ACC: 0.2370 TEST_ACC: 0.2500  Train Time: 238.5852s Inference Time: 32.0328s
+Epoch 2 | Loss: 1.3520 Train Acc 1: 0.5276 Test Acc 1: 0.0237 Train Acc 2: 0.8624 Test Acc 2: 0.0161 Train Acc 3: 0.5276 Test Acc 3: 0.0237 Train Acc 4: 0.2455 Test Acc 4: 0.0378  TRAIN_ACC: 0.2435 TEST_ACC: 0.2266  Train Time: 238.0626s Inference Time: 32.7020s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.4392 Train Acc 1: 0.4718 Test Acc 1: 0.0193 Train Acc 2: 0.7114 Test Acc 2: 0.0133 Train Acc 3: 0.4718 Test Acc 3: 0.0193 Train Acc 4: 0.5334 Test Acc 4: 0.0134  TRAIN_ACC: 0.5052 TEST_ACC: 0.0391  Train Time: 245.8764s Inference Time: 32.7941s
+Epoch 2 | Loss: 1.2683 Train Acc 1: 0.5565 Test Acc 1: 0.0185 Train Acc 2: 0.8824 Test Acc 2: 0.0109 Train Acc 3: 0.5565 Test Acc 3: 0.0185 Train Acc 4: 0.7406 Test Acc 4: 0.0121  TRAIN_ACC: 0.5573 TEST_ACC: 0.0469  Train Time: 242.6422s Inference Time: 33.1651s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.6826 Train Acc 1: 0.4788 Test Acc 1: 0.0196 Train Acc 2: 0.7483 Test Acc 2: 0.0114 Train Acc 3: 0.4788 Test Acc 3: 0.0196 Train Acc 4: 0.2483 Test Acc 4: 0.0284  TRAIN_ACC: 0.2448 TEST_ACC: 0.1094  Train Time: 239.6386s Inference Time: 32.9011s
+Epoch 2 | Loss: 1.4181 Train Acc 1: 0.5636 Test Acc 1: 0.0214 Train Acc 2: 0.8876 Test Acc 2: 0.0124 Train Acc 3: 0.5636 Test Acc 3: 0.0214 Train Acc 4: 0.3886 Test Acc 4: 0.0395  TRAIN_ACC: 0.2721 TEST_ACC: 0.2266  Train Time: 245.0706s Inference Time: 33.5526s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.5716 Train Acc 1: 0.4537 Test Acc 1: 0.0212 Train Acc 2: 0.7472 Test Acc 2: 0.0102 Train Acc 3: 0.4537 Test Acc 3: 0.0212 Train Acc 4: 0.3016 Test Acc 4: 0.0198  TRAIN_ACC: 0.2500 TEST_ACC: 0.2266  Train Time: 241.5029s Inference Time: 33.1480s
+Epoch 2 | Loss: 1.3575 Train Acc 1: 0.5175 Test Acc 1: 0.0257 Train Acc 2: 0.8832 Test Acc 2: 0.0108 Train Acc 3: 0.5175 Test Acc 3: 0.0257 Train Acc 4: 0.4657 Test Acc 4: 0.0280  TRAIN_ACC: 0.3125 TEST_ACC: 0.1641  Train Time: 238.7271s Inference Time: 32.4246s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.5274 Train Acc 1: 0.4602 Test Acc 1: 0.0254 Train Acc 2: 0.7512 Test Acc 2: 0.0151 Train Acc 3: 0.4602 Test Acc 3: 0.0254 Train Acc 4: 0.2588 Test Acc 4: 0.0404  TRAIN_ACC: 0.2656 TEST_ACC: 0.2422  Train Time: 236.2983s Inference Time: 32.8293s
+Epoch 2 | Loss: 1.3560 Train Acc 1: 0.5234 Test Acc 1: 0.0197 Train Acc 2: 0.8714 Test Acc 2: 0.0145 Train Acc 3: 0.5234 Test Acc 3: 0.0197 Train Acc 4: 0.6781 Test Acc 4: 0.0016  TRAIN_ACC: 0.4102 TEST_ACC: 0.0234  Train Time: 238.3411s Inference Time: 32.5422s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.6660 Train Acc 1: 0.4639 Test Acc 1: 0.0185 Train Acc 2: 0.6908 Test Acc 2: 0.0154 Train Acc 3: 0.4639 Test Acc 3: 0.0185 Train Acc 4: 0.2464 Test Acc 4: 0.0404  TRAIN_ACC: 0.2422 TEST_ACC: 0.2422  Train Time: 239.4554s Inference Time: 32.6550s
+Epoch 2 | Loss: 1.3961 Train Acc 1: 0.5363 Test Acc 1: 0.0201 Train Acc 2: 0.8639 Test Acc 2: 0.0152 Train Acc 3: 0.5363 Test Acc 3: 0.0201 Train Acc 4: 0.2464 Test Acc 4: 0.0417  TRAIN_ACC: 0.2435 TEST_ACC: 0.2500  Train Time: 240.3098s Inference Time: 32.7207s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.4624 Train Acc 1: 0.4824 Test Acc 1: 0.0172 Train Acc 2: 0.7444 Test Acc 2: 0.0130 Train Acc 3: 0.4824 Test Acc 3: 0.0172 Train Acc 4: 0.4116 Test Acc 4: 0.0140  TRAIN_ACC: 0.3333 TEST_ACC: 0.1094  Train Time: 236.5710s Inference Time: 33.3399s
+Epoch 2 | Loss: 1.3030 Train Acc 1: 0.5488 Test Acc 1: 0.0193 Train Acc 2: 0.8817 Test Acc 2: 0.0128 Train Acc 3: 0.5488 Test Acc 3: 0.0193 Train Acc 4: 0.4800 Test Acc 4: 0.0225  TRAIN_ACC: 0.3073 TEST_ACC: 0.1797  Train Time: 238.5467s Inference Time: 33.0999s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.3618 Train Acc 1: 0.4645 Test Acc 1: 0.0231 Train Acc 2: 0.7426 Test Acc 2: 0.0156 Train Acc 3: 0.4645 Test Acc 3: 0.0231 Train Acc 4: 0.4322 Test Acc 4: 0.0393  TRAIN_ACC: 0.4909 TEST_ACC: 0.2500  Train Time: 242.2494s Inference Time: 33.0153s
+Epoch 2 | Loss: 1.2435 Train Acc 1: 0.5372 Test Acc 1: 0.0197 Train Acc 2: 0.8554 Test Acc 2: 0.0134 Train Acc 3: 0.5372 Test Acc 3: 0.0197 Train Acc 4: 0.8191 Test Acc 4: 0.0194  TRAIN_ACC: 0.9362 TEST_ACC: 0.1875  Train Time: 237.7042s Inference Time: 32.5836s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.7782 Train Acc 1: 0.4352 Test Acc 1: 0.0190 Train Acc 2: 0.6995 Test Acc 2: 0.0164 Train Acc 3: 0.4352 Test Acc 3: 0.0190 Train Acc 4: 0.2452 Test Acc 4: 0.0404  TRAIN_ACC: 0.2500 TEST_ACC: 0.2422  Train Time: 246.8179s Inference Time: 33.1189s
+Epoch 2 | Loss: 1.4942 Train Acc 1: 0.5172 Test Acc 1: 0.0159 Train Acc 2: 0.8471 Test Acc 2: 0.0120 Train Acc 3: 0.5172 Test Acc 3: 0.0159 Train Acc 4: 0.2464 Test Acc 4: 0.0404  TRAIN_ACC: 0.2448 TEST_ACC: 0.2422  Train Time: 240.3334s Inference Time: 32.5413s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.7297 Train Acc 1: 0.4623 Test Acc 1: 0.0203 Train Acc 2: 0.6811 Test Acc 2: 0.0136 Train Acc 3: 0.4623 Test Acc 3: 0.0203 Train Acc 4: 0.2722 Test Acc 4: 0.0354  TRAIN_ACC: 0.2487 TEST_ACC: 0.2031  Train Time: 240.8916s Inference Time: 33.3562s
+Epoch 2 | Loss: 1.4140 Train Acc 1: 0.5396 Test Acc 1: 0.0222 Train Acc 2: 0.8430 Test Acc 2: 0.0125 Train Acc 3: 0.5396 Test Acc 3: 0.0222 Train Acc 4: 0.4549 Test Acc 4: 0.0376  TRAIN_ACC: 0.3294 TEST_ACC: 0.2188  Train Time: 238.0481s Inference Time: 32.7249s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.3173 Train Acc 1: 0.4533 Test Acc 1: 0.0229 Train Acc 2: 0.7338 Test Acc 2: 0.0141 Train Acc 3: 0.4533 Test Acc 3: 0.0229 Train Acc 4: 0.5676 Test Acc 4: 0.0050  TRAIN_ACC: 0.6237 TEST_ACC: 0.0000  Train Time: 237.0376s Inference Time: 32.6902s
+Epoch 2 | Loss: 1.2552 Train Acc 1: 0.5388 Test Acc 1: 0.0226 Train Acc 2: 0.8747 Test Acc 2: 0.0116 Train Acc 3: 0.5388 Test Acc 3: 0.0226 Train Acc 4: 0.8894 Test Acc 4: 0.0178  TRAIN_ACC: 0.7396 TEST_ACC: 0.1797  Train Time: 238.0563s Inference Time: 33.8733s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.4424 Train Acc 1: 0.4435 Test Acc 1: 0.0180 Train Acc 2: 0.7510 Test Acc 2: 0.0155 Train Acc 3: 0.4435 Test Acc 3: 0.0180 Train Acc 4: 0.3262 Test Acc 4: 0.0343  TRAIN_ACC: 0.2643 TEST_ACC: 0.1953  Train Time: 238.2710s Inference Time: 33.7443s
+Epoch 2 | Loss: 1.3615 Train Acc 1: 0.5250 Test Acc 1: 0.0179 Train Acc 2: 0.8736 Test Acc 2: 0.0146 Train Acc 3: 0.5250 Test Acc 3: 0.0179 Train Acc 4: 0.4455 Test Acc 4: 0.0369  TRAIN_ACC: 0.3190 TEST_ACC: 0.2266  Train Time: 239.1861s Inference Time: 32.9053s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.7114 Train Acc 1: 0.4429 Test Acc 1: 0.0212 Train Acc 2: 0.6987 Test Acc 2: 0.0147 Train Acc 3: 0.4429 Test Acc 3: 0.0212 Train Acc 4: 0.2972 Test Acc 4: 0.0469  TRAIN_ACC: 0.2565 TEST_ACC: 0.2812  Train Time: 239.0016s Inference Time: 33.1618s
+Epoch 2 | Loss: 1.4106 Train Acc 1: 0.5164 Test Acc 1: 0.0213 Train Acc 2: 0.8390 Test Acc 2: 0.0151 Train Acc 3: 0.5164 Test Acc 3: 0.0213 Train Acc 4: 0.4744 Test Acc 4: 0.0337  TRAIN_ACC: 0.3685 TEST_ACC: 0.2109  Train Time: 238.3624s Inference Time: 33.0480s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.8502 Train Acc 1: 0.4368 Test Acc 1: 0.0213 Train Acc 2: 0.7055 Test Acc 2: 0.0146 Train Acc 3: 0.4368 Test Acc 3: 0.0213 Train Acc 4: 0.2451 Test Acc 4: 0.0417  TRAIN_ACC: 0.2422 TEST_ACC: 0.2500  Train Time: 237.1984s Inference Time: 33.1487s
+Epoch 2 | Loss: 1.5079 Train Acc 1: 0.5288 Test Acc 1: 0.0221 Train Acc 2: 0.8546 Test Acc 2: 0.0137 Train Acc 3: 0.5288 Test Acc 3: 0.0221 Train Acc 4: 0.2451 Test Acc 4: 0.0339  TRAIN_ACC: 0.2409 TEST_ACC: 0.2031  Train Time: 242.8486s Inference Time: 32.4402s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.8314 Train Acc 1: 0.4414 Test Acc 1: 0.0155 Train Acc 2: 0.7403 Test Acc 2: 0.0121 Train Acc 3: 0.4414 Test Acc 3: 0.0155 Train Acc 4: 0.2437 Test Acc 4: 0.0312  TRAIN_ACC: 0.2396 TEST_ACC: 0.1875  Train Time: 237.4098s Inference Time: 33.0438s
+Epoch 2 | Loss: 1.2846 Train Acc 1: 0.5301 Test Acc 1: 0.0196 Train Acc 2: 0.8994 Test Acc 2: 0.0111 Train Acc 3: 0.5301 Test Acc 3: 0.0196 Train Acc 4: 0.4005 Test Acc 4: 0.0391  TRAIN_ACC: 0.2578 TEST_ACC: 0.2578  Train Time: 237.6680s Inference Time: 32.7924s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.7652 Train Acc 1: 0.4639 Test Acc 1: 0.0219 Train Acc 2: 0.7355 Test Acc 2: 0.0168 Train Acc 3: 0.4639 Test Acc 3: 0.0219 Train Acc 4: 0.2586 Test Acc 4: 0.0352  TRAIN_ACC: 0.2565 TEST_ACC: 0.2109  Train Time: 236.9525s Inference Time: 32.3358s
+Epoch 2 | Loss: 1.5195 Train Acc 1: 0.5289 Test Acc 1: 0.0225 Train Acc 2: 0.8629 Test Acc 2: 0.0147 Train Acc 3: 0.5289 Test Acc 3: 0.0225 Train Acc 4: 0.2451 Test Acc 4: 0.0378  TRAIN_ACC: 0.2435 TEST_ACC: 0.2266  Train Time: 237.6925s Inference Time: 32.9117s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.6876 Train Acc 1: 0.4520 Test Acc 1: 0.0216 Train Acc 2: 0.7495 Test Acc 2: 0.0126 Train Acc 3: 0.4520 Test Acc 3: 0.0216 Train Acc 4: 0.2596 Test Acc 4: 0.0456  TRAIN_ACC: 0.2396 TEST_ACC: 0.2734  Train Time: 239.6536s Inference Time: 33.2723s
+Epoch 2 | Loss: 1.3966 Train Acc 1: 0.5319 Test Acc 1: 0.0218 Train Acc 2: 0.8959 Test Acc 2: 0.0108 Train Acc 3: 0.5319 Test Acc 3: 0.0218 Train Acc 4: 0.2577 Test Acc 4: 0.0430  TRAIN_ACC: 0.2539 TEST_ACC: 0.2578  Train Time: 239.5419s Inference Time: 32.4969s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.8018 Train Acc 1: 0.4378 Test Acc 1: 0.0223 Train Acc 2: 0.6895 Test Acc 2: 0.0141 Train Acc 3: 0.4378 Test Acc 3: 0.0223 Train Acc 4: 0.2465 Test Acc 4: 0.0378  TRAIN_ACC: 0.2578 TEST_ACC: 0.2266  Train Time: 243.9783s Inference Time: 32.2963s
+Epoch 2 | Loss: 1.5561 Train Acc 1: 0.5255 Test Acc 1: 0.0256 Train Acc 2: 0.8468 Test Acc 2: 0.0141 Train Acc 3: 0.5255 Test Acc 3: 0.0256 Train Acc 4: 0.2477 Test Acc 4: 0.0378  TRAIN_ACC: 0.2461 TEST_ACC: 0.2266  Train Time: 241.9403s Inference Time: 32.5274s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.5983 Train Acc 1: 0.4366 Test Acc 1: 0.0179 Train Acc 2: 0.7348 Test Acc 2: 0.0165 Train Acc 3: 0.4366 Test Acc 3: 0.0179 Train Acc 4: 0.2468 Test Acc 4: 0.0391  TRAIN_ACC: 0.2656 TEST_ACC: 0.2344  Train Time: 249.0710s Inference Time: 30.7951s
+Epoch 2 | Loss: 1.3750 Train Acc 1: 0.5083 Test Acc 1: 0.0193 Train Acc 2: 0.8591 Test Acc 2: 0.0120 Train Acc 3: 0.5083 Test Acc 3: 0.0193 Train Acc 4: 0.2477 Test Acc 4: 0.0417  TRAIN_ACC: 0.2461 TEST_ACC: 0.2500  Train Time: 241.4656s Inference Time: 33.2648s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.9728 Train Acc 1: 0.4635 Test Acc 1: 0.0229 Train Acc 2: 0.7163 Test Acc 2: 0.0138 Train Acc 3: 0.4635 Test Acc 3: 0.0229 Train Acc 4: 0.2464 Test Acc 4: 0.0326  TRAIN_ACC: 0.2448 TEST_ACC: 0.1953  Train Time: 246.1706s Inference Time: 32.8332s
+Epoch 2 | Loss: 1.5097 Train Acc 1: 0.5395 Test Acc 1: 0.0195 Train Acc 2: 0.8712 Test Acc 2: 0.0101 Train Acc 3: 0.5395 Test Acc 3: 0.0195 Train Acc 4: 0.2464 Test Acc 4: 0.0365  TRAIN_ACC: 0.2448 TEST_ACC: 0.2188  Train Time: 239.4776s Inference Time: 33.5568s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.6663 Train Acc 1: 0.4604 Test Acc 1: 0.0209 Train Acc 2: 0.6397 Test Acc 2: 0.0205 Train Acc 3: 0.4604 Test Acc 3: 0.0209 Train Acc 4: 0.2452 Test Acc 4: 0.0352  TRAIN_ACC: 0.2357 TEST_ACC: 0.2109  Train Time: 241.4486s Inference Time: 33.2664s
+ 92%|████████████████████████████████████████████▏   | 69/75 [10:35:58<54:56, 549.44s/it, best loss: 0.71875]
+                                                                                Epoch 2 | Loss: 1.3483 Train Acc 1: 0.5374 Test Acc 1: 0.0203 Train Acc 2: 0.8260 Test Acc 2: 0.0150 Train Acc 3: 0.5374 Test Acc 3: 0.0203 Train Acc 4: 0.2465 Test Acc 4: 0.0391  TRAIN_ACC: 0.2552 TEST_ACC: 0.2344  Train Time: 242.6007s Inference Time: 33.3408s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.5917 Train Acc 1: 0.4555 Test Acc 1: 0.0216 Train Acc 2: 0.6936 Test Acc 2: 0.0141 Train Acc 3: 0.4555 Test Acc 3: 0.0216 Train Acc 4: 0.2660 Test Acc 4: 0.0443  TRAIN_ACC: 0.2643 TEST_ACC: 0.2656  Train Time: 240.3195s Inference Time: 32.7249s
+Epoch 2 | Loss: 1.3832 Train Acc 1: 0.5401 Test Acc 1: 0.0209 Train Acc 2: 0.8434 Test Acc 2: 0.0117 Train Acc 3: 0.5401 Test Acc 3: 0.0209 Train Acc 4: 0.2464 Test Acc 4: 0.0312  TRAIN_ACC: 0.2474 TEST_ACC: 0.1875  Train Time: 237.8716s Inference Time: 33.7367s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.7331 Train Acc 1: 0.4543 Test Acc 1: 0.0235 Train Acc 2: 0.7117 Test Acc 2: 0.0151 Train Acc 3: 0.4543 Test Acc 3: 0.0235 Train Acc 4: 0.2465 Test Acc 4: 0.0352  TRAIN_ACC: 0.2526 TEST_ACC: 0.2109  Train Time: 241.8600s Inference Time: 32.5567s
+Epoch 2 | Loss: 1.4050 Train Acc 1: 0.5345 Test Acc 1: 0.0206 Train Acc 2: 0.8725 Test Acc 2: 0.0118 Train Acc 3: 0.5345 Test Acc 3: 0.0206 Train Acc 4: 0.2465 Test Acc 4: 0.0404  TRAIN_ACC: 0.2448 TEST_ACC: 0.2422  Train Time: 239.2401s Inference Time: 32.9655s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.9919 Train Acc 1: 0.4553 Test Acc 1: 0.0253 Train Acc 2: 0.7074 Test Acc 2: 0.0155 Train Acc 3: 0.4553 Test Acc 3: 0.0253 Train Acc 4: 0.2451 Test Acc 4: 0.0404  TRAIN_ACC: 0.2357 TEST_ACC: 0.2422  Train Time: 238.9599s Inference Time: 32.8581s
+Epoch 2 | Loss: 1.5383 Train Acc 1: 0.5356 Test Acc 1: 0.0202 Train Acc 2: 0.8806 Test Acc 2: 0.0105 Train Acc 3: 0.5356 Test Acc 3: 0.0202 Train Acc 4: 0.2873 Test Acc 4: 0.0177  TRAIN_ACC: 0.2357 TEST_ACC: 0.0078  Train Time: 239.1380s Inference Time: 33.2484s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.5954 Train Acc 1: 0.4696 Test Acc 1: 0.0180 Train Acc 2: 0.6934 Test Acc 2: 0.0144 Train Acc 3: 0.4696 Test Acc 3: 0.0180 Train Acc 4: 0.2451 Test Acc 4: 0.0339  TRAIN_ACC: 0.2552 TEST_ACC: 0.2031  Train Time: 237.7359s Inference Time: 32.1256s
+Epoch 2 | Loss: 1.3605 Train Acc 1: 0.5441 Test Acc 1: 0.0175 Train Acc 2: 0.8300 Test Acc 2: 0.0103 Train Acc 3: 0.5441 Test Acc 3: 0.0175 Train Acc 4: 0.4420 Test Acc 4: 0.0383  TRAIN_ACC: 0.3164 TEST_ACC: 0.2422  Train Time: 238.9557s Inference Time: 33.0187s
+WPQUEG Quantization: 888888 tau_mem 60.00 tau syn 110.00 l1 1.300 l2 0.150 var 0.150
+Epoch 1 | Loss: 1.9074 Train Acc 1: 0.4581 Test Acc 1: 0.0221 Train Acc 2: 0.6855 Test Acc 2: 0.0153 Train Acc 3: 0.4581 Test Acc 3: 0.0221 Train Acc 4: 0.2785 Test Acc 4: 0.0125  TRAIN_ACC: 0.2487 TEST_ACC: 0.1250  Train Time: 234.7533s Inference Time: 32.6029s
+Epoch 2 | Loss: 1.3367 Train Acc 1: 0.5342 Test Acc 1: 0.0199 Train Acc 2: 0.8888 Test Acc 2: 0.0125 Train Acc 3: 0.5342 Test Acc 3: 0.0199 Train Acc 4: 0.5448 Test Acc 4: 0.0258  TRAIN_ACC: 0.4206 TEST_ACC: 0.0703  Train Time: 237.9140s Inference Time: 33.0085s
+100%|███████████████████| 75/75 [11:25:50<00:00, 548.67s/it, best loss: 0.71875]
+{'var_perc': 0.2721506955963038}
+
+In [2]:
