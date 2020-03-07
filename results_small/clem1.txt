@@ -230,3 +230,4 @@ Epoch 1 | Loss: 1.1810 Train Acc 1: 0.4666 Test Acc 1: 0.0176 Train Acc 2: 0.755
 Epoch 2 | Loss: 1.0161 Train Acc 1: 0.5410 Test Acc 1: 0.0204 Train Acc 2: 0.9120 Test Acc 2: 0.0103 Train Acc 3: 0.5410 Test Acc 3: 0.0204 Train Acc 4: 0.2446 Test Acc 4: 0.0430  TRAIN_ACC: 0.2435 TEST_ACC: 0.2578  Train Time: 237.2522s Inference Time: 32.5632s
 100%|█████████████████████████████████████| 75/75 [11:31:56<00:00, 553.56s/it, best loss: 0.6953125]
 
+tau_mem 20.00 tau syn 7.50 l1 1.357 l2 0.100

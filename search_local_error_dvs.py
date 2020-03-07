@@ -15,8 +15,6 @@ from localQ import sparse_data_generator_DVS, smoothstep, superspike, QLinearLay
 
 
 
-
-
 def save_vid_of_input(x_temp, y_temp):
     # # visualize
     import matplotlib.pyplot as plt
@@ -378,8 +376,8 @@ def train_run(mem_tau, syn_tau, l1, l2, var_perc):
     return max(test_acc), {'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer2':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer3':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer4':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'loss':[loss_hist], 'train': train_acc, 'test': test_acc}
 
 
-#lower bound tau_syn/tau_mem 2
-#hello = train_run(, 7.5, .2, .1)
+best_test, res_dict = train_run(60, 90, 1.35, .12, .45)
+print(best_test)
 
 # saving results/weights
 #results = {'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer2':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer3':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer4':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'loss':[loss_hist]} # 'test_acc': test_acc, 'train_acc': train_acc, , 'train_idx':shuffle_idx_ta, 'test_idx':shuffle_idx_te
@@ -389,23 +387,23 @@ def train_run(mem_tau, syn_tau, l1, l2, var_perc):
 
 # Epoch 41 | Loss: 2.6689 Train Acc: 0.0816 Test Acc: 0.0833 Train Time: 734.5396s Inference Time: 298.9132s
 
-from hyperopt import hp, fmin, tpe, space_eval
+# from hyperopt import hp, fmin, tpe, space_eval
 
-def objective(args):
-    best_test, res_dict = train_run(args['mem_tau'], args['syn_tau'], args['l1'], args['l2'], args['var_perc'])
-    return 1-best_test
+# def objective(args):
+#     best_test, res_dict = train_run(args['mem_tau'], args['syn_tau'], args['l1'], args['l2'], args['var_perc'])
+#     return 1-best_test
 
 
-space = {
-    'mem_tau' : 60,#hp.uniform('mem_tau', 1, 130), 
-    'syn_tau' : 110,#hp.uniform('syn_tau', 1, 130), 
-    'l1' :      1.3,#hp.uniform('l1', .5, 1.5),#1.3,#
-    'l2' :      0.15,#hp.uniform('l2', .1, 1.5),#0.15,#
-    'var_perc' : hp.uniform('var_perc', 0, .9)
-}
+# space = {
+#     'mem_tau' : 60,#hp.uniform('mem_tau', 1, 130), 
+#     'syn_tau' : 110,#hp.uniform('syn_tau', 1, 130), 
+#     'l1' :      1.3,#hp.uniform('l1', .5, 1.5),#1.3,#
+#     'l2' :      0.15,#hp.uniform('l2', .1, 1.5),#0.15,#
+#     'var_perc' : hp.uniform('var_perc', 0, .9)
+# }
 
-best = fmin(objective, space, algo=tpe.suggest, max_evals=75)
-print(best)
+# best = fmin(objective, space, algo=tpe.suggest, max_evals=75)
+# print(best)
 # 100%|██████████████████████████████████████████████| 75/75 [11:42:42<00:00, 562.16s/it, best loss: 0.7265625]
 #{'l1': 0.0684335852531665,
 # 'l2': 1.1617847867426163,

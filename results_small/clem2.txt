@@ -230,4 +230,4 @@ WPQUEG Quantization: 888888 tau_mem 20.00 tau syn 7.50 l1 0.200 l2 1.147
 Epoch 1 | Loss: 2.9375 Train Acc 1: 0.4442 Test Acc 1: 0.0185 Train Acc 2: 0.7360 Test Acc 2: 0.0158 Train Acc 3: 0.4442 Test Acc 3: 0.0185 Train Acc 4: 0.2562 Test Acc 4: 0.0429  TRAIN_ACC: 0.2630 TEST_ACC: 0.2578  Train Time: 233.4812s Inference Time: 33.1142s
 Epoch 2 | Loss: 3.1544 Train Acc 1: 0.5319 Test Acc 1: 0.0216 Train Acc 2: 0.8825 Test Acc 2: 0.0118 Train Acc 3: 0.5319 Test Acc 3: 0.0216 Train Acc 4: 0.4239 Test Acc 4: 0.0385  TRAIN_ACC: 0.2617 TEST_ACC: 0.2500  Train Time: 240.7076s Inference Time: 32.9385s
 100%|████████████████████████████████| 75/75 [11:38:11<00:00, 558.56s/it, best loss: 0.703125]
-
+tau_mem 20.00 tau syn 7.50 l1 0.200 l2 0.145
