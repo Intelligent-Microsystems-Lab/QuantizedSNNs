@@ -207,7 +207,7 @@ def train_run(mem_tau, syn_tau, l1, l2, var_perc):
     print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5} tau_mem {6:.2f} tau syn {7:.2f} l1 {8:.3f} l2 {9:.3f} var {9:.3f}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb, mem_tau, syn_tau, l1, l2, var_perc))
 
 
-    for e in range(2):
+    for e in range(45):
         #if (e%5 == 0) and (e != 0):
         #    quantization.globalc_lr = quantization.global_lr/2
         correct = 0
