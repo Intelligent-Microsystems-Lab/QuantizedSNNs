@@ -376,7 +376,7 @@ def train_run(mem_tau, syn_tau, l1, l2, var_perc):
     return max(test_acc), {'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer2':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer3':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer4':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'loss':[loss_hist], 'train': train_acc, 'test': test_acc}
 
 
-best_test, res_dict = train_run(60, 90, 1.35, .12, .45)
+best_test, res_dict = train_run(90, 90, 1.35, 1.12, .60)
 print(best_test)
 
 # saving results/weights
