@@ -15,7 +15,66 @@ def clee_spikes(T, rates):
     spikes[np.random.binomial(1, (1000. - rates.flatten())/1000, size=(T, np.prod(rates.shape))).astype('bool')] = 0
     return spikes.T.reshape((rates.shape + (T,)))
 
+def prep_input(x_local, input_mode):
+    #two channel trick
+    if input_mode == 0:
+        down_spikes = torch.cat((x_local, x_local), dim = 1)
+        mask1 = (down_spikes > 0) # this might change
+        mask2 = (down_spikes < 0)
+        mask1[:,0,:,:] = False
+        mask2[:,1,:,:] = False
+        down_spikes = torch.zeros_like(down_spikes)
+        down_spikes[mask1] = 1 
+        down_spikes[mask2] = 1
+        return down_spikes
+    # same same but different
+    if input_mode == 1:
+        down_spikes = x_local
+        down_spikes[down_spikes != 0] = 1
+        return down_spikes
+    #bi directional
+    if input_mode == 2:
+        return x_local
+    else:
+        print("No valid input mode")
+        return -1
 
+def sparse_data_generator_DVSPoker(X, y, batch_size, nb_steps, shuffle, device, test = False):
+    number_of_batches = len(y)//batch_size
+    sample_index = np.arange(len(y))
+    nb_steps = nb_steps -1
+    y = np.array(y)
+
+    if shuffle:
+        np.random.shuffle(sample_index)
+
+    total_batch_count = 0
+    counter = 0
+    while counter<number_of_batches:
+        batch_index = sample_index[batch_size*counter:batch_size*(counter+1)]
+        all_events = np.array([[],[],[],[],[],[],[]]).T
+
+
+        for bc,idx in enumerate(batch_index):
+            temp = np.append(np.ones((X[idx].shape[0], 1))*bc, X[idx], axis=1)
+            all_events = np.append(all_events, temp, axis = 0)
+
+        # to matrix
+        all_events = all_events[:,[0,4,5,1,6]]
+        sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(all_events[:,[True, True, True, True, False]].T), torch.FloatTensor(all_events[:,4])).to_dense()
+
+        # quick trick...
+        sparse_matrix[sparse_matrix < 0] = -1
+        sparse_matrix[sparse_matrix > 0] = 1
+
+        sparse_matrix = sparse_matrix.reshape(torch.Size([sparse_matrix.shape[0], 1, sparse_matrix.shape[1], sparse_matrix.shape[2], sparse_matrix.shape[3]]))
+
+        y_batch = torch.tensor(y[batch_index], dtype = int)
+        try:
+            yield sparse_matrix.to(device=device), y_batch.to(device=device)
+            counter += 1
+        except StopIteration:
+            return
 
 def sparse_data_generator_DVS(X, y, batch_size, nb_steps, shuffle, device, test = False):
     number_of_batches = len(y)//batch_size

@@ -9,119 +9,10 @@ import numpy as np
 import pandas as pd
 import argparse
 import datetime
+import uuid
 
 import quantization
-from localQ import sparse_data_generator_DVS, smoothstep, superspike, QLinearLayerSign, LIFDenseLayer, LIFConv2dLayer
-
-
-
-
-
-def save_vid_of_input(x_temp, y_temp):
-    # # visualize
-    import matplotlib.pyplot as plt
-    import matplotlib.animation as animation
-
-    gest_mapping = {
-        0:"club",
-        1:"diamond",
-        2:"heart",
-        3:"spade",
-    }
-
-
-    plt.clf()
-    fig1 = plt.figure()
-
-    ims = []
-    for j in np.arange(x_local.shape[0]):
-        #temp_show = downsample(x_local[:,:,:,:,j])*16
-        for i in np.arange(x_local.shape[4]):
-
-            #temp_show = downsample(x_local[:,:,:,:,i])*16
-
-            #temp_show = torch.cat((temp_show, temp_show), dim = 1)
-            temp_show = torch.cat((x_local[:,:,:,:,i], x_local[:,:,:,:,i]), dim = 1)
-            mask1 = (temp_show > 0) # this might change
-            mask2 = (temp_show < 0)
-            mask1[:,0,:,:] = False
-            mask2[:,1,:,:] = False
-            temp_show = torch.zeros_like(temp_show)
-            temp_show[mask1] = 1 
-            temp_show[mask2] = 1
-
-            ims.append((plt.imshow( temp_show[j,0,:,:].cpu()), plt.text(.5, .1, gest_mapping[y_temp[j].item()], fontsize=12), ))
-            
-    im_ani = animation.ArtistAnimation(fig1, ims, interval=1, repeat_delay=2000, blit=True)
-    im_ani.save('../dvs_poker_{date:%Y-%m-%d_%H:%M:%S}.mp4'.format( date=datetime.datetime.now()))
-
-
-
-def sparse_data_generator_DVSPoker(X, y, batch_size, nb_steps, shuffle, device, test = False):
-    number_of_batches = len(y)//batch_size
-    sample_index = np.arange(len(y))
-    nb_steps = nb_steps -1
-    y = np.array(y)
-
-    if shuffle:
-        np.random.shuffle(sample_index)
-
-    total_batch_count = 0
-    counter = 0
-    while counter<number_of_batches:
-        batch_index = sample_index[batch_size*counter:batch_size*(counter+1)]
-        all_events = np.array([[],[],[],[],[],[],[]]).T
-
-
-        for bc,idx in enumerate(batch_index):
-            temp = np.append(np.ones((X[idx].shape[0], 1))*bc, X[idx], axis=1)
-            all_events = np.append(all_events, temp, axis = 0)
-
-        # to matrix
-        all_events = all_events[:,[0,4,5,1,6]]
-        sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(all_events[:,[True, True, True, True, False]].T), torch.FloatTensor(all_events[:,4])).to_dense()
-
-        # quick trick...
-        sparse_matrix[sparse_matrix < 0] = -1
-        sparse_matrix[sparse_matrix > 0] = 1
-
-        sparse_matrix = sparse_matrix.reshape(torch.Size([sparse_matrix.shape[0], 1, sparse_matrix.shape[1], sparse_matrix.shape[2], sparse_matrix.shape[3]]))
-
-        y_batch = torch.tensor(y[batch_index], dtype = int)
-        try:
-            yield sparse_matrix.to(device=device), y_batch.to(device=device)
-            counter += 1
-        except StopIteration:
-            return
-
-def prep_input(x_local, input_mode):
-    #two channel trick
-    if input_mode == 0:
-        down_spikes = torch.cat((x_local, x_local), dim = 1)
-        mask1 = (down_spikes > 0) # this might change
-        mask2 = (down_spikes < 0)
-        mask1[:,0,:,:] = False
-        mask2[:,1,:,:] = False
-        down_spikes = torch.zeros_like(down_spikes)
-        down_spikes[mask1] = 1 
-        down_spikes[mask2] = 1
-        return down_spikes
-    # same same but different
-    if input_mode == 1:
-        down_spikes = x_local
-        down_spikes[down_spikes != 0] = 1
-        return down_spikes
-    #bi directional
-    if input_mode == 2:
-        return x_local
-    else:
-        print("No valid input mode")
-        return -1
-
-verbose_output = True
-ap = argparse.ArgumentParser()
-ap.add_argument("-dir", "--dir", type = str, help = "output dir")
-args = vars(ap.parse_args())
+from localQ import sparse_data_generator_DVS, sparse_data_generator_DVSPoker, smoothstep, superspike, QLinearLayerSign, LIFDenseLayer, LIFConv2dLayer, prep_input
 
 # Check whether a GPU is available
 if torch.cuda.is_available():
@@ -129,6 +20,7 @@ if torch.cuda.is_available():
 else:
     device = torch.device("cpu")
 dtype = torch.float
+verbose_output = True
 
 # load data
 with open('../slow_poker_500_train.pickle', 'rb') as f:
@@ -159,21 +51,27 @@ delta_t = 1*ms
 T = 500*ms
 T_test = 500*ms
 burnin = 50*ms
-batch_size = 128
 output_neurons = 4
-
-tau_mem = torch.Tensor([20*ms]).to(device)#torch.Tensor([5*ms, 35*ms]).to(device)
-tau_syn = torch.Tensor([7.5*ms]).to(device)#torch.Tensor([5*ms, 10*ms]).to(device)
+batch_size = 128
 tau_ref = torch.Tensor([0*ms]).to(device)
+dropout_p = .5
 thr = torch.Tensor([.4]).to(device)
 
-lambda1 = .2
-lambda2 = .1
+mem_tau = 60 
+syn_tau = 90
+l1 =  1.35
+l2 = .12
+var_perc = .45
+
+
+tau_mem = torch.Tensor([mem_tau*ms-mem_tau*ms*var_perc, mem_tau*ms+mem_tau*ms*var_perc]).to(device)#torch.Tensor([5*ms, 35*ms]).to(device)
+tau_syn = torch.Tensor([syn_tau*ms-syn_tau*ms*var_perc, syn_tau*ms+syn_tau*ms*var_perc]).to(device)#torch.Tensor([5*ms, 10*ms]).to(device)
+lambda1 = l1
+lambda2 = l2
 
 input_mode = 0 #two channel trick, down sample etc.
 
 # construct layers
-dropout_p = .5
 dropout_learning = nn.Dropout(p=dropout_p)
 
 downsample_l = nn.AvgPool2d(kernel_size = 4, stride = 4)
@@ -203,18 +101,16 @@ train_acc = []
 test_acc = []
 
 
-print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb))
+print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5} tau_mem {6:.2f} tau syn {7:.2f} l1 {8:.3f} l2 {9:.3f} var {9:.3f}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb, mem_tau, syn_tau, l1, l2, var_perc))
 
 
-for e in range(15):
-    #if (e%5 == 0) and (e != 0):
-    #    quantization.globalc_lr = quantization.global_lr/2
+for e in range(45):
     correct = 0
     total = 0
     tcorrect = 0
     ttotal = 0
 
-    correct1_train = 0 # note over all time steps now...
+    correct1_train = 0 
     correct2_train = 0
     correct3_train = 0
     correct4_train = 0
@@ -230,9 +126,7 @@ for e in range(15):
 
     rec_video = True
     for x_local, y_local in sparse_data_generator_DVSPoker(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = True, device = device):
-        #print("creating video")
-        #save_vid_of_input(x_local, y_local)
-        #print("video done")
+
         y_onehot = torch.Tensor(len(y_local), output_neurons).to(device)
         y_onehot.zero_()
         y_onehot.scatter_(1, y_local.reshape([y_local.shape[0],1]), 1)
@@ -289,10 +183,10 @@ for e in range(15):
             # flattening for spiking readout layer
             out_spikes3 = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
             out_spikes4 = layer4.forward(out_spikes3)
-            loss_gen += sl1_loss(softmax_fn(smoothstep(layer4.U-thr)), y_onehot)
+            loss_gen += sl1_loss(softmax_fn(smoothstep(layer4.U-thr)), y_onehot) + lambda1 * F.relu(layer4.U+.01).mean() + lambda2 * F.relu(thr-layer4.U).mean()
             #loss_gen += sl1_loss(smoothstep(layer4.U), y_onehot)
             _, predicted = torch.max(out_spikes4, 1)
-            correct4_train += (predicted == y_local).sum().item() + lambda1 * F.relu(layer4.U+.01).mean() + lambda2 * F.relu(thr-layer4.U).mean()
+            correct4_train += (predicted == y_local).sum().item() 
             #y_log_p4 = log_softmax_fn(smoothstep(layer4.U))
             #gen_loss +=  sl1_loss(smoothstep(layer4.U), y_onehot) + lambda1 * F.relu(layer4.U+.01).mean() + lambda2 * F.relu(.1-layer4.U).mean()
 
@@ -328,10 +222,6 @@ for e in range(15):
             out_spikes3 = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
             out_spikes4 = layer4.forward(out_spikes3)
 
-        # record activations
-        act_list = []
-        inp_list = []
-
         # testing
         for t in range(int(burnin/ms), int(T_test/ms)):
             total_test += y_local.size(0)
@@ -343,9 +233,6 @@ for e in range(15):
             rreadout1 = random_readout1(dropout_learning(out_spikes1.reshape([x_local.shape[0], np.prod(layer1.out_shape)])) * dropout_p)
             _, predicted = torch.max(rreadout1.data, 1)
             correct1_test += (predicted == y_local).sum().item()
-
-            act_list.append(out_spikes1)
-            inp_list.append(spikes_t)
 
             out_spikes2 = dropout_learning(layer2.forward(out_spikes1)) 
             rreadout2 = random_readout2(dropout_learning(out_spikes2.reshape([x_local.shape[0], np.prod(layer2.out_shape)])) * dropout_p)
@@ -368,24 +255,21 @@ for e in range(15):
         ttotal += len(y_local)
     inf_time = time.time()
 
-    with open('../dvs_act.pkl', 'wb') as f:
-        pickle.dump((act_list, inp_list), f)
     correct = correct.item()
     tcorrect = tcorrect.item()
     train_acc.append(correct/total)
     test_acc.append(tcorrect/ttotal)
-    #print("Epoch {0} | Loss: {1:.4f} Train Acc: {2:.4f} Test Acc: {3:.4f} Train Time: {4:.4f}s Inference Time: {5:.4f}s".format(e+1, np.mean(loss_hist), correct.item()/total, tcorrect.item()/ttotal, train_time-start_time, inf_time - train_time)) 
-    #np.mean(loss_hist2), np.mean(loss_hist3), np.mean(loss_hist4),
+
     if verbose_output:
-        print("Epoch {0} | Loss: {1:.4f}, {2:.0f}, {3:.0f}, {4:.0f} Train Acc 1: {5:.4f} Test Acc 1: {6:.4f} Train Acc 2: {7:.4f} Test Acc 2: {8:.4f} Train Acc 3: {9:.4f} Test Acc 3: {10:.4f} Train Acc 4: {11:.4f} Test Acc 4: {12:.4f}  TRAIN_ACC: {13:.4f} TEST_ACC: {14:.4f}  Train Time: {15:.4f}s Inference Time: {16:.4f}s".format(e+1, np.mean(loss_hist), -1, -1, -1, correct1_train/total_train, correct1_test/total_train, correct2_train/total_train, correct2_test/total_train, correct3_train/total_train, correct3_test/total_train, correct4_train/total_train, correct4_test/total_train, correct/total, tcorrect/ttotal, train_time-start_time, inf_time - train_time))
+        print("Epoch {0} | Loss: {1:.4f} Train Acc 1: {2:.4f} Test Acc 1: {3:.4f} Train Acc 2: {4:.4f} Test Acc 2: {5:.4f} Train Acc 3: {6:.4f} Test Acc 3: {7:.4f} Train Acc 4: {8:.4f} Test Acc 4: {9:.4f}  TRAIN_ACC: {10:.4f} TEST_ACC: {11:.4f}  Train Time: {12:.4f}s Inference Time: {13:.4f}s".format(e+1, np.mean(loss_hist), correct1_train/total_train, correct1_test/total_train, correct2_train/total_train, correct2_test/total_train, correct3_train/total_train, correct3_test/total_train, correct4_train/total_train, correct4_test/total_train, correct/total, tcorrect/ttotal, train_time-start_time, inf_time - train_time))
     else:
         print("Epoch {0} | TRAIN_ACC: {1:.4f} TEST_ACC: {2:.4f}  Train Time: {3:.4f}s Inference Time: {4:.4f}s".format(e+1, correct/total, tcorrect/ttotal, train_time-start_time, inf_time - train_time))
 
 
+
 # saving results/weights
-results = {'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer2':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer3':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer4':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'loss':[loss_hist]} # 'test_acc': test_acc, 'train_acc': train_acc, , 'train_idx':shuffle_idx_ta, 'test_idx':shuffle_idx_te
-with open('hello.pkl', 'wb') as f:
+results = {'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer2':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer3':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer4':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'loss':[loss_hist], 'train': train_acc, 'test': test_acc}
+
+with open('results/'+str(uuid.uuid1())+'.pkl', 'wb') as f:
     pickle.dump(results, f)
 
-
-# Epoch 41 | Loss: 2.6689 Train Acc: 0.0816 Test Acc: 0.0833 Train Time: 734.5396s Inference Time: 298.9132s

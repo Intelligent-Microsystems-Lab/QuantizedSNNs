@@ -377,6 +377,7 @@ def train_run(mem_tau, syn_tau, l1, l2, var_perc):
 
 
 best_test, res_dict = train_run(90, 90, 1.35, 1.12, .60)
+best_test, res_dict = train_run(60, 90, 1.35, .12, .45)
 print(best_test)
 
 # saving results/weights
