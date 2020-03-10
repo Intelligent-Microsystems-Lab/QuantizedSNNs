@@ -99,7 +99,7 @@ print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5} tau_mem {6:.2f} tau syn {7:.2f} l
 
 
 for e in range(75):
-    if (e%20 == 0) and (e != 0):
+    if (e%20 == 0) and (e != 0) and (quantization.global_lr > 1):
         quantization.global_lr /= 2
 
     correct = 0
