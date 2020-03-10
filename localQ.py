@@ -374,8 +374,11 @@ class LIFDenseLayer(nn.Module):
 
         rreadout = self.sign_random_readout(self.dropout_learning(smoothstep(self.U-self.thr).reshape([input_t.shape[0], self.out_channels])) * self.dropout_p)
         _, predicted = torch.max(rreadout.data, 1)
-        correct_train = (predicted == y_local).sum().item()
-        loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu(self.U+.01).mean() + l2 * F.relu(self.thr-self.U).mean()
+        if y_local.shape[1] == 4:
+            correct_train = (predicted == y_local.max(dim = 1 )[1]).sum().item()
+        else:
+            correct_train = (predicted == y_local).sum().item()
+        loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu(self.U+.01).mean() + self.l2 * F.relu(self.thr-self.U).mean()
 
         return self.S, loss_gen, correct_train
 
@@ -511,8 +514,11 @@ class LIFConv2dLayer(nn.Module):
         import pdb; pdb.set_trace()
         rreadout = self.sign_random_readout(self.dropout_learning(smoothstep(self.U-self.thr).reshape([input_t.shape[0], np.prod(self.out_shape)])) * self.dropout_p)
         _, predicted = torch.max(rreadout.data, 1)
-        correct_train = (predicted == y_local).sum().item()
-        loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu(self.U+.01).mean() + l2 * F.relu(self.thr-self.U).mean()
+        if y_local.shape[1] == 4:
+            correct_train = (predicted == y_local.max(dim = 1 )[1]).sum().item()
+        else:
+            correct_train = (predicted == y_local).sum().item()
+        loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu(self.U+.01).mean() + self.l2 * F.relu(self.thr-self.U).mean()
 
         return self.S, loss_gen, correct_train
 
