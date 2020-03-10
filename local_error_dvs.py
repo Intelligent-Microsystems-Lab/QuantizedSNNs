@@ -44,7 +44,7 @@ quantization.global_pb = 8
 quantization.global_gb = 8
 quantization.global_eb = 8
 quantization.global_rb = 16
-quantization.global_lr = 1
+quantization.global_lr = 8
 quantization.global_beta = 1.5 #quantization.step_d(quantization.global_wb)-.5
 
 # set parameters
@@ -135,8 +135,8 @@ for e in range(75):
 
         # burnin
         for t in range(int(burnin/ms)):
-            spikes_t = prep_input(x_local[:,:,:,:,t], input_mode)
-            spikes_t = downsample_l(spikes_t)*16
+            spikes_t          = prep_input(x_local[:,:,:,:,t], input_mode)
+            spikes_t          = downsample_l(spikes_t)*16
             out_spikes1, _, _ = layer1.forward(spikes_t, y_onehot)
             out_spikes2, _, _ = layer2.forward(out_spikes1, y_onehot)
             out_spikes3, _, _ = layer3.forward(out_spikes2, y_onehot)
@@ -145,8 +145,8 @@ for e in range(75):
 
         # training
         for t in range(int(burnin/ms), int(T/ms)):
-            spikes_t = prep_input(x_local[:,:,:,:,t], input_mode)
-            spikes_t = downsample_l(spikes_t)*16
+            spikes_t                            = prep_input(x_local[:,:,:,:,t], input_mode)
+            spikes_t                            = downsample_l(spikes_t)*16
             out_spikes1, temp_loss1, temp_corr1 = layer1.forward(spikes_t, y_onehot)
             out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_onehot)
             out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_onehot)
@@ -187,8 +187,8 @@ for e in range(75):
 
         # burnin
         for t in range(int(burnin/ms)):
-            spikes_t = prep_input(x_local[:,:,:,:,t], input_mode)
-            spikes_t = downsample_l(spikes_t)*16
+            spikes_t          = prep_input(x_local[:,:,:,:,t], input_mode)
+            spikes_t          = downsample_l(spikes_t)*16
             out_spikes1, _, _ = layer1.forward(spikes_t, y_onehot)
             out_spikes2, _, _ = layer2.forward(out_spikes1, y_onehot)
             out_spikes3, _, _ = layer3.forward(out_spikes2, y_onehot)
@@ -197,8 +197,8 @@ for e in range(75):
 
         # testing
         for t in range(int(burnin/ms), int(T_test/ms)):
-            spikes_t = prep_input(x_local[:,:,:,:,t], input_mode)
-            spikes_t = downsample_l(spikes_t)*16
+            spikes_t                            = prep_input(x_local[:,:,:,:,t], input_mode)
+            spikes_t                            = downsample_l(spikes_t)*16
             out_spikes1, temp_loss1, temp_corr1 = layer1.forward(spikes_t, y_onehot)
             out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_onehot)
             out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_onehot)
