@@ -60,11 +60,11 @@ tau_ref = torch.Tensor([0*ms]).to(device)
 dropout_p = .5
 thr = torch.Tensor([.4]).to(device)
 
-mem_tau = 60 
-syn_tau = 90
-l1 =  1.35
-l2 = .12
-var_perc = .45
+mem_tau = 19.144428947159064
+syn_tau = 3.419011079385445
+l1 = 0.5807472565567517
+l2 = 1.4068230901221566
+var_perc = 0.3797799366311833
 
 tau_mem = torch.Tensor([mem_tau*ms-mem_tau*ms*var_perc, mem_tau*ms+mem_tau*ms*var_perc]).to(device)#torch.Tensor([5*ms, 35*ms]).to(device)
 tau_syn = torch.Tensor([syn_tau*ms-syn_tau*ms*var_perc, syn_tau*ms+syn_tau*ms*var_perc]).to(device)#torch.Tensor([5*ms, 10*ms]).to(device)

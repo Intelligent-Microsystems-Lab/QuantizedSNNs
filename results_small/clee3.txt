@@ -221,3 +221,7 @@ Epoch 1 | Loss: 0.8732 Train Acc 1: 0.4816 Test Acc 1: 0.4816 Train Acc 2: 0.737
 Epoch 2 | Loss: 0.7235 Train Acc 1: 0.5662 Test Acc 1: 0.4770 Train Acc 2: 0.8934 Test Acc 2: 0.7998 Train Acc 3: 0.8814 Test Acc 3: 0.7838 Train Acc 4: 0.2422 Test Acc 4: 0.2344  TRAIN_ACC: 0.2422 TEST_ACC: 0.2344  Train Time: 261.1405s Inference Time: 35.1499s
 WPQUEG Quantization: 888888 tau_mem 78.10 tau syn 92.74 l1 0.329 l2 0.419 var 0.713
  97%|█████████████████████████████████████████████▋ | 73/75 [11:30:01<19:16, 578.07s/it, best loss: 0.671875][cschaef6@crcfe02 ~]$
+
+test_acc4 - 32.8125%
+tau_mem 80.70 tau syn 114.50 l1 0.550 l2 0.550 var 0.493
+tau_mem 79.34 tau syn 115.48 l1 0.319 l2 0.356 var 0.789

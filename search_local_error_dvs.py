@@ -275,6 +275,6 @@ print(best)
 # Exp:
 # 1. all paras spike count opt      - running
 # 2. all paras last layer test      - running
-# 3. all paras last conv layer test - 
-# 5. long run                       -
-# 6. long run lr 8, 4, 2, 1         -
+# 3. all paras last conv layer test - running
+# 5. long run                       - running
+# 6. long run lr 8, 4, 2, 1         - running
