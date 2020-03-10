@@ -248,8 +248,8 @@ from hyperopt import hp, fmin, tpe, space_eval
 
 def objective(args):
     best_test, res_dict = train_run(args['mem_tau'], args['syn_tau'], args['l1'], args['l2'], args['var_perc'])
-    #return 1-max(res_dict['layers1']['test4'])
-    return 1-max(res_dict['layers1']['test3'])
+    return 1-max(res_dict['layers1']['test4'])
+    #return 1-max(res_dict['layers1']['test3'])
     #return 1-best_test
 
 
@@ -274,7 +274,7 @@ print(best)
 
 # Exp:
 # 1. all paras spike count opt      - running
-# 2. all paras last layer test      -
+# 2. all paras last layer test      - running
 # 3. all paras last conv layer test - 
 # 5. long run                       -
 # 6. long run lr 8, 4, 2, 1         -
