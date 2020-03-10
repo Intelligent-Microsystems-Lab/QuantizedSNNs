@@ -71,18 +71,19 @@ def train_run(mem_tau, syn_tau, l1, l2, var_perc):
 
     log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
     nll_loss = torch.nn.NLLLoss()
-
+    softmax_fn = nn.Softmax(dim=1)
+    sl1_loss = torch.nn.SmoothL1Loss()
 
     # construct layers
     downsample_l = nn.AvgPool2d(kernel_size = 4, stride = 4)
 
-    layer1 = LIFConv2dLayer(inp_shape = (2, 32, 32), kernel_size = 5, out_channels = 16, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_prep_fn = log_softmax_fn, loss_fn = nll_loss, l1 = l1, l2 = l2).to(device)
+    layer1 = LIFConv2dLayer(inp_shape = (2, 32, 32), kernel_size = 5, out_channels = 16, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_prep_fn = softmax_fn, loss_fn = sl1_loss, l1 = l1, l2 = l2).to(device)
 
-    layer2 = LIFConv2dLayer(inp_shape = layer1.out_shape, kernel_size = 5, out_channels = 32, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_prep_fn = log_softmax_fn, loss_fn = nll_loss, l1 = l1, l2 = l2).to(device)
+    layer2 = LIFConv2dLayer(inp_shape = layer1.out_shape, kernel_size = 5, out_channels = 32, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_prep_fn = softmax_fn, loss_fn = sl1_loss, l1 = l1, l2 = l2).to(device)
 
-    layer3 = LIFConv2dLayer(inp_shape = layer2.out_shape, kernel_size = 5, out_channels = 32, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_prep_fn = log_softmax_fn, loss_fn = nll_loss, l1 = l1, l2 = l2).to(device)
+    layer3 = LIFConv2dLayer(inp_shape = layer2.out_shape, kernel_size = 5, out_channels = 32, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_prep_fn = softmax_fn, loss_fn = sl1_loss, l1 = l1, l2 = l2).to(device)
 
-    layer4 = LIFDenseLayer(in_channels = np.prod(layer3.out_shape), out_channels = output_neurons, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_prep_fn = log_softmax_fn, loss_fn = nll_loss, l1 = l1, l2 = l2).to(device)
+    layer4 = LIFDenseLayer(in_channels = np.prod(layer3.out_shape), out_channels = output_neurons, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_prep_fn = softmax_fn, loss_fn = sl1_loss, l1 = l1, l2 = l2).to(device)
 
     all_parameters = list(layer1.parameters()) + list(layer2.parameters()) + list(layer3.parameters()) + list(layer4.parameters())
 
@@ -95,7 +96,7 @@ def train_run(mem_tau, syn_tau, l1, l2, var_perc):
     print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5} tau_mem {6:.2f} tau syn {7:.2f} l1 {8:.3f} l2 {9:.3f} var {10:.3f}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb, mem_tau, syn_tau, l1, l2, var_perc))
 
 
-    for e in range(10):
+    for e in range(3):
         correct = 0
         total = 0
         tcorrect = 0
@@ -116,6 +117,9 @@ def train_run(mem_tau, syn_tau, l1, l2, var_perc):
         start_time = time.time()
 
         for x_local, y_local in sparse_data_generator_DVSPoker(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = True, device = device):
+            y_onehot = torch.Tensor(len(y_local), output_neurons).to(device)
+            y_onehot.zero_()
+            y_onehot.scatter_(1, y_local.reshape([y_local.shape[0],1]), 1)
 
             class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
 
@@ -128,21 +132,21 @@ def train_run(mem_tau, syn_tau, l1, l2, var_perc):
             for t in range(int(burnin/ms)):
                 spikes_t = prep_input(x_local[:,:,:,:,t], input_mode)
                 spikes_t = downsample_l(spikes_t)*16
-                out_spikes1, _, _ = layer1.forward(spikes_t, y_local)
-                out_spikes2, _, _ = layer2.forward(out_spikes1, y_local)
-                out_spikes3, _, _ = layer3.forward(out_spikes2, y_local)
+                out_spikes1, _, _ = layer1.forward(spikes_t, y_onehot)
+                out_spikes2, _, _ = layer2.forward(out_spikes1, y_onehot)
+                out_spikes3, _, _ = layer3.forward(out_spikes2, y_onehot)
                 out_spikes3       = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
-                out_spikes4, _, _ = layer4.forward(out_spikes3, y_local)
+                out_spikes4, _, _ = layer4.forward(out_spikes3, y_onehot)
 
             # training
             for t in range(int(burnin/ms), int(T/ms)):
                 spikes_t = prep_input(x_local[:,:,:,:,t], input_mode)
                 spikes_t = downsample_l(spikes_t)*16
-                out_spikes1, temp_loss1, temp_corr1 = layer1.forward(spikes_t, y_local)
-                out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_local)
-                out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_local)
+                out_spikes1, temp_loss1, temp_corr1 = layer1.forward(spikes_t, y_onehot)
+                out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_onehot)
+                out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_onehot)
                 out_spikes3                         = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
-                out_spikes4, temp_loss4, temp_corr4 = layer4.forward(out_spikes3, y_local)
+                out_spikes4, temp_loss4, temp_corr4 = layer4.forward(out_spikes3, y_onehot)
 
                 loss_gen = temp_loss1 + temp_loss2 + temp_loss3 + temp_loss4
 
@@ -165,6 +169,9 @@ def train_run(mem_tau, syn_tau, l1, l2, var_perc):
 
         # test accuracy
         for x_local, y_local in sparse_data_generator_DVSPoker(x_test, y_test, batch_size = batch_size, nb_steps = T_test / ms, shuffle = True, device = device, test = True):
+            y_onehot = torch.Tensor(len(y_local), output_neurons).to(device)
+            y_onehot.zero_()
+            y_onehot.scatter_(1, y_local.reshape([y_local.shape[0],1]), 1)
 
             class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
 
@@ -177,21 +184,21 @@ def train_run(mem_tau, syn_tau, l1, l2, var_perc):
             for t in range(int(burnin/ms)):
                 spikes_t = prep_input(x_local[:,:,:,:,t], input_mode)
                 spikes_t = downsample_l(spikes_t)*16
-                out_spikes1, _, _ = layer1.forward(spikes_t, y_local)
-                out_spikes2, _, _ = layer2.forward(out_spikes1, y_local)
-                out_spikes3, _, _ = layer3.forward(out_spikes2, y_local)
+                out_spikes1, _, _ = layer1.forward(spikes_t, y_onehot)
+                out_spikes2, _, _ = layer2.forward(out_spikes1, y_onehot)
+                out_spikes3, _, _ = layer3.forward(out_spikes2, y_onehot)
                 out_spikes3       = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
-                out_spikes4, _, _ = layer4.forward(out_spikes3, y_local)
+                out_spikes4, _, _ = layer4.forward(out_spikes3, y_onehot)
 
             # testing
             for t in range(int(burnin/ms), int(T_test/ms)):
                 spikes_t = prep_input(x_local[:,:,:,:,t], input_mode)
                 spikes_t = downsample_l(spikes_t)*16
-                out_spikes1, temp_loss1, temp_corr1 = layer1.forward(spikes_t, y_local)
-                out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_local)
-                out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_local)
+                out_spikes1, temp_loss1, temp_corr1 = layer1.forward(spikes_t, y_onehot)
+                out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_onehot)
+                out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_onehot)
                 out_spikes3                         = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
-                out_spikes4, temp_loss4, temp_corr4 = layer4.forward(out_spikes3, y_local)
+                out_spikes4, temp_loss4, temp_corr4 = layer4.forward(out_spikes3, y_onehot)
 
                 
                 class_rec += out_spikes4
@@ -220,9 +227,9 @@ def train_run(mem_tau, syn_tau, l1, l2, var_perc):
     return max(test_acc), {'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer2':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer3':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer4':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'loss':[loss_hist], 'train': train_acc, 'test': test_acc}
 
 
-best_test, res_dict = train_run(90, 90, 1.35, 1.12, .60)
-best_test, res_dict = train_run(60, 90, 1.35, .12, .45)
-print(best_test)
+#best_test, res_dict = train_run(90, 90, 1.35, 1.12, .60)
+#best_test, res_dict = train_run(60, 90, 1.35, .12, .45)
+#print(best_test)
 
 # saving results/weights
 #results = {'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer2':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer3':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer4':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'loss':[loss_hist]} # 'test_acc': test_acc, 'train_acc': train_acc, , 'train_idx':shuffle_idx_ta, 'test_idx':shuffle_idx_te
@@ -240,10 +247,10 @@ def objective(args):
 
 
 space = {
-    'mem_tau' : 60,#hp.uniform('mem_tau', 1, 130), 
-    'syn_tau' : 110,#hp.uniform('syn_tau', 1, 130), 
-    'l1' :      1.3,#hp.uniform('l1', .5, 1.5),#1.3,#
-    'l2' :      0.15,#hp.uniform('l2', .1, 1.5),#0.15,#
+    'mem_tau' : hp.uniform('mem_tau', 1, 130), 
+    'syn_tau' : hp.uniform('syn_tau', 1, 130), 
+    'l1' :      hp.uniform('l1', .05, 1.7),#1.3,#
+    'l2' :      hp.uniform('l2', .05, 1.7),#0.15,#
     'var_perc' : hp.uniform('var_perc', 0, .9)
 }
 
