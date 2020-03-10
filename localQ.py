@@ -511,7 +511,6 @@ class LIFConv2dLayer(nn.Module):
 
         self.S = (self.U >= self.thr).float()
 
-        import pdb; pdb.set_trace()
         rreadout = self.sign_random_readout(self.dropout_learning(smoothstep(self.U-self.thr).reshape([input_t.shape[0], np.prod(self.out_shape)])) * self.dropout_p)
         _, predicted = torch.max(rreadout.data, 1)
         if y_local.shape[1] == 4:
