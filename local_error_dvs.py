@@ -15,8 +15,6 @@ import quantization
 from localQ import sparse_data_generator_DVS, sparse_data_generator_DVSPoker, smoothstep, superspike, QLinearLayerSign, LIFDenseLayer, LIFConv2dLayer, prep_input
 
 
-
-
 # Check whether a GPU is available
 if torch.cuda.is_available():
     device = torch.device("cuda")     
@@ -44,7 +42,7 @@ quantization.global_pb = 8
 quantization.global_gb = 8
 quantization.global_eb = 8
 quantization.global_rb = 16
-quantization.global_lr = 1
+quantization.global_lr = 8
 quantization.global_beta = 1.5 #quantization.step_d(quantization.global_wb)-.5
 
 # set parameters
