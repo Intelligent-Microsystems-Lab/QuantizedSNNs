@@ -14,9 +14,6 @@ import quantization
 from localQ import sparse_data_generator_DVS, sparse_data_generator_DVSPoker, smoothstep, superspike, QLinearLayerSign, LIFDenseLayer, LIFConv2dLayer, prep_input
 
 
-
-
-
 # Check whether a GPU is available
 if torch.cuda.is_available():
     device = torch.device("cuda")     
@@ -97,7 +94,7 @@ def train_run(mem_tau, syn_tau, l1, l2, var_perc):
 
     diff_layers_acc = {'train1': [], 'test1': [],'train2': [], 'test2': [],'train3': [], 'test3': [],'train4': [], 'test4': []}
 
-    for e in range(3):
+    for e in range(2):
         correct = 0
         total = 0
         tcorrect = 0
