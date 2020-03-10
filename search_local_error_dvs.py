@@ -251,8 +251,8 @@ from hyperopt import hp, fmin, tpe, space_eval
 
 def objective(args):
     best_test, res_dict = train_run(args['mem_tau'], args['syn_tau'], args['l1'], args['l2'], args['var_perc'])
-    return 1-max(res_dict['layers1']['test4'])
-    #return 1-max(res_dict['layers1']['test3'])
+    #return 1-max(res_dict['layers1']['test4'])
+    return 1-max(res_dict['layers1']['test3'])
     #return 1-best_test
 
 
