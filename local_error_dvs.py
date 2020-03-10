@@ -44,7 +44,7 @@ quantization.global_pb = 8
 quantization.global_gb = 8
 quantization.global_eb = 8
 quantization.global_rb = 16
-quantization.global_lr = 4
+quantization.global_lr = 8
 quantization.global_beta = 1.5 #quantization.step_d(quantization.global_wb)-.5
 
 # set parameters
@@ -98,7 +98,10 @@ test_acc = []
 print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5} tau_mem {6:.2f} tau syn {7:.2f} l1 {8:.3f} l2 {9:.3f} var {10:.3f}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb, mem_tau, syn_tau, l1, l2, var_perc))
 
 
-for e in range(10):
+for e in range(75):
+    if (e%20 == 0) and (e != 0):
+        quantization.global_lr /= 2
+
     correct = 0
     total = 0
     tcorrect = 0
