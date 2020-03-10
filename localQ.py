@@ -243,7 +243,7 @@ class QLinearFunctional(torch.autograd.Function):
 
 class QLinearLayerSign(nn.Module):
     '''from https://github.com/L0SG/feedback-alignment-pytorch/'''
-    def __init__(self, input_features, output_features):
+    def __init__(self, input_features, output_features, pass_through = False):
         super(QLinearLayerSign, self).__init__()
         self.input_features = input_features
         self.output_features = output_features
@@ -252,8 +252,12 @@ class QLinearLayerSign(nn.Module):
         self.weights = nn.Parameter(torch.Tensor(output_features, input_features))
         self.weights.data.uniform_(-1, 1)
 
-        self.weights.data[self.weights.data > 0] = 1
-        self.weights.data[self.weights.data < 0] = -1
+        if pass_through:
+            self.weights.data[self.weights.data > 0] = 1
+            self.weights.data[self.weights.data < 0] = 1
+        else:
+            self.weights.data[self.weights.data > 0] = 1
+            self.weights.data[self.weights.data < 0] = -1
         
 
     def forward(self, input):
@@ -331,7 +335,7 @@ class LIFDenseLayer(nn.Module):
         self.weights = nn.Parameter(torch.empty((self.in_channels, self.out_channels),  device=device, dtype=dtype, requires_grad=True))
         torch.nn.init.uniform_(self.weights, a = -self.L, b = self.L)
 
-        self.sign_random_readout = QLinearLayerSign(self.out_channels, output_neurons).to(device)
+        self.sign_random_readout = QLinearLayerSign(self.out_channels, output_neurons, pass_through = True).to(device)
 
         if bias:
             self.bias = nn.Parameter(torch.empty(out_channels,  device=device, dtype=dtype, requires_grad=True))

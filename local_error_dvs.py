@@ -162,9 +162,9 @@ for e in range(75):
             loss_hist.append(loss_gen.item())
             class_rec += out_spikes4
             correct1_train += temp_corr1
-            correct2_train += temp_corr1
-            correct3_train += temp_corr1
-            correct4_train += temp_corr1
+            correct2_train += temp_corr2
+            correct3_train += temp_corr3
+            correct4_train += temp_corr4
             total_train += y_local.size(0)
 
 
@@ -208,9 +208,9 @@ for e in range(75):
             
             class_rec += out_spikes4
             correct1_test += temp_corr1
-            correct2_test += temp_corr1
-            correct3_test += temp_corr1
-            correct4_test += temp_corr1
+            correct2_test += temp_corr2
+            correct3_test += temp_corr3
+            correct4_test += temp_corr4
             total_test += y_local.size(0)
 
         tcorrect += (torch.max(class_rec, dim = 1).indices == y_local).sum() 

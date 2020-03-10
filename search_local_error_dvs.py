@@ -131,8 +131,8 @@ def train_run(mem_tau, syn_tau, l1, l2, var_perc):
 
             # burnin
             for t in range(int(burnin/ms)):
-                spikes_t = prep_input(x_local[:,:,:,:,t], input_mode)
-                spikes_t = downsample_l(spikes_t)*16
+                spikes_t          = prep_input(x_local[:,:,:,:,t], input_mode)
+                spikes_t          = downsample_l(spikes_t)*16
                 out_spikes1, _, _ = layer1.forward(spikes_t, y_onehot)
                 out_spikes2, _, _ = layer2.forward(out_spikes1, y_onehot)
                 out_spikes3, _, _ = layer3.forward(out_spikes2, y_onehot)
@@ -141,8 +141,8 @@ def train_run(mem_tau, syn_tau, l1, l2, var_perc):
 
             # training
             for t in range(int(burnin/ms), int(T/ms)):
-                spikes_t = prep_input(x_local[:,:,:,:,t], input_mode)
-                spikes_t = downsample_l(spikes_t)*16
+                spikes_t                            = prep_input(x_local[:,:,:,:,t], input_mode)
+                spikes_t                            = downsample_l(spikes_t)*16
                 out_spikes1, temp_loss1, temp_corr1 = layer1.forward(spikes_t, y_onehot)
                 out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_onehot)
                 out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_onehot)
@@ -158,9 +158,9 @@ def train_run(mem_tau, syn_tau, l1, l2, var_perc):
                 loss_hist.append(loss_gen.item())
                 class_rec += out_spikes4
                 correct1_train += temp_corr1
-                correct2_train += temp_corr1
-                correct3_train += temp_corr1
-                correct4_train += temp_corr1
+                correct2_train += temp_corr2
+                correct3_train += temp_corr3
+                correct4_train += temp_corr4
                 total_train += y_local.size(0)
 
 
@@ -183,8 +183,8 @@ def train_run(mem_tau, syn_tau, l1, l2, var_perc):
 
             # burnin
             for t in range(int(burnin/ms)):
-                spikes_t = prep_input(x_local[:,:,:,:,t], input_mode)
-                spikes_t = downsample_l(spikes_t)*16
+                spikes_t          = prep_input(x_local[:,:,:,:,t], input_mode)
+                spikes_t          = downsample_l(spikes_t)*16
                 out_spikes1, _, _ = layer1.forward(spikes_t, y_onehot)
                 out_spikes2, _, _ = layer2.forward(out_spikes1, y_onehot)
                 out_spikes3, _, _ = layer3.forward(out_spikes2, y_onehot)
@@ -193,8 +193,8 @@ def train_run(mem_tau, syn_tau, l1, l2, var_perc):
 
             # testing
             for t in range(int(burnin/ms), int(T_test/ms)):
-                spikes_t = prep_input(x_local[:,:,:,:,t], input_mode)
-                spikes_t = downsample_l(spikes_t)*16
+                spikes_t                            = prep_input(x_local[:,:,:,:,t], input_mode)
+                spikes_t                            = downsample_l(spikes_t)*16
                 out_spikes1, temp_loss1, temp_corr1 = layer1.forward(spikes_t, y_onehot)
                 out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_onehot)
                 out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_onehot)
@@ -204,9 +204,9 @@ def train_run(mem_tau, syn_tau, l1, l2, var_perc):
                 
                 class_rec += out_spikes4
                 correct1_test += temp_corr1
-                correct2_test += temp_corr1
-                correct3_test += temp_corr1
-                correct4_test += temp_corr1
+                correct2_test += temp_corr2
+                correct3_test += temp_corr3
+                correct4_test += temp_corr4
                 total_test += y_local.size(0)
 
             tcorrect += (torch.max(class_rec, dim = 1).indices == y_local).sum() 
@@ -252,8 +252,8 @@ from hyperopt import hp, fmin, tpe, space_eval
 def objective(args):
     best_test, res_dict = train_run(args['mem_tau'], args['syn_tau'], args['l1'], args['l2'], args['var_perc'])
     #return 1-max(res_dict['layers1']['test4'])
-    return 1-max(res_dict['layers1']['test3'])
-    #return 1-best_test
+    #return 1-max(res_dict['layers1']['test3'])
+    return 1-best_test
 
 
 space = {
@@ -276,8 +276,8 @@ print(best)
 
 
 # Exp:
-# 1. all paras spike count opt - running
-# 2. all paras last layer test - running
-# 3. all paras last conv layer test - running
-# 5. long run
-# 6. long run lr 8, 4, 2, 1
+# 1. all paras spike count opt      -
+# 2. all paras last layer test      -
+# 3. all paras last conv layer test - 
+# 5. long run                       -
+# 6. long run lr 8, 4, 2, 1         -
