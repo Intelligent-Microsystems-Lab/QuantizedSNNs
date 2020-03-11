@@ -80,14 +80,14 @@ thr = torch.Tensor([.4]).to(device)
 
 mem_tau = 19.144428947159064
 syn_tau = 3.419011079385445
-l1 = 0.485#0.5807472565567517
-l2 = 0.621#1.4068230901221566
+l1 = .5#0.485#0.5807472565567517
+l2 = .5#0.621#1.4068230901221566
 var_perc = 0.3797799366311833
 
 #l1 0.485 l2 0.621
 
-tau_mem = torch.Tensor([mem_tau*ms-mem_tau*ms*var_perc, mem_tau*ms+mem_tau*ms*var_perc]).to(device)#torch.Tensor([5*ms, 35*ms]).to(device)
-tau_syn = torch.Tensor([syn_tau*ms-syn_tau*ms*var_perc, syn_tau*ms+syn_tau*ms*var_perc]).to(device)#torch.Tensor([5*ms, 10*ms]).to(device)
+tau_mem = torch.Tensor([5*ms, 35*ms]).to(device)#torch.Tensor([5*ms, 35*ms]).to(device) #[mem_tau*ms-mem_tau*ms*var_perc, mem_tau*ms+mem_tau*ms*var_perc]
+tau_syn = torch.Tensor([5*ms, 10*ms]).to(device)#torch.Tensor([5*ms, 10*ms]).to(device) #[syn_tau*ms-syn_tau*ms*var_perc, syn_tau*ms+syn_tau*ms*var_perc]
 
 input_mode = 0 #two channel trick, down sample etc.
 

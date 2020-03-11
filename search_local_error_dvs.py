@@ -108,8 +108,9 @@ def train_run(mem_tau, syn_tau, l1, l2, var_perc):
     train_acc = []
     test_acc = []
 
-    print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5} tau_mem {6:.2f} tau syn {7:.2f} l1 {8:.3f} l2 {9:.3f} var {10:.3f}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb, mem_tau, syn_tau, l1, l2, var_perc))
+    diff_layers_acc = {'train1': [], 'test1': [],'train2': [], 'test2': [],'train3': [], 'test3': [],'train4': [], 'test4': []}
 
+    print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5} tau_mem {6:.2f} tau syn {7:.2f} l1 {8:.3f} l2 {9:.3f} var {10:.3f}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb, mem_tau, syn_tau, l1, l2, var_perc))
 
     for e in range(1):
         if (e%20 == 0) and (e != 0) and (quantization.global_lr > 1):
@@ -234,6 +235,14 @@ def train_run(mem_tau, syn_tau, l1, l2, var_perc):
         tcorrect = tcorrect.item()
         train_acc.append(correct/total)
         test_acc.append(tcorrect/ttotal)
+        diff_layers_acc['train1'].append(correct1_train/total_train)
+        diff_layers_acc['test1'].append(correct1_test/total_test)
+        diff_layers_acc['train2'].append(correct2_train/total_train)
+        diff_layers_acc['test2'].append(correct2_test/total_test)
+        diff_layers_acc['train3'].append(correct3_train/total_train)
+        diff_layers_acc['test3'].append(correct3_test/total_test)
+        diff_layers_acc['train4'].append(correct4_train/total_train)
+        diff_layers_acc['test4'].append(correct4_test/total_test)
 
         if verbose_output:
             print("Epoch {0} | Loss: {1:.4f} Train Acc 1: {2:.4f} Test Acc 1: {3:.4f} Train Acc 2: {4:.4f} Test Acc 2: {5:.4f} Train Acc 3: {6:.4f} Test Acc 3: {7:.4f} Train Acc 4: {8:.4f} Test Acc 4: {9:.4f}  TRAIN_ACC: {10:.4f} TEST_ACC: {11:.4f}  Train Time: {12:.4f}s Inference Time: {13:.4f}s".format(e+1, np.mean(loss_hist), correct1_train/total_train, correct1_test/total_test, correct2_train/total_train, correct2_test/total_test, correct3_train/total_train, correct3_test/total_test, correct4_train/total_train, correct4_test/total_test, correct/total, tcorrect/ttotal, train_time-start_time, inf_time - train_time))
