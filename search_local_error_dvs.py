@@ -21,17 +21,42 @@ else:
     device = torch.device("cpu")
 dtype = torch.float
 verbose_output = True
+ms = 1e-3
+delta_t = 1*ms
 
+
+# # DVS Poker
+# # load data
+# with open('../slow_poker_500_train.pickle', 'rb') as f:
+#     data = pickle.load(f)
+# x_train = data[0]
+# y_train = data[1]
+
+# with open('../slow_poker_500_test.pickle', 'rb') as f:
+#     data = pickle.load(f)
+# x_test = data[0]
+# y_test = data[1]
+
+# output_neurons = 4
+# T = 500*ms
+# T_test = 500*ms
+
+# DVS Gesture
 # load data
-with open('../slow_poker_500_train.pickle', 'rb') as f:
+with open('data/train_dvs_gesture.pickle', 'rb') as f:
     data = pickle.load(f)
 x_train = data[0]
-y_train = data[1]
+y_train = np.array(data[1], dtype = int) - 1
 
-with open('../slow_poker_500_test.pickle', 'rb') as f:
+with open('data/test_dvs_gesture.pickle', 'rb') as f:
     data = pickle.load(f)
 x_test = data[0]
-y_test = data[1]
+y_test = np.array(data[1], dtype = int) - 1
+
+output_neurons = 11
+T = 500*ms
+T_test = 1800*ms
+
 
 # set quant level
 quantization.global_wb = 8
@@ -45,24 +70,17 @@ quantization.global_lr = 1
 quantization.global_beta = 1.5 #quantization.step_d(quantization.global_wb)-.5
 
 # set parameters
-ms = 1e-3
-delta_t = 1*ms
-
-T = 500*ms
-T_test = 500*ms
 burnin = 50*ms
-output_neurons = 4
-batch_size = 128
+batch_size = 72
 tau_ref = torch.Tensor([0*ms]).to(device)
 dropout_p = .5
 thr = torch.Tensor([.4]).to(device)
 
 
-
 def train_run(mem_tau, syn_tau, l1, l2, var_perc):
 
-    tau_mem = torch.Tensor([mem_tau*ms-mem_tau*ms*var_perc, mem_tau*ms+mem_tau*ms*var_perc]).to(device)#torch.Tensor([5*ms, 35*ms]).to(device)
-    tau_syn = torch.Tensor([syn_tau*ms-syn_tau*ms*var_perc, syn_tau*ms+syn_tau*ms*var_perc]).to(device)#torch.Tensor([5*ms, 10*ms]).to(device)
+    tau_mem = torch.Tensor([5*ms, 35*ms]).to(device)#torch.Tensor([5*ms, 35*ms]).to(device)
+    tau_syn = torch.Tensor([5*ms, 10*ms]).to(device)#torch.Tensor([5*ms, 10*ms]).to(device)
 
     input_mode = 0 #two channel trick, down sample etc.
 
@@ -92,9 +110,11 @@ def train_run(mem_tau, syn_tau, l1, l2, var_perc):
 
     print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5} tau_mem {6:.2f} tau syn {7:.2f} l1 {8:.3f} l2 {9:.3f} var {10:.3f}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb, mem_tau, syn_tau, l1, l2, var_perc))
 
-    diff_layers_acc = {'train1': [], 'test1': [],'train2': [], 'test2': [],'train3': [], 'test3': [],'train4': [], 'test4': []}
 
-    for e in range(2):
+    for e in range(1):
+        if (e%20 == 0) and (e != 0) and (quantization.global_lr > 1):
+            quantization.global_lr /= 2
+
         correct = 0
         total = 0
         tcorrect = 0
@@ -114,7 +134,7 @@ def train_run(mem_tau, syn_tau, l1, l2, var_perc):
 
         start_time = time.time()
 
-        for x_local, y_local in sparse_data_generator_DVSPoker(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = True, device = device):
+        for x_local, y_local in sparse_data_generator_DVS(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = True, device = device):
             y_onehot = torch.Tensor(len(y_local), output_neurons).to(device)
             y_onehot.zero_()
             y_onehot.scatter_(1, y_local.reshape([y_local.shape[0],1]), 1)
@@ -166,7 +186,7 @@ def train_run(mem_tau, syn_tau, l1, l2, var_perc):
         train_time = time.time()
 
         # test accuracy
-        for x_local, y_local in sparse_data_generator_DVSPoker(x_test, y_test, batch_size = batch_size, nb_steps = T_test / ms, shuffle = True, device = device, test = True):
+        for x_local, y_local in sparse_data_generator_DVS(x_test, y_test, batch_size = batch_size, nb_steps = T_test / ms, shuffle = True, device = device, test = True):
             y_onehot = torch.Tensor(len(y_local), output_neurons).to(device)
             y_onehot.zero_()
             y_onehot.scatter_(1, y_local.reshape([y_local.shape[0],1]), 1)
@@ -214,20 +234,11 @@ def train_run(mem_tau, syn_tau, l1, l2, var_perc):
         tcorrect = tcorrect.item()
         train_acc.append(correct/total)
         test_acc.append(tcorrect/ttotal)
-        diff_layers_acc['train1'].append(correct1_train/total_train)
-        diff_layers_acc['test1'].append(correct1_test/total_test)
-        diff_layers_acc['train2'].append(correct2_train/total_train)
-        diff_layers_acc['test2'].append(correct2_test/total_test)
-        diff_layers_acc['train3'].append(correct3_train/total_train)
-        diff_layers_acc['test3'].append(correct3_test/total_test)
-        diff_layers_acc['train4'].append(correct4_train/total_train)
-        diff_layers_acc['test4'].append(correct4_test/total_test)
 
         if verbose_output:
             print("Epoch {0} | Loss: {1:.4f} Train Acc 1: {2:.4f} Test Acc 1: {3:.4f} Train Acc 2: {4:.4f} Test Acc 2: {5:.4f} Train Acc 3: {6:.4f} Test Acc 3: {7:.4f} Train Acc 4: {8:.4f} Test Acc 4: {9:.4f}  TRAIN_ACC: {10:.4f} TEST_ACC: {11:.4f}  Train Time: {12:.4f}s Inference Time: {13:.4f}s".format(e+1, np.mean(loss_hist), correct1_train/total_train, correct1_test/total_test, correct2_train/total_train, correct2_test/total_test, correct3_train/total_train, correct3_test/total_test, correct4_train/total_train, correct4_test/total_test, correct/total, tcorrect/ttotal, train_time-start_time, inf_time - train_time))
         else:
             print("Epoch {0} | TRAIN_ACC: {1:.4f} TEST_ACC: {2:.4f}  Train Time: {3:.4f}s Inference Time: {4:.4f}s".format(e+1, correct/total, tcorrect/ttotal, train_time-start_time, inf_time - train_time))
-
 
 
     return max(test_acc), {'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer2':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer3':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer4':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'loss':[loss_hist], 'train': train_acc, 'test': test_acc, 'layers1':diff_layers_acc}
@@ -254,11 +265,11 @@ def objective(args):
 
 
 space = {
-    'mem_tau' : hp.uniform('mem_tau', 1, 130), 
-    'syn_tau' : hp.uniform('syn_tau', 1, 130), 
+    'mem_tau' : 0,# hp.uniform('mem_tau', 1, 130), 
+    'syn_tau' : 0,#hp.uniform('syn_tau', 1, 130), 
     'l1' :      hp.uniform('l1', .05, 1.7),#1.3,#
     'l2' :      hp.uniform('l2', .05, 1.7),#0.15,#
-    'var_perc' : hp.uniform('var_perc', 0, .9)
+    'var_perc' : 0#hp.uniform('var_perc', 0, .9)
 }
 
 best = fmin(objective, space, algo=tpe.suggest, max_evals=75)
