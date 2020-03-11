@@ -60,15 +60,15 @@ T_test = 1800*ms
 
 
 # set quant level
-quantization.global_wb = 8
-quantization.global_ub = 8
-quantization.global_qb = 8
-quantization.global_pb = 8
-quantization.global_gb = 8
-quantization.global_eb = 8
+quantization.global_wb = 12
+quantization.global_ub = 12
+quantization.global_qb = 12
+quantization.global_pb = 12
+quantization.global_gb = 12
+quantization.global_eb = 12
 quantization.global_rb = 16
 quantization.global_lr = 1#8
-quantization.global_sb = 4
+quantization.global_sb = 2
 quantization.global_beta = 1.5 #quantization.step_d(quantization.global_wb)-.5
 
 # set parameters
