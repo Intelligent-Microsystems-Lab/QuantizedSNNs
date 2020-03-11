@@ -256,6 +256,9 @@ class QLinearLayerSign(nn.Module):
             self.weights.data[self.weights.data > 0] = 1
             self.weights.data[self.weights.data < 0] = 1
         else:
+            # use quantization.global_sb
+            import pdb; pdb.set_trace()
+            quantization.quant(self.weights.data, quantization.global_sb)
             self.weights.data[self.weights.data > 0] = 1
             self.weights.data[self.weights.data < 0] = -1
         

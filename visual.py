@@ -380,6 +380,24 @@ for i in inp_list:
     final_plt += i[0,:,:,:]
 fig, axs = plt.subplots(1, 2)
 axs[0].imshow(final_plt[0,:,:].cpu())
-axs[1].imshow(final_plt[0,:,:].cpu())
+axs[1].imshow(final_plt[1,:,:].cpu())
 plt.savefig("../dvs_inp.png")
 
+
+# raster plot
+rel_sample = torch.stack(act_list)[:,0,:,:,:]
+rel_sample = rel_sample.reshape((950,-1,))
+plt.imshow(rel_sample.cpu().T)
+plt.xlabel("Time ms")
+plt.ylabel("# Neuron")
+plt.title("MNIST (Good)")
+plt.savefig("../raster_joshi_mnist.png")
+
+
+rel_sample = torch.stack(act_list)[:,0,:,:,:]
+rel_sample = rel_sample.reshape((450,-1,))
+plt.imshow(rel_sample.cpu().T)
+plt.xlabel("Time ms")
+plt.ylabel("# Neuron")
+plt.title("DVS (bad)")
+plt.savefig("../raster_joshi_dvs.png")
