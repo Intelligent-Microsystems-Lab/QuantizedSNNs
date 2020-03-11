@@ -253,16 +253,12 @@ class QLinearLayerSign(nn.Module):
         self.weights.data.uniform_(-1, 1)
 
         if pass_through:
-            self.weights.data[self.weights.data > 0] = 1
-            self.weights.data[self.weights.data < 0] = 1
+            self.weights.data = torch.ones_like(self.weights.data)
         else:
-            # use quantization.global_sb
-            import pdb; pdb.set_trace()
-            quantization.quant(self.weights.data, quantization.global_sb)
-            self.weights.data[self.weights.data > 0] = 1
-            self.weights.data[self.weights.data < 0] = -1
+            scale = quantization.step_d(quantization.global_sb)
+            s_sign = torch.sign(self.weights.data)
+            self.weights.data = torch.ceil(torch.abs(self.weights.data) * scale ) / scale * s_sign
         
-
     def forward(self, input):
         return QLinearFunctional.apply(input, self.weights, None)
 
