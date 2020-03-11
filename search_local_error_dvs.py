@@ -114,7 +114,7 @@ def train_run(l1, l2):
     print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5}{6} l1 {7:.3f} l2 {8:.3f}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb, quantization.global_sb, l1, l2))
 
 
-    for e in range(75):
+    for e in range(1):
         if (e%20 == 0) and (e != 0) and (quantization.global_lr > 1):
             quantization.global_lr /= 2
 
