@@ -21,7 +21,6 @@ if torch.cuda.is_available():
 else:
     device = torch.device("cpu")
 dtype = torch.float
-verbose_output = True
 ms = 1e-3
 delta_t = 1*ms
 
@@ -60,15 +59,15 @@ T_test = 1800*ms
 
 
 # set quant level
-quantization.global_wb = 12
-quantization.global_ub = 12
-quantization.global_qb = 12
-quantization.global_pb = 12
-quantization.global_gb = 12
-quantization.global_eb = 12
+quantization.global_wb = 8
+quantization.global_ub = 8
+quantization.global_qb = 8
+quantization.global_pb = 8
+quantization.global_gb = 8
+quantization.global_eb = 8
 quantization.global_rb = 16
 quantization.global_lr = 1#8
-quantization.global_sb = 2
+quantization.global_sb = 1
 quantization.global_beta = 1.5 #quantization.step_d(quantization.global_wb)-.5
 
 # set parameters
@@ -99,21 +98,23 @@ sl1_loss = torch.nn.SmoothL1Loss()
 # construct layers
 downsample_l = nn.AvgPool2d(kernel_size = 4, stride = 4)
 
-layer1 = LIFConv2dLayer(inp_shape = (2, 32, 32), kernel_size = 5, out_channels = 16, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_prep_fn = softmax_fn, loss_fn = sl1_loss, l1 = l1, l2 = l2).to(device)
+layer1 = LIFConv2dLayer(inp_shape = (2, 32, 32), kernel_size = 7, out_channels = 64, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_prep_fn = softmax_fn, loss_fn = sl1_loss, l1 = l1, l2 = l2).to(device)
 
-layer2 = LIFConv2dLayer(inp_shape = layer1.out_shape, kernel_size = 5, out_channels = 32, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_prep_fn = softmax_fn, loss_fn = sl1_loss, l1 = l1, l2 = l2).to(device)
+layer2 = LIFConv2dLayer(inp_shape = layer1.out_shape, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 1, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_prep_fn = softmax_fn, loss_fn = sl1_loss, l1 = l1, l2 = l2).to(device)
 
-layer3 = LIFConv2dLayer(inp_shape = layer2.out_shape, kernel_size = 5, out_channels = 32, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_prep_fn = softmax_fn, loss_fn = sl1_loss, l1 = l1, l2 = l2).to(device)
+layer3 = LIFConv2dLayer(inp_shape = layer2.out_shape, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_prep_fn = softmax_fn, loss_fn = sl1_loss, l1 = l1, l2 = l2).to(device)
 
-layer4 = LIFDenseLayer(in_channels = np.prod(layer3.out_shape), out_channels = output_neurons, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_prep_fn = softmax_fn, loss_fn = sl1_loss, l1 = l1, l2 = l2).to(device)
+#layer4 = LIFDenseLayer(in_channels = np.prod(layer3.out_shape), out_channels = output_neurons, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_prep_fn = softmax_fn, loss_fn = sl1_loss, l1 = l1, l2 = l2).to(device)
 
-all_parameters = list(layer1.parameters()) + list(layer2.parameters()) + list(layer3.parameters()) + list(layer4.parameters())
+all_parameters = list(layer1.parameters()) + list(layer2.parameters()) + list(layer3.parameters()) #+ list(layer4.parameters())
 
 # initlialize optimizier
 opt = torch.optim.SGD(all_parameters, lr=1)
 
-train_acc = []
-test_acc = []
+#train_acc = []
+#test_acc = []
+
+diff_layers_acc = {'train1': [], 'test1': [],'train2': [], 'test2': [],'train3': [], 'test3': []}
 
 print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5}{6} l1 {7:.3f} l2 {8:.3f}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb, quantization.global_sb, l1, l2))
 
@@ -122,20 +123,20 @@ for e in range(75):
     if (e%20 == 0) and (e != 0) and (quantization.global_lr > 1):
         quantization.global_lr /= 2
 
-    correct = 0
-    total = 0
-    tcorrect = 0
-    ttotal = 0
+    #correct = 0
+    #total = 0
+    #tcorrect = 0
+    #ttotal = 0
 
     correct1_train = 0 
     correct2_train = 0
     correct3_train = 0
-    correct4_train = 0
+    #correct4_train = 0
     total_train = 0
     correct1_test = 0
     correct2_test = 0
     correct3_test = 0
-    correct4_test = 0
+    #correct4_test = 0
     total_test = 0
     loss_hist = []
 
@@ -146,12 +147,12 @@ for e in range(75):
         y_onehot.zero_()
         y_onehot.scatter_(1, y_local.reshape([y_local.shape[0],1]), 1)
 
-        class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
+        #class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
 
         layer1.state_init(x_local.shape[0])
         layer2.state_init(x_local.shape[0])
         layer3.state_init(x_local.shape[0])
-        layer4.state_init(x_local.shape[0])
+        #layer4.state_init(x_local.shape[0])
 
         # burnin
         for t in range(int(burnin/ms)):
@@ -160,8 +161,8 @@ for e in range(75):
             out_spikes1, _, _ = layer1.forward(spikes_t, y_onehot)
             out_spikes2, _, _ = layer2.forward(out_spikes1, y_onehot)
             out_spikes3, _, _ = layer3.forward(out_spikes2, y_onehot)
-            out_spikes3       = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
-            out_spikes4, _, _ = layer4.forward(out_spikes3, y_onehot)
+            #out_spikes3       = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
+            #out_spikes4, _, _ = layer4.forward(out_spikes3, y_onehot)
 
         # training
         for t in range(int(burnin/ms), int(T/ms)):
@@ -170,26 +171,26 @@ for e in range(75):
             out_spikes1, temp_loss1, temp_corr1 = layer1.forward(spikes_t, y_onehot)
             out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_onehot)
             out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_onehot)
-            out_spikes3                         = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
-            out_spikes4, temp_loss4, temp_corr4 = layer4.forward(out_spikes3, y_onehot)
+            #out_spikes3                         = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
+            #out_spikes4, temp_loss4, temp_corr4 = layer4.forward(out_spikes3, y_onehot)
 
-            loss_gen = temp_loss1 + temp_loss2 + temp_loss3 + temp_loss4
+            loss_gen = temp_loss1 + temp_loss2 + temp_loss3 #+ temp_loss4
 
             loss_gen.backward()
             opt.step()
             opt.zero_grad()
 
             loss_hist.append(loss_gen.item())
-            class_rec += out_spikes4
+            #class_rec += out_spikes4
             correct1_train += temp_corr1
             correct2_train += temp_corr2
             correct3_train += temp_corr3
-            correct4_train += temp_corr4
+            #correct4_train += temp_corr4
             total_train += y_local.size(0)
 
 
-        correct += (torch.max(class_rec, dim = 1).indices == y_local).sum() 
-        total += len(y_local)
+        #correct += (torch.max(class_rec, dim = 1).indices == y_local).sum() 
+        #total += len(y_local)
     train_time = time.time()
 
     # test accuracy
@@ -198,12 +199,12 @@ for e in range(75):
         y_onehot.zero_()
         y_onehot.scatter_(1, y_local.reshape([y_local.shape[0],1]), 1)
 
-        class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
+        #class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
 
         layer1.state_init(x_local.shape[0])
         layer2.state_init(x_local.shape[0])
         layer3.state_init(x_local.shape[0])
-        layer4.state_init(x_local.shape[0])
+        #layer4.state_init(x_local.shape[0])
 
         # burnin
         for t in range(int(burnin/ms)):
@@ -212,8 +213,8 @@ for e in range(75):
             out_spikes1, _, _ = layer1.forward(spikes_t, y_onehot)
             out_spikes2, _, _ = layer2.forward(out_spikes1, y_onehot)
             out_spikes3, _, _ = layer3.forward(out_spikes2, y_onehot)
-            out_spikes3       = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
-            out_spikes4, _, _ = layer4.forward(out_spikes3, y_onehot)
+            #out_spikes3       = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
+            #out_spikes4, _, _ = layer4.forward(out_spikes3, y_onehot)
 
         # testing
         for t in range(int(burnin/ms), int(T_test/ms)):
@@ -222,32 +223,35 @@ for e in range(75):
             out_spikes1, temp_loss1, temp_corr1 = layer1.forward(spikes_t, y_onehot)
             out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_onehot)
             out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_onehot)
-            out_spikes3                         = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
-            out_spikes4, temp_loss4, temp_corr4 = layer4.forward(out_spikes3, y_onehot)
+            #out_spikes3                         = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
+            #out_spikes4, temp_loss4, temp_corr4 = layer4.forward(out_spikes3, y_onehot)
 
             
-            class_rec += out_spikes4
+            #class_rec += out_spikes4
             correct1_test += temp_corr1
             correct2_test += temp_corr2
             correct3_test += temp_corr3
-            correct4_test += temp_corr4
+            #correct4_test += temp_corr4
             total_test += y_local.size(0)
 
-        tcorrect += (torch.max(class_rec, dim = 1).indices == y_local).sum() 
-        ttotal += len(y_local)
+        #tcorrect += (torch.max(class_rec, dim = 1).indices == y_local).sum() 
+        #ttotal += len(y_local)
     inf_time = time.time()
 
-    correct = correct.item()
-    tcorrect = tcorrect.item()
-    train_acc.append(correct/total)
-    test_acc.append(tcorrect/ttotal)
+    diff_layers_acc['train1'].append(correct1_train/total_train)
+    diff_layers_acc['test1'].append(correct1_test/total_test)
+    diff_layers_acc['train2'].append(correct2_train/total_train)
+    diff_layers_acc['test2'].append(correct2_test/total_test)
+    diff_layers_acc['train3'].append(correct3_train/total_train)
+    diff_layers_acc['test3'].append(correct3_test/total_test)
 
-    if verbose_output:
-        print("Epoch {0} | Loss: {1:.4f} Train Acc 1: {2:.4f} Test Acc 1: {3:.4f} Train Acc 2: {4:.4f} Test Acc 2: {5:.4f} Train Acc 3: {6:.4f} Test Acc 3: {7:.4f} Train Acc 4: {8:.4f} Test Acc 4: {9:.4f}  TRAIN_ACC: {10:.4f} TEST_ACC: {11:.4f}  Train Time: {12:.4f}s Inference Time: {13:.4f}s".format(e+1, np.mean(loss_hist), correct1_train/total_train, correct1_test/total_test, correct2_train/total_train, correct2_test/total_test, correct3_train/total_train, correct3_test/total_test, correct4_train/total_train, correct4_test/total_test, correct/total, tcorrect/ttotal, train_time-start_time, inf_time - train_time))
-    else:
-        print("Epoch {0} | TRAIN_ACC: {1:.4f} TEST_ACC: {2:.4f}  Train Time: {3:.4f}s Inference Time: {4:.4f}s".format(e+1, correct/total, tcorrect/ttotal, train_time-start_time, inf_time - train_time))
+    #correct = correct.item()
+    #tcorrect = tcorrect.item()
+    #train_acc.append(correct/total)
+    #test_acc.append(tcorrect/ttotal)
 
 
+    print("Epoch {0} | Loss: {1:.4f} Train Acc 1: {2:.4f} Test Acc 1: {3:.4f} Train Acc 2: {4:.4f} Test Acc 2: {5:.4f} Train Acc 3: {6:.4f} Test Acc 3: {7:.4f} Train Time: {8:.4f}s Inference Time: {9:.4f}s".format(e+1, np.mean(loss_hist), correct1_train/total_train, correct1_test/total_test, correct2_train/total_train, correct2_test/total_test, correct3_train/total_train, correct3_test/total_test, train_time-start_time, inf_time - train_time))
 
 # saving results/weights
 results = {'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer2':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer3':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer4':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'loss':[loss_hist], 'train': train_acc, 'test': test_acc}
