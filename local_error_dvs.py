@@ -59,16 +59,16 @@ T_test = 1800*ms
 
 
 # set quant level
-quantization.global_wb = 32
-quantization.global_ub = 32
-quantization.global_qb = 32
-quantization.global_pb = 32
-quantization.global_gb = 32
-quantization.global_eb = 32
-quantization.global_rb = 32
-quantization.global_lr = 22#8
+quantization.global_wb = 24
+quantization.global_ub = 24
+quantization.global_qb = 24
+quantization.global_pb = 24
+quantization.global_gb = 24
+quantization.global_eb = 24
+quantization.global_rb = 24
+quantization.global_lr = 4#8
 quantization.global_sb = 1
-quantization.global_beta = quantization.step_d(quantization.global_wb)-.5 #1.5 #
+quantization.global_beta = 1.5#quantization.step_d(quantization.global_wb)-.5 #1.5 #
 
 # set parameters
 burnin = 50*ms
