@@ -59,14 +59,14 @@ T_test = 1800*ms
 
 
 # set quant level
-quantization.global_wb = 24
-quantization.global_ub = 24
-quantization.global_qb = 24
-quantization.global_pb = 24
-quantization.global_gb = 24
-quantization.global_eb = 24
-quantization.global_rb = 24
-quantization.global_lr = 4#8
+quantization.global_wb = 16
+quantization.global_ub = 16
+quantization.global_qb = 16
+quantization.global_pb = 16
+quantization.global_gb = 16
+quantization.global_eb = 16
+quantization.global_rb = 16
+quantization.global_lr = 1#8
 quantization.global_sb = 1
 quantization.global_beta = 1.5#quantization.step_d(quantization.global_wb)-.5 #1.5 #
 
@@ -74,7 +74,7 @@ quantization.global_beta = 1.5#quantization.step_d(quantization.global_wb)-.5 #1
 burnin = 50*ms
 batch_size = 72
 tau_ref = torch.Tensor([0*ms]).to(device)
-dropout_p = .5
+dropout_p = .05
 thr = torch.Tensor([.4]).to(device)
 
 mem_tau = 19.144428947159064
