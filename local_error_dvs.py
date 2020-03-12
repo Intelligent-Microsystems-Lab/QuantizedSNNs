@@ -66,7 +66,7 @@ quantization.global_pb = 32
 quantization.global_gb = 32
 quantization.global_eb = 32
 quantization.global_rb = 16
-quantization.global_lr = 4#8
+quantization.global_lr = 1#8
 quantization.global_sb = 1
 quantization.global_beta = 1.5 #quantization.step_d(quantization.global_wb)-.5
 
@@ -79,8 +79,8 @@ thr = torch.Tensor([.4]).to(device)
 
 mem_tau = 19.144428947159064
 syn_tau = 3.419011079385445
-l1 = 0.973#.5#0.5807472565567517#.5#0.485#
-l2 = 1.099 #5#1.4068230901221566#.5#0.621#
+l1 = .5#0.973#.5#0.5807472565567517#.5#0.485#
+l2 = .5#1.099 #5#1.4068230901221566#.5#0.621#
 var_perc = 0.3797799366311833
 
 
