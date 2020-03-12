@@ -87,7 +87,7 @@ var_perc = 0.3797799366311833
 tau_mem = torch.Tensor([5*ms, 35*ms]).to(device)#torch.Tensor([5*ms, 35*ms]).to(device) #[mem_tau*ms-mem_tau*ms*var_perc, mem_tau*ms+mem_tau*ms*var_perc]
 tau_syn = torch.Tensor([5*ms, 10*ms]).to(device)#torch.Tensor([5*ms, 10*ms]).to(device) #[syn_tau*ms-syn_tau*ms*var_perc, syn_tau*ms+syn_tau*ms*var_perc]
 
-input_mode = 1 #two channel trick, down sample etc.
+input_mode = 2 #two channel trick, down sample etc.
 
 log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
 nll_loss = torch.nn.NLLLoss()
