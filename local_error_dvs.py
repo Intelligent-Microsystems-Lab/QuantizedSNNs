@@ -74,7 +74,7 @@ quantization.global_beta = 1.5#quantization.step_d(quantization.global_wb)-.5 #1
 burnin = 50*ms
 batch_size = 72
 tau_ref = torch.Tensor([0*ms]).to(device)
-dropout_p = .5
+dropout_p = .75
 thr = torch.Tensor([.4]).to(device)
 
 mem_tau = 19.144428947159064
