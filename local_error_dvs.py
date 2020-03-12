@@ -66,7 +66,7 @@ quantization.global_pb = 32
 quantization.global_gb = 32
 quantization.global_eb = 32
 quantization.global_rb = 32
-quantization.global_lr = 1#8
+quantization.global_lr = 22#8
 quantization.global_sb = 1
 quantization.global_beta = 1.5 #quantization.step_d(quantization.global_wb)-.5
 
@@ -87,7 +87,7 @@ var_perc = 0.3797799366311833
 tau_mem = torch.Tensor([5*ms, 35*ms]).to(device)#torch.Tensor([5*ms, 35*ms]).to(device) #[mem_tau*ms-mem_tau*ms*var_perc, mem_tau*ms+mem_tau*ms*var_perc]
 tau_syn = torch.Tensor([5*ms, 10*ms]).to(device)#torch.Tensor([5*ms, 10*ms]).to(device) #[syn_tau*ms-syn_tau*ms*var_perc, syn_tau*ms+syn_tau*ms*var_perc]
 
-input_mode = 2 #two channel trick, down sample etc.
+input_mode = 0 #two channel trick, down sample etc.
 
 log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
 nll_loss = torch.nn.NLLLoss()
@@ -246,7 +246,7 @@ for e in range(75):
 
     #correct = correct.item()
     #tcorrect = tcorrect.item()
-    #train_acc.append(correct/total)
+    #train_acc.append(correct/total) WPQUEG: 1616161616161 l1 0.5 l2 0.5
     #test_acc.append(tcorrect/ttotal)
 
 
