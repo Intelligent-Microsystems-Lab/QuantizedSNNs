@@ -1,0 +1,94 @@
+WPQUEG Quantization: 3232323232321 l1 0.920 l2 0.993
+Epoch 1 | Loss: 2.4394 Train Acc 1: 0.0947 Test Acc 1: 0.0920 Train Acc 2: 0.0899 Test Acc 2: 0.0863 Train Acc 3: 0.0888 Test Acc 3: 0.0893 Train Time: 675.1227s Inference Time: 273.6666s
+WPQUEG Quantization: 3232323232321 l1 0.370 l2 0.967
+Epoch 1 | Loss: 1.9847 Train Acc 1: 0.0893 Test Acc 1: 0.0881 Train Acc 2: 0.0889 Test Acc 2: 0.0908 Train Acc 3: 0.0895 Test Acc 3: 0.0919 Train Time: 654.3673s Inference Time: 276.2309s
+WPQUEG Quantization: 3232323232321 l1 0.448 l2 0.695
+Epoch 1 | Loss: 1.5936 Train Acc 1: 0.0932 Test Acc 1: 0.0874 Train Acc 2: 0.0913 Test Acc 2: 0.0956 Train Acc 3: 0.0865 Test Acc 3: 0.0836 Train Time: 658.7403s Inference Time: 269.0421s
+WPQUEG Quantization: 3232323232321 l1 1.280 l2 1.366
+Epoch 1 | Loss: 3.2993 Train Acc 1: 0.0924 Test Acc 1: 0.0826 Train Acc 2: 0.0937 Test Acc 2: 0.0958 Train Acc 3: 0.0918 Test Acc 3: 0.0926 Train Time: 672.6094s Inference Time: 270.9052s
+WPQUEG Quantization: 3232323232321 l1 1.003 l2 1.263
+Epoch 1 | Loss: 2.8797 Train Acc 1: 0.0888 Test Acc 1: 0.0875 Train Acc 2: 0.0925 Test Acc 2: 0.0929 Train Acc 3: 0.0896 Test Acc 3: 0.0838 Train Time: 671.5226s Inference Time: 267.7106s
+WPQUEG Quantization: 3232323232321 l1 0.245 l2 1.611
+Epoch 1 | Loss: 2.7642 Train Acc 1: 0.0810 Test Acc 1: 0.0894 Train Acc 2: 0.0892 Test Acc 2: 0.0910 Train Acc 3: 0.0894 Test Acc 3: 0.0907 Train Time: 667.5183s Inference Time: 269.3197s
+WPQUEG Quantization: 3232323232321 l1 0.136 l2 0.562
+Epoch 1 | Loss: 1.1614 Train Acc 1: 0.0927 Test Acc 1: 0.0955 Train Acc 2: 0.0955 Test Acc 2: 0.0911 Train Acc 3: 0.0921 Test Acc 3: 0.0889 Train Time: 657.7851s Inference Time: 287.0884s
+WPQUEG Quantization: 3232323232321 l1 1.237 l2 1.142
+Epoch 1 | Loss: 2.9227 Train Acc 1: 0.0966 Test Acc 1: 0.0949 Train Acc 2: 0.0899 Test Acc 2: 0.0957 Train Acc 3: 0.0894 Test Acc 3: 0.0913 Train Time: 664.2890s Inference Time: 273.5850s
+WPQUEG Quantization: 3232323232321 l1 1.124 l2 0.300
+Epoch 1 | Loss: 1.5833 Train Acc 1: 0.0862 Test Acc 1: 0.0890 Train Acc 2: 0.0882 Test Acc 2: 0.0911 Train Acc 3: 0.0876 Test Acc 3: 0.0918 Train Time: 662.2949s Inference Time: 285.3512s
+WPQUEG Quantization: 3232323232321 l1 0.734 l2 0.148
+Epoch 1 | Loss: 1.0639 Train Acc 1: 0.0925 Test Acc 1: 0.0923 Train Acc 2: 0.0947 Test Acc 2: 0.0912 Train Acc 3: 0.0924 Test Acc 3: 0.0944 Train Time: 661.0865s Inference Time: 269.3357s
+WPQUEG Quantization: 3232323232321 l1 1.518 l2 1.563
+Epoch 1 | Loss: 3.7062 Train Acc 1: 0.0883 Test Acc 1: 0.0886 Train Acc 2: 0.0908 Test Acc 2: 0.0881 Train Acc 3: 0.0935 Test Acc 3: 0.0894 Train Time: 661.4142s Inference Time: 275.8389s
+WPQUEG Quantization: 3232323232321 l1 0.363 l2 1.635
+Epoch 1 | Loss: 3.0829 Train Acc 1: 0.0901 Test Acc 1: 0.0935 Train Acc 2: 0.0881 Test Acc 2: 0.0927 Train Acc 3: 0.0886 Test Acc 3: 0.0916 Train Time: 656.8257s Inference Time: 270.0976s
+WPQUEG Quantization: 3232323232321 l1 1.497 l2 0.390
+Epoch 1 | Loss: 1.9469 Train Acc 1: 0.0926 Test Acc 1: 0.0908 Train Acc 2: 0.0926 Test Acc 2: 0.0884 Train Acc 3: 0.0898 Test Acc 3: 0.0873 Train Time: 654.7290s Inference Time: 267.2863s
+WPQUEG Quantization: 3232323232321 l1 0.579 l2 0.474
+Epoch 1 | Loss: 1.4011 Train Acc 1: 0.0933 Test Acc 1: 0.0911 Train Acc 2: 0.0899 Test Acc 2: 0.0867 Train Acc 3: 0.0915 Test Acc 3: 0.0893 Train Time: 655.8640s Inference Time: 279.9737s
+WPQUEG Quantization: 3232323232321 l1 0.885 l2 0.466
+Epoch 1 | Loss: 1.6554 Train Acc 1: 0.0872 Test Acc 1: 0.0857 Train Acc 2: 0.0943 Test Acc 2: 0.0927 Train Acc 3: 0.0892 Test Acc 3: 0.0913 Train Time: 653.6957s Inference Time: 270.2740s
+WPQUEG Quantization: 3232323232321 l1 0.968 l2 0.898
+Epoch 1 | Loss: 2.3153 Train Acc 1: 0.0926 Test Acc 1: 0.0899 Train Acc 2: 0.0879 Test Acc 2: 0.0920 Train Acc 3: 0.0884 Test Acc 3: 0.0874 Train Time: 652.3581s Inference Time: 269.1651s
+WPQUEG Quantization: 3232323232321 l1 0.546 l2 0.857
+Epoch 1 | Loss: 1.9279 Train Acc 1: 0.0941 Test Acc 1: 0.0894 Train Acc 2: 0.0913 Test Acc 2: 0.0882 Train Acc 3: 0.0899 Test Acc 3: 0.0868 Train Time: 652.3911s Inference Time: 268.8447s
+WPQUEG Quantization: 3232323232321 l1 0.280 l2 0.727
+Epoch 1 | Loss: 1.5115 Train Acc 1: 0.0928 Test Acc 1: 0.0972 Train Acc 2: 0.0887 Test Acc 2: 0.0924 Train Acc 3: 0.0967 Test Acc 3: 0.0951 Train Time: 658.6303s Inference Time: 269.1034s
+WPQUEG Quantization: 3232323232321 l1 1.373 l2 0.689
+Epoch 1 | Loss: 2.3408 Train Acc 1: 0.0935 Test Acc 1: 0.0917 Train Acc 2: 0.0953 Test Acc 2: 0.0967 Train Acc 3: 0.0897 Test Acc 3: 0.0866 Train Time: 657.6296s Inference Time: 271.0527s
+WPQUEG Quantization: 3232323232321 l1 0.703 l2 0.258
+Epoch 1 | Loss: 1.1786 Train Acc 1: 0.0947 Test Acc 1: 0.0905 Train Acc 2: 0.0936 Test Acc 2: 0.0944 Train Acc 3: 0.0925 Test Acc 3: 0.0857 Train Time: 659.1315s Inference Time: 270.9449s
+WPQUEG Quantization: 3232323232321 l1 0.118 l2 0.067
+Epoch 1 | Loss: 0.4311 Train Acc 1: 0.0861 Test Acc 1: 0.0863 Train Acc 2: 0.0927 Test Acc 2: 0.0927 Train Acc 3: 0.0923 Test Acc 3: 0.0906 Train Time: 654.8690s Inference Time: 273.6241s
+WPQUEG Quantization: 3232323232321 l1 0.728 l2 0.107
+Epoch 1 | Loss: 0.9576 Train Acc 1: 0.0863 Test Acc 1: 0.0830 Train Acc 2: 0.0887 Test Acc 2: 0.0902 Train Acc 3: 0.0908 Test Acc 3: 0.0876 Train Time: 653.7160s Inference Time: 267.8659s
+WPQUEG Quantization: 3232323232321 l1 0.743 l2 0.206
+Epoch 1 | Loss: 1.1495 Train Acc 1: 0.0928 Test Acc 1: 0.0949 Train Acc 2: 0.0924 Test Acc 2: 0.0866 Train Acc 3: 0.0938 Test Acc 3: 0.0929 Train Time: 652.7301s Inference Time: 269.5204s
+WPQUEG Quantization: 3232323232321 l1 0.254 l2 0.684
+Epoch 1 | Loss: 1.4014 Train Acc 1: 0.0878 Test Acc 1: 0.0940 Train Acc 2: 0.0912 Test Acc 2: 0.0902 Train Acc 3: 0.0915 Test Acc 3: 0.0897 Train Time: 655.0259s Inference Time: 269.2618s
+WPQUEG Quantization: 3232323232321 l1 0.577 l2 1.418
+Epoch 1 | Loss: 2.6371 Train Acc 1: 0.0905 Test Acc 1: 0.0919 Train Acc 2: 0.0891 Test Acc 2: 0.0879 Train Acc 3: 0.0907 Test Acc 3: 0.0988 Train Time: 653.4074s Inference Time: 273.3754s
+WPQUEG Quantization: 3232323232321 l1 0.051 l2 1.414
+Epoch 1 | Loss: 2.2755 Train Acc 1: 0.0829 Test Acc 1: 0.0855 Train Acc 2: 0.0907 Test Acc 2: 0.0930 Train Acc 3: 0.0894 Test Acc 3: 0.0981 Train Time: 655.8986s Inference Time: 279.7891s
+WPQUEG Quantization: 3232323232321 l1 0.079 l2 1.473
+Epoch 1 | Loss: 2.3792 Train Acc 1: 0.0862 Test Acc 1: 0.0939 Train Acc 2: 0.0899 Test Acc 2: 0.0925 Train Acc 3: 0.0924 Test Acc 3: 0.0912 Train Time: 651.5489s Inference Time: 268.5531s
+WPQUEG Quantization: 3232323232321 l1 1.699 l2 1.154
+Epoch 1 | Loss: 3.3067 Train Acc 1: 0.0952 Test Acc 1: 0.0884 Train Acc 2: 0.0876 Test Acc 2: 0.0874 Train Acc 3: 0.0945 Test Acc 3: 0.0900 Train Time: 654.8522s Inference Time: 272.2654s
+WPQUEG Quantization: 3232323232321 l1 0.604 l2 1.395
+Epoch 1 | Loss: 2.7555 Train Acc 1: 0.0962 Test Acc 1: 0.0949 Train Acc 2: 0.0901 Test Acc 2: 0.0867 Train Acc 3: 0.0906 Test Acc 3: 0.0873 Train Time: 657.1998s Inference Time: 277.6929s
+WPQUEG Quantization: 3232323232321 l1 0.457 l2 1.113
+Epoch 1 | Loss: 2.1408 Train Acc 1: 0.0919 Test Acc 1: 0.0916 Train Acc 2: 0.0923 Test Acc 2: 0.0956 Train Acc 3: 0.0918 Test Acc 3: 0.0894 Train Time: 651.2633s Inference Time: 279.4916s
+WPQUEG Quantization: 3232323232321 l1 0.207 l2 1.688
+Epoch 1 | Loss: 2.7918 Train Acc 1: 0.0864 Test Acc 1: 0.0877 Train Acc 2: 0.0909 Test Acc 2: 0.0899 Train Acc 3: 0.0945 Test Acc 3: 0.0910 Train Time: 650.7463s Inference Time: 277.1114s
+WPQUEG Quantization: 3232323232321 l1 0.393 l2 1.265
+Epoch 1 | Loss: 2.3064 Train Acc 1: 0.0913 Test Acc 1: 0.0883 Train Acc 2: 0.0913 Test Acc 2: 0.0934 Train Acc 3: 0.0922 Test Acc 3: 0.0937 Train Time: 656.0657s Inference Time: 274.2409s
+WPQUEG Quantization: 3232323232321 l1 0.066 l2 1.039
+Epoch 1 | Loss: 1.7845 Train Acc 1: 0.0940 Test Acc 1: 0.0896 Train Acc 2: 0.0893 Test Acc 2: 0.0893 Train Acc 3: 0.0933 Test Acc 3: 0.0909 Train Time: 655.6898s Inference Time: 269.5980s
+WPQUEG Quantization: 3232323232321 l1 1.070 l2 1.505
+Epoch 1 | Loss: 3.1740 Train Acc 1: 0.0949 Test Acc 1: 0.0882 Train Acc 2: 0.0946 Test Acc 2: 0.0902 Train Acc 3: 0.0915 Test Acc 3: 0.0870 Train Time: 653.6417s Inference Time: 268.8898s
+WPQUEG Quantization: 3232323232321 l1 0.474 l2 1.271
+Epoch 1 | Loss: 2.4175 Train Acc 1: 0.0885 Test Acc 1: 0.0829 Train Acc 2: 0.0920 Test Acc 2: 0.0948 Train Acc 3: 0.0907 Test Acc 3: 0.0884 Train Time: 654.3021s Inference Time: 271.2102s
+WPQUEG Quantization: 3232323232321 l1 0.794 l2 1.391
+Epoch 1 | Loss: 2.8426 Train Acc 1: 0.0986 Test Acc 1: 0.0969 Train Acc 2: 0.0919 Test Acc 2: 0.0939 Train Acc 3: 0.0938 Test Acc 3: 0.0857 Train Time: 652.2017s Inference Time: 274.5558s
+WPQUEG Quantization: 3232323232321 l1 0.639 l2 1.677
+Epoch 1 | Loss: 3.0618 Train Acc 1: 0.0919 Test Acc 1: 0.0886 Train Acc 2: 0.0934 Test Acc 2: 0.0965 Train Acc 3: 0.0917 Test Acc 3: 0.0917 Train Time: 656.2609s Inference Time: 272.0504s
+WPQUEG Quantization: 3232323232321 l1 0.827 l2 1.016
+Epoch 1 | Loss: 2.3446 Train Acc 1: 0.0821 Test Acc 1: 0.0858 Train Acc 2: 0.0923 Test Acc 2: 0.0925 Train Acc 3: 0.0905 Test Acc 3: 0.0917 Train Time: 655.2814s Inference Time: 273.3128s
+WPQUEG Quantization: 3232323232321 l1 0.343 l2 1.220
+Epoch 1 | Loss: 2.1857 Train Acc 1: 0.0867 Test Acc 1: 0.0884 Train Acc 2: 0.0924 Test Acc 2: 0.0951 Train Acc 3: 0.0900 Test Acc 3: 0.0840 Train Time: 653.6879s Inference Time: 273.0883s
+WPQUEG Quantization: 3232323232321 l1 0.183 l2 1.488
+Epoch 1 | Loss: 2.5500 Train Acc 1: 0.0910 Test Acc 1: 0.0834 Train Acc 2: 0.0934 Test Acc 2: 0.0971 Train Acc 3: 0.0897 Test Acc 3: 0.0968 Train Time: 661.5711s Inference Time: 271.4482s
+WPQUEG Quantization: 3232323232321 l1 1.024 l2 1.355
+Epoch 1 | Loss: 3.0192 Train Acc 1: 0.0867 Test Acc 1: 0.0857 Train Acc 2: 0.0912 Test Acc 2: 0.0946 Train Acc 3: 0.0903 Test Acc 3: 0.0893 Train Time: 654.0042s Inference Time: 268.7063s
+WPQUEG Quantization: 3232323232321 l1 1.172 l2 1.580
+Epoch 1 | Loss: 3.4311 Train Acc 1: 0.0869 Test Acc 1: 0.0883 Train Acc 2: 0.0915 Test Acc 2: 0.0946 Train Acc 3: 0.0939 Test Acc 3: 0.0886 Train Time: 654.1062s Inference Time: 268.8827s
+WPQUEG Quantization: 3232323232321 l1 0.936 l2 0.923
+Epoch 1 | Loss: 2.2724 Train Acc 1: 0.0897 Test Acc 1: 0.0880 Train Acc 2: 0.0937 Test Acc 2: 0.0998 Train Acc 3: 0.0904 Test Acc 3: 0.0971 Train Time: 654.9536s Inference Time: 269.7516s
+WPQUEG Quantization: 3232323232321 l1 1.313 l2 0.814
+Epoch 1 | Loss: 2.5216 Train Acc 1: 0.1018 Test Acc 1: 0.0961 Train Acc 2: 0.0859 Test Acc 2: 0.0872 Train Acc 3: 0.0940 Test Acc 3: 0.0883 Train Time: 653.8447s Inference Time: 289.8216s
+WPQUEG Quantization: 3232323232321 l1 0.310 l2 1.088
+Epoch 1 | Loss: 1.9992 Train Acc 1: 0.0959 Test Acc 1: 0.0975 Train Acc 2: 0.0896 Test Acc 2: 0.0941 Train Acc 3: 0.0902 Test Acc 3: 0.0855 Train Time: 658.9773s Inference Time: 268.2287s
+WPQUEG Quantization: 3232323232321 l1 1.649 l2 1.182
+Epoch 1 | Loss: 3.2815 Train Acc 1: 0.0918 Test Acc 1: 0.0963 Train Acc 2: 0.0873 Test Acc 2: 0.0941 Train Acc 3: 0.0891 Test Acc 3: 0.0916 Train Time: 653.6323s Inference Time: 266.0257s
+WPQUEG Quantization: 3232323232321 l1 0.519 l2 1.316
+ 71%|████████████████████████▊          | 46/65 [11:52:56<4:53:30, 926.88s/it, best loss: 0.9011507936507936][cschaef6@crcfe02 ~]$

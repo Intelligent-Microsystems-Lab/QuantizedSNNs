@@ -68,7 +68,7 @@ quantization.global_eb = 32
 quantization.global_rb = 32
 quantization.global_lr = 22#8
 quantization.global_sb = 1
-quantization.global_beta = 1.5 #quantization.step_d(quantization.global_wb)-.5
+quantization.global_beta = quantization.step_d(quantization.global_wb)-.5 #1.5 #
 
 # set parameters
 burnin = 50*ms
