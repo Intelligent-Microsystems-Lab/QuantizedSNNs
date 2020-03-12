@@ -59,12 +59,12 @@ T_test = 1800*ms
 
 
 # set quant level
-quantization.global_wb = 8
-quantization.global_ub = 8
-quantization.global_qb = 8
-quantization.global_pb = 8
-quantization.global_gb = 8
-quantization.global_eb = 8
+quantization.global_wb = 32
+quantization.global_ub = 32
+quantization.global_qb = 32
+quantization.global_pb = 32
+quantization.global_gb = 32
+quantization.global_eb = 32
 quantization.global_rb = 16
 quantization.global_lr = 1
 quantization.global_sb = 1
