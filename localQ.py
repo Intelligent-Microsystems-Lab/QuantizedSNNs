@@ -382,7 +382,8 @@ class LIFDenseLayer(nn.Module):
             correct_train = (predicted == y_local.max(dim = 1 )[1]).sum().item()
         else:
             correct_train = (predicted == y_local).sum().item()
-        loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu((self.U+.01).mean()) + self.l2 * F.relu(self.thr-self.U).mean()
+        loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu(self.U+.01).mean() + self.l2 * F.relu(self.thr-self.U.mean())
+        #loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu((self.U+.01).mean()) + self.l2 * F.relu(self.thr-self.U).mean()
         #loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu((self.U+.01).mean()) + self.l2 * F.relu(self.thr-self.U.mean())
         #loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu(self.U+.01).mean() + self.l2 * F.relu(self.thr-self.U).mean()
 
@@ -525,7 +526,8 @@ class LIFConv2dLayer(nn.Module):
             correct_train = (predicted == y_local.max(dim = 1 )[1]).sum().item()
         else:
             correct_train = (predicted == y_local).sum().item()
-        loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu((self.U+.01).mean()) + self.l2 * F.relu(self.thr-self.U).mean()
+        loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu(self.U+.01).mean() + self.l2 * F.relu(self.thr-self.U.mean())
+        #loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu((self.U+.01).mean()) + self.l2 * F.relu(self.thr-self.U).mean()
         #loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu((self.U+.01).mean()) + self.l2 * F.relu(self.thr-self.U.mean())
         #loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu(self.U+.01).mean() + self.l2 * F.relu(self.thr-self.U).mean()
 
