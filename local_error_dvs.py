@@ -66,7 +66,7 @@ quantization.global_pb = 32
 quantization.global_gb = 32
 quantization.global_eb = 32
 quantization.global_rb = 32
-quantization.global_lr = 21#8
+quantization.global_lr = 2#8
 quantization.global_sb = 1
 quantization.global_beta = 1.5#quantization.step_d(quantization.global_wb)-.5 #1.5 #
 
@@ -75,7 +75,7 @@ burnin = 50*ms
 batch_size = 72
 tau_ref = torch.Tensor([0*ms]).to(device)
 dropout_p = .5
-thr = torch.Tensor([.2]).to(device)
+thr = torch.Tensor([.1]).to(device)
 
 
 l1 = .5#0.973#.5#0.5807472565567517#.5#0.485#
