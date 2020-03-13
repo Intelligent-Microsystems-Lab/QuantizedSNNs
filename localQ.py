@@ -426,7 +426,6 @@ class QSConv2dFunctional(torch.autograd.Function):
         # computed quantized gradient
         if ctx.needs_input_grad[1]:
             grad_weight = quantization.quant_grad(torch.nn.grad.conv2d_weight(input, w_quant.shape, quant_error, padding = ctx.padding)).float()
-            import pdb; pdb.set_trace()
         # computed quantized bias
         if bias_quant is not None and ctx.needs_input_grad[2]:
             grad_bias = quantization.quant_grad(torch.einsum("abcd->b",(quant_error))).float()
