@@ -99,7 +99,8 @@ def quant_grad(x):
     return norm / step_d(global_gb)
 
 def quant_err(x):
-    import pdb; pdb.set_trace()
+    if (x.abs() > 1).sum() != 0:
+        import pdb; pdb.set_trace()
     alpha = shift(torch.max(torch.abs(x)))
     return quant(clip(x / alpha, global_eb), global_eb)
 
