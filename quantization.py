@@ -84,6 +84,7 @@ def quant_generic(x, cb):
 def quant_grad(x):
     # those gonna be ternary, or we can tweak the lr
     xmax = torch.max(torch.abs(x))
+    import pdb; pdb.set_trace()
     norm = global_lr * x / shift(xmax)
 
     norm_sign = torch.sign(norm)
