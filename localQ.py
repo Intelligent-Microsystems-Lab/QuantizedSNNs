@@ -185,21 +185,21 @@ class QLinearFunctional(torch.autograd.Function):
 
     @staticmethod
     def backward(ctx, grad_output):
-        input, weight, bias = context.saved_tensors
+        input, weight, bias = ctx.saved_tensors
         grad_input = grad_weight = grad_bias = None
 
         # quantize error - this function should receive a quant error***
         # 2 bits (-1, 1) * 1 bit (0, 1/spikes)
-        if context.needs_input_grad[0]:
+        if ctx.needs_input_grad[0]:
             if ctx.quant_on:
                 grad_input = quantization.quant_err(grad_output.mm(weight))
             else:
                 grad_input = grad_output.mm(weight)
 
         # those weights should not be updated
-        if context.needs_input_grad[1]:
+        if ctx.needs_input_grad[1]:
             grad_weight = torch.zeros_like(weight)
-        if bias is not None and context.needs_input_grad[2]:
+        if bias is not None and ctx.needs_input_grad[2]:
             grad_bias = torch.zeros_like(bias)
 
         return grad_input, grad_weight, grad_bias, None
