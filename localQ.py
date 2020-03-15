@@ -233,10 +233,10 @@ class QSConv2dFunctional(torch.autograd.Function):
     @staticmethod
     def forward(ctx, input, weights, bias, scale, padding = 0, pooling = None, quant_on = True):
         if quant_on:
-            w_quant = quantization.quant_w(w_quant, scale)
+            w_quant = quantization.quant_w(weights, scale)
             bias_quant = quantization.quant_w(bias, scale)
         else:
-            w_quant = w_quant
+            w_quant = weights
             bias_quant = bias
         ctx.padding = padding
         ctx.pooling = pooling 
@@ -262,7 +262,7 @@ class QSConv2dFunctional(torch.autograd.Function):
 
         if ctx.pooling is not None:
             grad_output = unmpool(grad_output, pool_indices, output_size = torch.Size(ctx.size_pool))
-            
+
         if ctx.quant_on:
             quant_error = quantization.quant_err(grad_output)
         else:
