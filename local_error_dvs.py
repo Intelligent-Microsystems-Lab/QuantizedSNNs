@@ -23,6 +23,7 @@ else:
 dtype = torch.float
 ms = 1e-3
 delta_t = 1*ms
+quant_on = False
 
 
 # # DVS Poker
@@ -75,7 +76,7 @@ burnin = 50*ms
 batch_size = 72
 tau_ref = torch.Tensor([0*ms]).to(device)
 dropout_p = .5
-thr = torch.Tensor([.1]).to(device)
+thr = torch.Tensor([1.]).to(device) #that probably should be one
 
 
 l1 = .5#0.973#.5#0.5807472565567517#.5#0.485#
@@ -95,25 +96,28 @@ sl1_loss = torch.nn.SmoothL1Loss()
 # construct layers
 downsample_l = nn.AvgPool2d(kernel_size = 4, stride = 4)
 
-layer1 = LIFConv2dLayer(inp_shape = (2, 32, 32), kernel_size = 7, out_channels = 64, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_prep_fn = softmax_fn, loss_fn = sl1_loss, l1 = l1, l2 = l2).to(device)
+layer1 = LIFConv2dLayer(inp_shape = (2, 32, 32), kernel_size = 7, out_channels = 64, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_prep_fn = softmax_fn, loss_fn = sl1_loss, l1 = l1, l2 = l2, quant_on = quant_on).to(device)
 
-layer2 = LIFConv2dLayer(inp_shape = layer1.out_shape, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 1, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_prep_fn = softmax_fn, loss_fn = sl1_loss, l1 = l1, l2 = l2).to(device)
+layer2 = LIFConv2dLayer(inp_shape = layer1.out_shape, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 1, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_prep_fn = softmax_fn, loss_fn = sl1_loss, l1 = l1, l2 = l2, quant_on = quant_on).to(device)
 
-layer3 = LIFConv2dLayer(inp_shape = layer2.out_shape, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_prep_fn = softmax_fn, loss_fn = sl1_loss, l1 = l1, l2 = l2).to(device)
+layer3 = LIFConv2dLayer(inp_shape = layer2.out_shape, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_prep_fn = softmax_fn, loss_fn = sl1_loss, l1 = l1, l2 = l2, quant_on = quant_on).to(device)
 
 #layer4 = LIFDenseLayer(in_channels = np.prod(layer3.out_shape), out_channels = output_neurons, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_prep_fn = softmax_fn, loss_fn = sl1_loss, l1 = l1, l2 = l2).to(device)
 
 all_parameters = list(layer1.parameters()) + list(layer2.parameters()) + list(layer3.parameters()) #+ list(layer4.parameters())
 
 # initlialize optimizier
-opt = torch.optim.SGD(all_parameters, lr=1)
+if quant_on:
+    opt = torch.optim.SGD(all_parameters, lr=1)
+else:
+    opt = torch.optim.Adamax(all_parameters, lr=10e-9, betas=[0., .95])
 
 #train_acc = []
 #test_acc = []
 
 diff_layers_acc = {'train1': [], 'test1': [],'train2': [], 'test2': [],'train3': [], 'test3': []}
 
-print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5}{6} l1 {7:.3f} l2 {8:.3f} Inp {9} LR {10} Drop {11}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb, quantization.global_sb, l1, l2, input_mode, quantization.global_lr, dropout_p))
+print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5}{6} {7} l1 {8:.3f} l2 {9:.3f} Inp {10} LR {11} Drop {12}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb, quantization.global_sb, quant_on, l1, l2, input_mode, quantization.global_lr, dropout_p))
 
 
 for e in range(75):

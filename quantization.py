@@ -86,6 +86,8 @@ def quant_grad(x):
     xmax = torch.max(torch.abs(x))
     norm = global_lr * x / shift(xmax)
 
+    norm = 1 * x / shift(xmax)
+
     norm_sign = torch.sign(norm)
     norm_abs = torch.abs(norm)
     norm_int = torch.floor(norm_abs)
