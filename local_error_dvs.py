@@ -23,7 +23,7 @@ else:
 dtype = torch.float
 ms = 1e-3
 delta_t = 1*ms
-quant_on = True
+quant_on = False
 
 
 # # DVS Poker
