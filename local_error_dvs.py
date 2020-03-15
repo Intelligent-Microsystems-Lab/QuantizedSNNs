@@ -23,7 +23,7 @@ else:
 dtype = torch.float
 ms = 1e-3
 delta_t = 1*ms
-quant_on = False
+quant_on = True
 
 
 # # DVS Poker
@@ -76,7 +76,7 @@ burnin = 50*ms
 batch_size = 72
 tau_ref = torch.Tensor([0*ms]).to(device)
 dropout_p = .5
-thr = torch.Tensor([1.]).to(device) #that probably should be one
+thr = torch.Tensor([.9]).to(device) #that probably should be one
 
 
 l1 = .5#0.973#.5#0.5807472565567517#.5#0.485#
