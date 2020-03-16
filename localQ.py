@@ -344,9 +344,9 @@ class LIFConv2dLayer(nn.Module):
             self.alpha = torch.Tensor([torch.exp( - delta_t / tau_mem)]).to(device)
 
         if tau_ref.shape[0] == 2:
-            self.gamma = self.alpha#torch.exp( -delta_t / torch.Tensor(torch.Size(self.out_shape)).uniform_(tau_ref[0], tau_ref[1]).to(device))
+            self.gamma = torch.exp( -delta_t / torch.Tensor(torch.Size(self.out_shape)).uniform_(tau_ref[0], tau_ref[1]).to(device))
         else:
-            self.gamma = self.alpha#torch.Tensor([torch.exp( - delta_t / tau_ref)]).to(device)
+            self.gamma = torch.Tensor([torch.exp( - delta_t / tau_ref)]).to(device)
 
         if self.quant_on:
             with torch.no_grad():
