@@ -113,7 +113,7 @@ all_parameters = list(layer1.parameters()) + list(layer2.parameters()) + list(la
 if quant_on:
     opt = torch.optim.SGD(all_parameters, lr=1)
 else:
-    opt = torch.optim.Adamax(all_parameters, lr=1e-9, betas=[0., .95])
+    opt = torch.optim.Adamax(all_parameters, lr=1.0e-9, betas=[0., .95])
 
 #train_acc = []
 #test_acc = []
@@ -192,7 +192,7 @@ for e in range(75):
             #correct4_train += temp_corr4
             total_train += y_local.size(0)
 
-            print(loss_gen.item())
+            print("{0:.4f} {1:.4f} {2:.4f} {3:.4f}".format(loss_gen.item(), correct1_train/total_train, correct2_train/total_train, correct3_train/total_train))
 
 
         #correct += (torch.max(class_rec, dim = 1).indices == y_local).sum() 
