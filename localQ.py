@@ -410,7 +410,7 @@ class LIFConv2dLayer(nn.Module):
             correct_train = (predicted == y_local).sum().item()
 
 
-        loss_gen = self.loss_fn(self.loss_prep_fn(rreadout)) + self.l1 *1e-2* F.relu(self.U+.01).mean() + self.l2 *6e-5* F.relu(self.thr+.1-self.U).mean()
+        loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 *1e-2* F.relu(self.U+.01).mean() + self.l2 *6e-5* F.relu(self.thr+.1-self.U).mean()
         #loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu(self.U+.01).mean() + self.l2 * F.relu(self.thr+.1-self.U.mean())
         #loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu((self.U+.01).mean()) + self.l2 * F.relu(self.thr-self.U).mean()
         #loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu((self.U+.01).mean()) + self.l2 * F.relu(self.thr-self.U.mean())
