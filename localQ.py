@@ -369,7 +369,11 @@ class LIFConv2dLayer(nn.Module):
                 if self.bias is not None:
                     self.bias.data = quantization.clip(self.bias.data, quantization.global_gb)
 
-        self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.gamma * self.R - self.S * self.thr, self.beta * self.Q + input_t
+        # reset neurons which spiked
+        self.U = self.U * (1-self.S)
+
+        # R could be used for refrac... right now its doing nothing....
+        self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.gamma * self.R, self.beta * self.Q + input_t
 
         # quantize P, Q
         if self.quant_on:
