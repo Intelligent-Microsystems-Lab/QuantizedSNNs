@@ -72,8 +72,8 @@ quantization.global_sb = 1
 quantization.global_beta = 1.5#quantization.step_d(quantization.global_wb)-.5 #1.5 #
 
 # set parameters
-burnin = 50*ms
-batch_size = 72
+burnin = 100*ms #50*ms
+batch_size = 144#72
 tau_ref = torch.Tensor([0*ms]).to(device)
 dropout_p = .5
 thr = torch.Tensor([0.]).to(device) #that probably should be one... one doesnt really work

@@ -370,7 +370,8 @@ class LIFConv2dLayer(nn.Module):
                     self.bias.data = quantization.clip(self.bias.data, quantization.global_gb)
 
         # R could be used for refrac... right now its doing nothing....
-        self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.gamma * self.R + self.S, self.beta * self.Q + input_t
+        self.P, self.R, self.Q = 0.97 * self.P + self.Q, 0.65 * self.R + self.S, 0.92 * self.Q + input_t
+        #self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.gamma * self.R + self.S, self.beta * self.Q + input_t
 
         # quantize P, Q
         if self.quant_on:
