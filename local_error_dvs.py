@@ -90,7 +90,7 @@ tau_syn = torch.Tensor([5*ms, 10*ms]).to(device)#[syn_tau*ms-syn_tau*ms*var_perc
 
 input_mode = 0 #two channel trick, down sample etc.
 
-sig_fn = nn.Sigmoid(dim=1)
+sig_fn = nn.Sigmoid()
 log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
 nll_loss = torch.nn.NLLLoss()
 softmax_fn = nn.Softmax(dim=1)
