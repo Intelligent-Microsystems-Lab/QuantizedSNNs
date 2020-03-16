@@ -193,7 +193,7 @@ for e in range(75):
             total_train += y_local.size(0)
 
             # debug output
-            print("{0:.4f} {1:.4f} {2:.4f} {3:.4f}".format(loss_gen.item(), correct1_train/total_train, correct2_train/total_train, correct3_train/total_train))
+            #print("{0:.4f} {1:.4f} {2:.4f} {3:.4f}".format(loss_gen.item(), correct1_train/total_train, correct2_train/total_train, correct3_train/total_train))
 
 
         #correct += (torch.max(class_rec, dim = 1).indices == y_local).sum() 
