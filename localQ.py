@@ -216,8 +216,9 @@ class QLinearLayerSign(nn.Module):
         self.quant_on = quant_on
 
         # weight and bias for forward pass
-        self.weights = nn.Parameter(torch.Tensor(output_features, input_features), requires_grad=False)
-        torch.nn.init.uniform_(self.weights, a = -lc_ampl/torch.tensor(self.weights.shape).prod().item(), b = lc_ampl/torch.tensor(self.weights.shape).prod().item())
+        self.weights = nn.Parameter(torch.Tensor(output_features, input_features))
+        stdv = lc_ampl/torch.sqrt(torch.tensor(self.weights.shape).prod().item())
+        torch.nn.init.uniform_(self.weights, a = -stdv, b = stdv)
 
         self.weight_fa = self.weights
         #self.weight_fa = nn.Parameter(torch.Tensor(output_features, input_features), requires_grad=False)
@@ -322,11 +323,13 @@ class LIFConv2dLayer(nn.Module):
         self.loss_fn = loss_fn
         self.loss_prep_fn = loss_prep_fn
 
+
         self.weights = nn.Parameter(torch.empty((self.out_channels, inp_shape[0],  self.kernel_size, self.kernel_size),  device=device, dtype=dtype, requires_grad=True))
+        self.stdv = torch.sqrt(lc_ampl/torch.tensor(self.weights.shape).prod().item())
         if self.quant_on:
             torch.nn.init.uniform_(self.weights, a = -self.L, b = self.L)
         else:
-            torch.nn.init.uniform_(self.weights, a = -lc_ampl/torch.tensor(self.weights.shape).prod().item(), b = lc_ampl/torch.tensor(self.weights.shape).prod().item())
+            torch.nn.init.uniform_(self.weights, a = -stdv, b = stdv)
 
 
         if bias:
@@ -334,7 +337,7 @@ class LIFConv2dLayer(nn.Module):
             if self.quant_on:
                 torch.nn.init.uniform_(self.bias, a = -self.L, b = self.L)
             else:
-                torch.nn.init.uniform_(self.bias, a = -lc_ampl/torch.tensor(self.weights.shape).prod().item(), b = lc_ampl/torch.tensor(self.weights.shape).prod().item())
+                torch.nn.init.uniform_(self.bias, a = -stdv, b = stdv)
         else:
             self.register_parameter('bias', None)
 
@@ -406,9 +409,8 @@ class LIFConv2dLayer(nn.Module):
         else:
             correct_train = (predicted == y_local).sum().item()
 
-        import pdb; pdb.set_trace()
 
-        loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 *1e-2* F.relu(self.U+.01).mean() + self.l2 *6e-5* F.relu(self.thr+.1-self.U).mean()
+        loss_gen = self.loss_fn(self.loss_prep_fn(rreadout)) + self.l1 *1e-2* F.relu(self.U+.01).mean() + self.l2 *6e-5* F.relu(self.thr+.1-self.U).mean()
         #loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu(self.U+.01).mean() + self.l2 * F.relu(self.thr+.1-self.U.mean())
         #loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu((self.U+.01).mean()) + self.l2 * F.relu(self.thr-self.U).mean()
         #loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu((self.U+.01).mean()) + self.l2 * F.relu(self.thr-self.U.mean())
