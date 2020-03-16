@@ -369,9 +369,6 @@ class LIFConv2dLayer(nn.Module):
                 if self.bias is not None:
                     self.bias.data = quantization.clip(self.bias.data, quantization.global_gb)
 
-        # reset neurons which spiked
-        self.U = self.U * (1-self.S)
-
         # R could be used for refrac... right now its doing nothing....
         self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.gamma * self.R, self.beta * self.Q + input_t
 
@@ -387,6 +384,8 @@ class LIFConv2dLayer(nn.Module):
             self.U, _ = quantization.quant_generic(self.U, quantization.global_ub)
 
         self.S = (self.U >= self.thr).float()
+        # reset neurons which spiked
+        self.U = self.U * (1-self.S)
 
         rreadout = self.sign_random_readout(self.dropout_learning(smoothstep(self.U-self.thr, self.quant_on).reshape([input_t.shape[0], np.prod(self.out_shape)])) * self.dropout_p)
         _, predicted = torch.max(rreadout.data, 1)
