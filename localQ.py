@@ -388,12 +388,13 @@ class LIFConv2dLayer(nn.Module):
         _, predicted = torch.max(rreadout.data, 1)
 
         if y_local.shape[1] == self.output_neurons:
-            correct_train = (predicted == y_local.max(dim = 1 )[1]).sum().item()
+            correct_train = (predicted == y_local.max(dim = 1)[1]).sum().item()
         else:
             correct_train = (predicted == y_local).sum().item()
         #loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu(self.U+.01).mean() + self.l2 * F.relu(self.thr-self.U.mean())
         #loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu((self.U+.01).mean()) + self.l2 * F.relu(self.thr-self.U).mean()
         loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu((self.U+.01).mean()) + self.l2 * F.relu(self.thr-self.U.mean())
+        import pdb; pdb.set_trace()
         #loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu(self.U+.01).mean() + self.l2 * F.relu(self.thr-self.U).mean()
 
         return self.S, loss_gen, correct_train
