@@ -217,8 +217,8 @@ class QLinearLayerSign(nn.Module):
 
         # weight and bias for forward pass
         self.weights = nn.Parameter(torch.Tensor(output_features, input_features))
-        stdv = lc_ampl/np.sqrt(torch.tensor(self.weights.shape).prod().item())
-        torch.nn.init.uniform_(self.weights, a = -stdv, b = stdv)
+        self.stdv = lc_ampl/np.sqrt(torch.tensor(self.weights.shape).prod().item())
+        torch.nn.init.uniform_(self.weights, a = -self.stdv, b = self.stdv)
 
         self.weight_fa = self.weights
         #self.weight_fa = nn.Parameter(torch.Tensor(output_features, input_features), requires_grad=False)
@@ -329,7 +329,7 @@ class LIFConv2dLayer(nn.Module):
         if self.quant_on:
             torch.nn.init.uniform_(self.weights, a = -self.L, b = self.L)
         else:
-            torch.nn.init.uniform_(self.weights, a = -stdv, b = stdv)
+            torch.nn.init.uniform_(self.weights, a = -self.stdv, b = self.stdv)
 
 
         if bias:
