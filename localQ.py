@@ -316,8 +316,7 @@ class LIFConv2dLayer(nn.Module):
         if self.quant_on:
             torch.nn.init.uniform_(self.weights, a = -self.L, b = self.L)
         else:
-            import pdb; pdb.set_trace()
-            torch.nn.init.uniform_(self.weights, a = torch.tensor([-1], dtype = torch.float)/torch.tensor(self.weights.shape).prod(), b = torch.tensor([1], dtype = torch.float)/torch.tensor(self.weights.shape).prod())
+            torch.nn.init.uniform_(self.weights, a = -1/torch.tensor(self.weights.shape).prod().item(), b = 1/torch.tensor(self.weights.shape).prod().item())
 
 
         if bias:
@@ -325,7 +324,7 @@ class LIFConv2dLayer(nn.Module):
             if self.quant_on:
                 torch.nn.init.uniform_(self.bias, a = -self.L, b = self.L)
             else:
-                torch.nn.init.uniform_(self.bias, a = torch.tensor([-.04], dtype = torch.float)/torch.tensor(self.weights.shape).prod(), b = torch.tensor([.04], dtype = torch.float)/torch.tensor(self.weights.shape).prod())
+                torch.nn.init.uniform_(self.bias, a = -.04/torch.tensor(self.weights.shape).prod().item(), b = .04/torch.tensor(self.weights.shape).prod().item())
         else:
             self.register_parameter('bias', None)
 
