@@ -12,6 +12,7 @@ import datetime
 import uuid
 
 import quantization
+import localQ
 from localQ import sparse_data_generator_DVSGesture, sparse_data_generator_DVSPoker, LIFConv2dLayer, prep_input
 
 
@@ -77,7 +78,7 @@ batch_size = 144#72
 tau_ref = torch.Tensor([0*ms]).to(device)
 dropout_p = .5
 thr = torch.Tensor([0.]).to(device) #that probably should be one... one doesnt really work
-
+localQ.lc_ampl = .5
 
 l1 = .5#0.973#.5#0.5807472565567517#.5#0.485#
 l2 = .5#1.099 #5#1.4068230901221566#.5#0.621#
@@ -189,6 +190,8 @@ for e in range(75):
             correct3_train += temp_corr3
             #correct4_train += temp_corr4
             total_train += y_local.size(0)
+
+            print(loss_gen.item())
 
 
         #correct += (torch.max(class_rec, dim = 1).indices == y_local).sum() 

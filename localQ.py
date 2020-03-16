@@ -10,6 +10,8 @@ import numpy as np
 import quantization
 
 
+lc_ampl = .5
+
 def clee_spikes(T, rates):
     spikes = np.ones((T, + np.prod(rates.shape)))        
     spikes[np.random.binomial(1, (1000. - rates.flatten())/1000, size=(T, np.prod(rates.shape))).astype('bool')] = 0
@@ -173,11 +175,11 @@ smoothstep = SmoothStep().apply
 class QLinearFunctional(torch.autograd.Function):
     '''from https://github.com/L0SG/feedback-alignment-pytorch/'''
     @staticmethod
-    def forward(ctx, input, weight, bias=None, quant_on = True):
+    def forward(ctx, input, weight, weight_fa, bias=None, quant_on = True):
         ctx.quant_on = quant_on
         input[input > 0]  = 1 #correct for dropout scale
         input[input <= 0] = 0
-        ctx.save_for_backward(input, weight, bias)
+        ctx.save_for_backward(input, weight, weight_fa, bias)
         output = input.mm(weight.t())
         if bias is not None:
             output += bias.unsqueeze(0).expand_as(output)
@@ -185,24 +187,24 @@ class QLinearFunctional(torch.autograd.Function):
 
     @staticmethod
     def backward(ctx, grad_output):
-        input, weight, bias = ctx.saved_tensors
+        input, weight, weight_fa, bias = ctx.saved_tensors
         grad_input = grad_weight = grad_bias = None
 
         # quantize error - this function should receive a quant error***
         # 2 bits (-1, 1) * 1 bit (0, 1/spikes)
         if ctx.needs_input_grad[0]:
             if ctx.quant_on:
-                grad_input = quantization.quant_err(grad_output.mm(weight))
+                grad_input = quantization.quant_err(grad_output.mm(weight_fa))
             else:
-                grad_input = grad_output.mm(weight)
+                grad_input = grad_output.mm(weight_fa)
 
         # those weights should not be updated
         if ctx.needs_input_grad[1]:
-            grad_weight = torch.zeros_like(weight)
+            grad_weight = torch.zeros_like(weight_fa)
         if bias is not None and ctx.needs_input_grad[2]:
             grad_bias = torch.zeros_like(bias)
 
-        return grad_input, grad_weight, grad_bias, None
+        return grad_input, grad_weight, None, grad_bias, None
 
 class QLinearLayerSign(nn.Module):
     '''from https://github.com/L0SG/feedback-alignment-pytorch/'''
@@ -214,7 +216,14 @@ class QLinearLayerSign(nn.Module):
 
         # weight and bias for forward pass
         self.weights = nn.Parameter(torch.Tensor(output_features, input_features))
-        self.weights.data.uniform_(-1, 1)
+        
+
+        self.weight_fa = nn.Parameter(torch.Tensor(output_features, input_features), requires_grad=False)
+
+        import pdb; pdb.set_trace()
+        self.weight_fa.data.normal_(1, .5)
+        self.weight_fa.data[self.weight_fa.data<0] = 0
+        self.weight_fa.data[:] *= self.weight.data[:]
 
         if pass_through:
             self.weights.data = torch.ones_like(self.weights.data)
@@ -225,7 +234,7 @@ class QLinearLayerSign(nn.Module):
             self.weights.data = torch.ceil(torch.abs(self.weights.data) * scale ) / scale * s_sign
         
     def forward(self, input):
-        return QLinearFunctional.apply(input, self.weights, None, self.quant_on)
+        return QLinearFunctional.apply(input, self.weights, self.weight_fa, None, self.quant_on)
 
 
 
@@ -316,7 +325,7 @@ class LIFConv2dLayer(nn.Module):
         if self.quant_on:
             torch.nn.init.uniform_(self.weights, a = -self.L, b = self.L)
         else:
-            torch.nn.init.uniform_(self.weights, a = -1/torch.tensor(self.weights.shape).prod().item(), b = 1/torch.tensor(self.weights.shape).prod().item())
+            torch.nn.init.uniform_(self.weights, a = -lc_ampl/torch.tensor(self.weights.shape).prod().item(), b = lc_ampl/torch.tensor(self.weights.shape).prod().item())
 
 
         if bias:
@@ -324,7 +333,7 @@ class LIFConv2dLayer(nn.Module):
             if self.quant_on:
                 torch.nn.init.uniform_(self.bias, a = -self.L, b = self.L)
             else:
-                torch.nn.init.uniform_(self.bias, a = -.04/torch.tensor(self.weights.shape).prod().item(), b = .04/torch.tensor(self.weights.shape).prod().item())
+                torch.nn.init.uniform_(self.bias, a = -lc_ampl/torch.tensor(self.weights.shape).prod().item(), b = lc_ampl/torch.tensor(self.weights.shape).prod().item())
         else:
             self.register_parameter('bias', None)
 
@@ -396,7 +405,7 @@ class LIFConv2dLayer(nn.Module):
         else:
             correct_train = (predicted == y_local).sum().item()
 
-        loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu(self.U+.01).mean() + self.l2 * F.relu(self.thr-self.U.mean())
+        loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu(self.U+.01).mean() + self.l2 * F.relu(self.thr+.1-self.U.mean())
         #loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu((self.U+.01).mean()) + self.l2 * F.relu(self.thr-self.U).mean()
         #loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu((self.U+.01).mean()) + self.l2 * F.relu(self.thr-self.U.mean())
         #loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu(self.U+.01).mean() + self.l2 * F.relu(self.thr-self.U).mean()
