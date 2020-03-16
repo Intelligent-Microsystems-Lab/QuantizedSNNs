@@ -337,7 +337,7 @@ class LIFConv2dLayer(nn.Module):
             if self.quant_on:
                 torch.nn.init.uniform_(self.bias, a = -self.L, b = self.L)
             else:
-                torch.nn.init.uniform_(self.bias, a = -stdv, b = stdv)
+                torch.nn.init.uniform_(self.bias, a = -self.stdv, b = self.stdv)
         else:
             self.register_parameter('bias', None)
 
