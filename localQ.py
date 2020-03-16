@@ -216,13 +216,13 @@ class QLinearLayerSign(nn.Module):
         self.weights = nn.Parameter(torch.Tensor(output_features, input_features))
         self.weights.data.uniform_(-1, 1)
 
-        if quant_on:
-            if pass_through:
-                self.weights.data = torch.ones_like(self.weights.data)
-            else:
-                scale = quantization.step_d(quantization.global_sb)
-                s_sign = torch.sign(self.weights.data)
-                self.weights.data = torch.ceil(torch.abs(self.weights.data) * scale ) / scale * s_sign
+        if pass_through:
+            self.weights.data = torch.ones_like(self.weights.data)
+
+        if quant_on and not pass_through:
+            scale = quantization.step_d(quantization.global_sb)
+            s_sign = torch.sign(self.weights.data)
+            self.weights.data = torch.ceil(torch.abs(self.weights.data) * scale ) / scale * s_sign
         
     def forward(self, input):
         return QLinearFunctional.apply(input, self.weights, None, self.quant_on)
@@ -288,7 +288,7 @@ class QSConv2dFunctional(torch.autograd.Function):
 
 
 class LIFConv2dLayer(nn.Module):
-    def __init__(self, inp_shape, kernel_size, out_channels, tau_syn, tau_mem, tau_ref, delta_t, pooling = 1, padding = 0, bias=True, thr = 1, device=torch.device("cpu"), dtype = torch.float, dropout_p = .5, output_neurons = 10, loss_prep_fn = None, loss_fn = None, l1 = 0, l2 = 0, quant_on = False):
+    def __init__(self, inp_shape, kernel_size, out_channels, tau_syn, tau_mem, tau_ref, delta_t, pooling = 1, padding = 0, bias=True, thr = 1, device=torch.device("cpu"), dtype = torch.float, dropout_p = .5, output_neurons = 10, loss_prep_fn = None, loss_fn = None, l1 = 0, l2 = 0, quant_on = False, delta = ):
         super(LIFConv2dLayer, self).__init__()   
         self.device = device
         self.quant_on = quant_on
@@ -316,7 +316,7 @@ class LIFConv2dLayer(nn.Module):
         if self.quant_on:
             torch.nn.init.uniform_(self.weights, a = -self.L, b = self.L)
         else:
-            torch.nn.init.uniform_(self.weights, a = -.5, b = .5)
+            torch.nn.init.uniform_(self.weights, a = -.3, b = .3)
 
 
         if bias:
@@ -324,7 +324,7 @@ class LIFConv2dLayer(nn.Module):
             if self.quant_on:
                 torch.nn.init.uniform_(self.bias, a = -self.L, b = self.L)
             else:
-                torch.nn.init.uniform_(self.bias, a = -.5, b = .5)
+                torch.nn.init.uniform_(self.bias, a = -.01, b = .01)
         else:
             self.register_parameter('bias', None)
 
@@ -344,9 +344,9 @@ class LIFConv2dLayer(nn.Module):
             self.alpha = torch.Tensor([torch.exp( - delta_t / tau_mem)]).to(device)
 
         if tau_ref.shape[0] == 2:
-            self.gamma = torch.exp( -delta_t / torch.Tensor(torch.Size(self.out_shape)).uniform_(tau_ref[0], tau_ref[1]).to(device))
+            self.gamma = self.alpha#torch.exp( -delta_t / torch.Tensor(torch.Size(self.out_shape)).uniform_(tau_ref[0], tau_ref[1]).to(device))
         else:
-            self.gamma = torch.Tensor([torch.exp( - delta_t / tau_ref)]).to(device)
+            self.gamma = self.alpha#torch.Tensor([torch.exp( - delta_t / tau_ref)]).to(device)
 
         if self.quant_on:
             with torch.no_grad():
@@ -370,7 +370,7 @@ class LIFConv2dLayer(nn.Module):
                     self.bias.data = quantization.clip(self.bias.data, quantization.global_gb)
 
         # R could be used for refrac... right now its doing nothing....
-        self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.gamma * self.R, self.beta * self.Q + input_t
+        self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.gamma * self.R - self.S, self.beta * self.Q + input_t
 
         # quantize P, Q
         if self.quant_on:
@@ -385,7 +385,7 @@ class LIFConv2dLayer(nn.Module):
 
         self.S = (self.U >= self.thr).float()
         # reset neurons which spiked
-        self.U = self.U * (1-self.S)
+        #self.U = self.U * (1-self.S)
 
         rreadout = self.sign_random_readout(self.dropout_learning(smoothstep(self.U-self.thr, self.quant_on).reshape([input_t.shape[0], np.prod(self.out_shape)])) * self.dropout_p)
         _, predicted = torch.max(rreadout.data, 1)
@@ -394,6 +394,7 @@ class LIFConv2dLayer(nn.Module):
             correct_train = (predicted == y_local.max(dim = 1)[1]).sum().item()
         else:
             correct_train = (predicted == y_local).sum().item()
+
         loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu(self.U+.01).mean() + self.l2 * F.relu(self.thr-self.U.mean())
         #loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu((self.U+.01).mean()) + self.l2 * F.relu(self.thr-self.U).mean()
         #loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu((self.U+.01).mean()) + self.l2 * F.relu(self.thr-self.U.mean())
