@@ -369,7 +369,7 @@ class LIFConv2dLayer(nn.Module):
                 if self.bias is not None:
                     self.bias.data = quantization.clip(self.bias.data, quantization.global_gb)
 
-        self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.gamma * self.R - self.S, self.beta * self.Q + input_t
+        self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.gamma * self.R - self.S * self.thr, self.beta * self.Q + input_t
 
         # quantize P, Q
         if self.quant_on:
@@ -395,6 +395,8 @@ class LIFConv2dLayer(nn.Module):
         #loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu((self.U+.01).mean()) + self.l2 * F.relu(self.thr-self.U).mean()
         loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu((self.U+.01).mean()) + self.l2 * F.relu(self.thr-self.U.mean())
         #loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu(self.U+.01).mean() + self.l2 * F.relu(self.thr-self.U).mean()
+
+        import pdb; pdb.set_trace()
 
         return self.S, loss_gen, correct_train
 
