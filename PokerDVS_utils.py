@@ -77,9 +77,9 @@ def dat2mat(filename, retinaSizeX, only_pos=False):
     return res_stim
   
 
-chunk_size = 700
-#chunk_size = 1500
-#chunk_size = 2500
+chunk_size = 500
+chunk_size = 1300
+chunk_size = 2400
 file_list = ["RetinaTeresa2-club_long.aedat", "RetinaTeresa2-diamond_long.aedat", "RetinaTeresa2-heart_long.aedat", "RetinaTeresa2-spade_long.aedat"]
 start_ts = np.arange(0,121000/chunk_size)*chunk_size
 end_ts = np.arange(0,121000/chunk_size)*chunk_size + chunk_size #its not 3min... one recording is just 2min!
