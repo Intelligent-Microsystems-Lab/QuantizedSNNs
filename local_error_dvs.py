@@ -90,6 +90,7 @@ tau_syn = torch.Tensor([5*ms, 10*ms]).to(device)#[syn_tau*ms-syn_tau*ms*var_perc
 
 input_mode = 0 #two channel trick, down sample etc.
 
+sig_fn = nn.Sigmoid(dim=1)
 log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
 nll_loss = torch.nn.NLLLoss()
 softmax_fn = nn.Softmax(dim=1)
@@ -98,11 +99,11 @@ sl1_loss = torch.nn.SmoothL1Loss()
 # construct layers
 downsample_l = nn.AvgPool2d(kernel_size = 4, stride = 4)
 
-layer1 = LIFConv2dLayer(inp_shape = (2, 32, 32), kernel_size = 7, out_channels = 64, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_prep_fn = softmax_fn, loss_fn = sl1_loss, l1 = l1, l2 = l2, quant_on = quant_on).to(device)
+layer1 = LIFConv2dLayer(inp_shape = (2, 32, 32), kernel_size = 7, out_channels = 64, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_prep_fn = sig_fn, loss_fn = sl1_loss, l1 = l1, l2 = l2, quant_on = quant_on).to(device)
 
-layer2 = LIFConv2dLayer(inp_shape = layer1.out_shape, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 1, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_prep_fn = softmax_fn, loss_fn = sl1_loss, l1 = l1, l2 = l2, quant_on = quant_on).to(device)
+layer2 = LIFConv2dLayer(inp_shape = layer1.out_shape, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 1, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_prep_fn = sig_fn, loss_fn = sl1_loss, l1 = l1, l2 = l2, quant_on = quant_on).to(device)
 
-layer3 = LIFConv2dLayer(inp_shape = layer2.out_shape, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_prep_fn = softmax_fn, loss_fn = sl1_loss, l1 = l1, l2 = l2, quant_on = quant_on).to(device)
+layer3 = LIFConv2dLayer(inp_shape = layer2.out_shape, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_prep_fn = sig_fn, loss_fn = sl1_loss, l1 = l1, l2 = l2, quant_on = quant_on).to(device)
 
 #layer4 = LIFDenseLayer(in_channels = np.prod(layer3.out_shape), out_channels = output_neurons, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_prep_fn = softmax_fn, loss_fn = sl1_loss, l1 = l1, l2 = l2).to(device)
 
