@@ -192,6 +192,7 @@ for e in range(75):
             #correct4_train += temp_corr4
             total_train += y_local.size(0)
 
+            # debug output
             print("{0:.4f} {1:.4f} {2:.4f} {3:.4f}".format(loss_gen.item(), correct1_train/total_train, correct2_train/total_train, correct3_train/total_train))
 
 
