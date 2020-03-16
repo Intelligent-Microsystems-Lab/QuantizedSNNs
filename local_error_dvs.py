@@ -83,8 +83,9 @@ l1 = .5#0.973#.5#0.5807472565567517#.5#0.485#
 l2 = .5#1.099 #5#1.4068230901221566#.5#0.621#
 
 
-tau_mem = torch.Tensor([5*ms, 35*ms]).to(device)#torch.Tensor([5*ms, 35*ms]).to(device) #[mem_tau*ms-mem_tau*ms*var_perc, mem_tau*ms+mem_tau*ms*var_perc]
-tau_syn = torch.Tensor([5*ms, 10*ms]).to(device)#torch.Tensor([5*ms, 10*ms]).to(device) #[syn_tau*ms-syn_tau*ms*var_perc, syn_tau*ms+syn_tau*ms*var_perc]
+tau_mem = torch.Tensor([5*ms, 35*ms]).to(device)#[mem_tau*ms-mem_tau*ms*var_perc, mem_tau*ms+mem_tau*ms*var_perc]
+tau_ref = torch.Tensor([5*ms, 35*ms]).to(device)
+tau_syn = torch.Tensor([5*ms, 10*ms]).to(device)#[syn_tau*ms-syn_tau*ms*var_perc, syn_tau*ms+syn_tau*ms*var_perc]
 
 input_mode = 0 #two channel trick, down sample etc.
 
