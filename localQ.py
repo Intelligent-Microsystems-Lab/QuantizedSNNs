@@ -181,7 +181,6 @@ def sparse_data_generator_Static(X, y, batch_size, nb_steps, samples, max_hertz,
         except StopIteration:
             return
 
-
 # class QSigmoid(torch.autograd.Function):
 #     @staticmethod
 #     def forward(ctx, x):
@@ -427,7 +426,7 @@ class LIFConv2dLayer(nn.Module):
 
         self.S = (self.U >= self.thr).float()
 
-        self.U_aux = self.U#self.act(self.U)
+        self.U_aux = self.act(self.U)
         rreadout = self.dropout_learning(self.sign_random_readout(self.U_aux.reshape([input_t.shape[0], np.prod(self.out_shape)]) ))
 
         _, predicted = torch.max(rreadout.data, 1)
