@@ -42,7 +42,7 @@ def prep_input(x_local, input_mode):
         return -1
 
 def sparse_data_generator_DVSPoker(X, y, batch_size, nb_steps, shuffle, device, test = False):
-    number_of_batches = len(y)//batch_size
+    number_of_batches = int(np.ceil(len(y)/batch_size))
     sample_index = np.arange(len(y))
     nb_steps = nb_steps -1
     y = np.array(y)
@@ -114,7 +114,7 @@ def onebatch_DVSGesture(X, y, batch_size, nb_steps, device, shuffle = True):
 
 
 def sparse_data_generator_DVSGesture(X, y, batch_size, nb_steps, shuffle, device, test = False):
-    number_of_batches = np.ceil(len(y)/batch_size)
+    number_of_batches = int(np.ceil(len(y)/batch_size))
     sample_index = np.arange(len(y))
     nb_steps = nb_steps -1
     y = np.array(y)
