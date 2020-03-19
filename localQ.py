@@ -192,12 +192,13 @@ class QSigmoid(torch.autograd.Function):
         x, = ctx.saved_tensors
         grad_input = None
 
+
         if ctx.needs_input_grad[0]:
             grad_input = (torch.exp(-x))/((1+torch.exp(-x))**2)
         
         if torch.isnan(grad_input).sum() != 0:
-            grad_input[torch.isnan(grad_input)] = 0
-            #import pdb; pdb.set_trace()
+        #    grad_input[torch.isnan(grad_input)] = 0
+            import pdb; pdb.set_trace()
         # quantize error
         #grad_input = quantization.quant_err(grad_input)
 
