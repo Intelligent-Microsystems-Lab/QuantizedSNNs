@@ -196,7 +196,7 @@ class QLinearFunctional(torch.autograd.Function):
 
     @staticmethod
     def backward(ctx, grad_output):
-        import pdb; pdb.set_trace()
+
         input, weight, weight_fa, bias = ctx.saved_tensors
         grad_input = grad_weight = grad_bias = None
 
@@ -214,6 +214,7 @@ class QLinearFunctional(torch.autograd.Function):
         if bias is not None and ctx.needs_input_grad[2]:
             grad_bias = torch.zeros_like(bias)
 
+        import pdb; pdb.set_trace()
         return grad_input, None, None, None, None
 
 class QLinearLayerSign(nn.Module):
