@@ -16,8 +16,6 @@ import quantization
 import localQ
 from localQ import sparse_data_generator_DVSGesture, onebatch_DVSGesture, sparse_data_generator_DVSPoker, LIFConv2dLayer, prep_input
 
-torch.autograd.set_detect_anomaly(True)
-
 
 # Check whether a GPU is available
 if torch.cuda.is_available():
