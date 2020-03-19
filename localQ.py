@@ -213,7 +213,6 @@ class QLinearFunctional(torch.autograd.Function):
         if bias is not None and ctx.needs_input_grad[2]:
             grad_bias = torch.zeros_like(bias)
 
-        import pdb; pdb.set_trace()
         return grad_input, None, None, None, None
 
 class QLinearLayerSign(nn.Module):
@@ -410,7 +409,7 @@ class LIFConv2dLayer(nn.Module):
 
         self.S = (self.U >= self.thr).float()
 
-        self.U_aux = self.act(self.U)
+        self.U_aux = self.U#self.act(self.U)
         rreadout = self.dropout_learning(self.sign_random_readout(self.U_aux.reshape([input_t.shape[0], np.prod(self.out_shape)]) ))
 
         _, predicted = torch.max(rreadout.data, 1)
