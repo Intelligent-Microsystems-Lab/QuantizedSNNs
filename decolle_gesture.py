@@ -182,12 +182,12 @@ for e in range(epochs):
             #correct4_train += temp_corr4
             total_train += y_local.size(0)
 
-
+    print("Epoch {0} | Loss: {1:.4f} Train Acc 1: {2:.4f} Train Acc 2: {4:.4f} Train Acc 3: {6:.4f} Train Time: {8:.4f}s".format(e+1, np.mean(loss_hist), correct1_train/total_train, correct2_train/total_train, correct3_train/total_train, train_time-start_time))
         
     train_time = time.time()
 
     # test accuracy
-    if e%10 == 0:
+    if (e+1)%10 == 0:
         for x_local, y_local in sparse_data_generator_DVSGesture(x_test, y_test, batch_size = batch_size, nb_steps = T_test / ms, shuffle = True, device = device, test = True):
             y_onehot = torch.Tensor(len(y_local), output_neurons).to(device)
             y_onehot.zero_()
@@ -227,7 +227,7 @@ for e in range(epochs):
     #test_acc.append(tcorrect/ttotal)
 
 
-    print("Epoch {0} | Loss: {1:.4f} Train Acc 1: {2:.4f} Train Acc 2: {4:.4f} Train Acc 3: {6:.4f} Train Time: {8:.4f}s".format(e+1, np.mean(loss_hist), correct1_train/total_train, correct2_train/total_train, correct3_train/total_train, train_time-start_time))
+    
 
 # saving results/weights
 results = {'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer2':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer3':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer4':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'loss':[loss_hist], 'train': train_acc, 'test': test_acc}
