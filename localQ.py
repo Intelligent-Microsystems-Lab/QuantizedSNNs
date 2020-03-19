@@ -181,23 +181,24 @@ def sparse_data_generator_Static(X, y, batch_size, nb_steps, samples, max_hertz,
         except StopIteration:
             return
 
-# class QSigmoid(torch.autograd.Function):
-#     @staticmethod
-#     def forward(ctx, x):
-#         ctx.save_for_backward(x)
-#         return (x >= 0).float()
+class QSigmoid(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, x):
+        ctx.save_for_backward(x)
+        return 1/ (1 + torch.exp(-x))
 
-#     @staticmethod
-#     def backward(ctx, grad_output):
-#         x, = ctx.saved_tensors
-#         grad_input = grad_output.clone()
+    @staticmethod
+    def backward(ctx, grad_output):
+        x = ctx.saved_tensors
+        grad_input = None
 
-#         grad_input = grad_input/(SuperSpike.scale*torch.abs(x)+1.0)**2
+        if ctx.needs_input_grad[0]:
+            grad_input = (torch.exp(-x))/((1+torch.exp(-x))**2)
 
-#         # quantize error
-#         grad_input = quantization.quant_err(grad_input)
+        # quantize error
+        #grad_input = quantization.quant_err(grad_input)
 
-#         return grad_input
+        return grad_input
 
 class QLinearFunctional(torch.autograd.Function):
     '''from https://github.com/L0SG/feedback-alignment-pytorch/'''
@@ -218,9 +219,9 @@ class QLinearFunctional(torch.autograd.Function):
         grad_input = grad_weight = grad_bias = None
 
         if ctx.quant_on:
-            quant_error = quantization.quant_err(grad_output.clone())
+            quant_error = quantization.quant_err(grad_output)
         else:
-            quant_error = grad_output.clone()
+            quant_error = grad_output
 
         if ctx.needs_input_grad[0]:
             grad_input = quant_error.mm(weight_fa)
@@ -294,7 +295,6 @@ class QSConv2dFunctional(torch.autograd.Function):
 
     @staticmethod
     def backward(ctx, grad_output):
-        import pdb; pdb.set_trace()
         input, w_quant, bias_quant, pool_indices = ctx.saved_tensors
         grad_input = grad_weight = grad_bias = None 
         unmpool = nn.MaxUnpool2d(ctx.pooling, stride = ctx.pooling, padding = (ctx.pooling-1)//2)
@@ -427,7 +427,8 @@ class LIFConv2dLayer(nn.Module):
 
         self.S = (self.U >= self.thr).float()
 
-        self.U_aux = self.act(self.U)
+        self.U_aux = QSigmoid.apply(self.U)
+        #self.U_aux = self.act(self.U)
         rreadout = self.dropout_learning(self.sign_random_readout(self.U_aux.reshape([input_t.shape[0], np.prod(self.out_shape)]) ))
 
         _, predicted = torch.max(rreadout.data, 1)
