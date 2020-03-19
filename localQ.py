@@ -194,10 +194,10 @@ class QSigmoid(torch.autograd.Function):
 
         if ctx.needs_input_grad[0]:
             grad_input = (torch.exp(-x))/((1+torch.exp(-x))**2)
-
         
         if torch.isnan(grad_input).sum() != 0:
-            import pdb; pdb.set_trace()
+            grad_input[torch.isnan(grad_input)] = 0
+            #import pdb; pdb.set_trace()
         # quantize error
         #grad_input = quantization.quant_err(grad_input)
 
@@ -431,7 +431,6 @@ class LIFConv2dLayer(nn.Module):
         self.S = (self.U >= self.thr).float()
 
         self.U_aux = QSigmoid.apply(self.U)
-        #self.U_aux = self.act(self.U)
         rreadout = self.dropout_learning(self.sign_random_readout(self.U_aux.reshape([input_t.shape[0], np.prod(self.out_shape)]) ))
 
         _, predicted = torch.max(rreadout.data, 1)
