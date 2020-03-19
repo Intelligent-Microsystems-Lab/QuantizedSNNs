@@ -251,7 +251,7 @@ class QLinearLayerSign(nn.Module):
         self.quant_on = quant_on
 
         # weight and bias for forward pass
-        self.weights = nn.Parameter(torch.Tensor(output_features, input_features))
+        self.weights = nn.Parameter(torch.Tensor(output_features, input_features), requires_grad=False)
         self.stdv = lc_ampl/np.sqrt(torch.tensor(self.weights.shape).prod().item())
         torch.nn.init.uniform_(self.weights, a = -self.stdv, b = self.stdv)
 
