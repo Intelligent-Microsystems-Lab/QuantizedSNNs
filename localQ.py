@@ -181,32 +181,6 @@ def sparse_data_generator_Static(X, y, batch_size, nb_steps, samples, max_hertz,
         except StopIteration:
             return
 
-class SmoothStep(torch.autograd.Function):
-    '''
-    Modified from: https://pytorch.org/tutorials/beginner/examples_autograd/two_layer_net_custom_function.html
-    '''
-    @staticmethod
-    def forward(ctx, x, quant_on = True):
-        ctx.quant_on = quant_on
-        ctx.save_for_backward(x)
-        return (x >= 0).float()
-
-    @staticmethod
-    def backward(ctx, grad_output):     
-        x, = ctx.saved_tensors
-        grad_input = grad_output.clone()
-
-        grad_input[x <= -.5] = 0
-        grad_input[x > .5] = 0
-
-        # quantize error
-        if ctx.quant_on:
-            grad_input = quantization.quant_err(grad_input)
-
-        return grad_input, None
-
-smoothstep = SmoothStep().apply
-
 class QLinearFunctional(torch.autograd.Function):
     '''from https://github.com/L0SG/feedback-alignment-pytorch/'''
     @staticmethod
@@ -225,13 +199,13 @@ class QLinearFunctional(torch.autograd.Function):
         input, weight, weight_fa, bias = ctx.saved_tensors
         grad_input = grad_weight = grad_bias = None
 
-        # quantize error - this function should receive a quant error***
-        # 2 bits (-1, 1) * 1 bit (0, 1/spikes)
+        if ctx.quant_on:
+            quant_error = quantization.quant_err(grad_output)
+        else:
+            quant_error = grad_output
+
         if ctx.needs_input_grad[0]:
-            if ctx.quant_on:
-                grad_input = quantization.quant_err(grad_output.mm(weight_fa))
-            else:
-                grad_input = grad_output.mm(weight_fa)
+            quant_error = grad_output.mm(weight_fa)
 
         # those weights should not be updated
         if ctx.needs_input_grad[1]:
@@ -433,12 +407,10 @@ class LIFConv2dLayer(nn.Module):
             self.U, _ = quantization.quant_generic(self.U, quantization.global_ub)
 
         self.S = (self.U >= self.thr).float()
-        # reset neurons which spiked
-        #self.U = self.U * (1-self.S)
+
         self.U_aux = self.act(self.U)
         rreadout = self.dropout_learning(self.sign_random_readout(self.U_aux.reshape([input_t.shape[0], np.prod(self.out_shape)]) ))
 
-        #rreadout = self.act(self.sign_random_readout(self.dropout_learning(smoothstep(self.U-self.thr, self.quant_on).reshape([input_t.shape[0], np.prod(self.out_shape)])) * self.dropout_p))
         _, predicted = torch.max(rreadout.data, 1)
 
         if y_local.shape[1] == self.output_neurons:
@@ -448,10 +420,7 @@ class LIFConv2dLayer(nn.Module):
 
 
         loss_gen = self.loss_fn(rreadout, y_local) + self.l1 * 200e-1 * F.relu((self.U+.01).mean()) + self.l2 *1e-1* F.relu(.1-self.U_aux.mean())
-        #loss_gen = self.loss_fn(self.act(rreadout), y_local) + self.l1 * F.relu(self.U+.01).mean() + self.l2 * F.relu(self.thr+.1-self.U.mean())
-        #loss_gen = self.loss_fn(self.act(rreadout), y_local) + self.l1 * F.relu((self.U+.01).mean()) + self.l2 * F.relu(self.thr-self.U).mean()
-        #loss_gen = self.loss_fn(self.act(rreadout), y_local) + self.l1 * F.relu((self.U+.01).mean()) + self.l2 * F.relu(self.thr-self.U.mean())
-        #loss_gen = self.loss_fn(self.act(rreadout), y_local) + self.l1 * F.relu(self.U+.01).mean() + self.l2 * F.relu(self.thr-self.U).mean()
+
 
         return self.S, loss_gen, correct_train
 

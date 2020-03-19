@@ -75,7 +75,7 @@ quantization.global_beta = 1.5#quantization.step_d(quantization.global_wb)-.5 #1
 
 # set parameters
 epochs = 4500
-burnin = 50*ms #50*ms
+burnin = 50*ms #40*ms
 batch_size = 72
 tau_ref = torch.Tensor([0*ms]).to(device)
 dropout_p = .5
@@ -107,9 +107,8 @@ layer2 = LIFConv2dLayer(inp_shape = layer1.out_shape, kernel_size = 7, out_chann
 
 layer3 = LIFConv2dLayer(inp_shape = layer2.out_shape, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, act = sig_fn, loss_fn = sl1_loss, l1 = l1, l2 = l2, quant_on = quant_on).to(device)
 
-#layer4 = LIFDenseLayer(in_channels = np.prod(layer3.out_shape), out_channels = output_neurons, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_prep_fn = softmax_fn, loss_fn = sl1_loss, l1 = l1, l2 = l2).to(device)
 
-all_parameters = list(layer1.parameters()) + list(layer2.parameters()) + list(layer3.parameters()) #+ list(layer4.parameters())
+all_parameters = list(layer1.parameters()) + list(layer2.parameters()) + list(layer3.parameters())
 
 # initlialize optimizier
 if quant_on:
@@ -117,8 +116,6 @@ if quant_on:
 else:
     opt = torch.optim.Adamax(all_parameters, lr=1.0e-9, betas=[0., .95])
 
-#train_acc = []
-#test_acc = []
 
 diff_layers_acc = {'train1': [], 'test1': [],'train2': [], 'test2': [],'train3': [], 'test3': []}
 
@@ -129,20 +126,13 @@ for e in range(epochs):
     #if (e%20 == 0) and (e != 0) and (quantization.global_lr > 1):
     #    quantization.global_lr /= 2
 
-    #correct = 0
-    #total = 0
-    #tcorrect = 0
-    #ttotal = 0
-
     correct1_train = 0 
     correct2_train = 0
     correct3_train = 0
-    #correct4_train = 0
     total_train = 0
     correct1_test = 0
     correct2_test = 0
     correct3_test = 0
-    #correct4_test = 0
     total_test = 0
     loss_hist = []
 
@@ -175,11 +165,9 @@ for e in range(epochs):
             opt.zero_grad()
 
             loss_hist.append(loss_gen.item())
-            #class_rec += out_spikes4
             correct1_train += temp_corr1
             correct2_train += temp_corr2
             correct3_train += temp_corr3
-            #correct4_train += temp_corr4
             total_train += y_local.size(0)
 
     train_time = time.time()
@@ -222,16 +210,12 @@ for e in range(epochs):
     diff_layers_acc['train3'].append(correct3_train/total_train)
     
 
-    #correct = correct.item()
-    #tcorrect = tcorrect.item()
-    #train_acc.append(correct/total) WPQUEG: 1616161616161 l1 0.5 l2 0.5
-    #test_acc.append(tcorrect/ttotal)
 
 
     
 
 # saving results/weights
-results = {'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer2':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer3':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer4':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'loss':[loss_hist], 'train': train_acc, 'test': test_acc}
+results = {'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer2':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer3':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer4':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'loss':[loss_hist], 'acc': diff_layers_acc}
 
 with open('results/'+str(uuid.uuid1())+'.pkl', 'wb') as f:
     pickle.dump(results, f)
