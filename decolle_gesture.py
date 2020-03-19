@@ -82,8 +82,8 @@ dropout_p = .5
 thr = torch.Tensor([0.]).to(device) #that probably should be one... one doesnt really work
 localQ.lc_ampl = .5
 
-l1 = .5#0.973#.5#0.5807472565567517#.5#0.485#
-l2 = .5#1.099 #5#1.4068230901221566#.5#0.621#
+l1 = .001#0.973#.5#0.5807472565567517#.5#0.485#
+l2 = .001#1.099 #5#1.4068230901221566#.5#0.621#
 
 
 tau_mem = torch.Tensor([5*ms, 35*ms]).to(device)#[mem_tau*ms-mem_tau*ms*var_perc, mem_tau*ms+mem_tau*ms*var_perc]
