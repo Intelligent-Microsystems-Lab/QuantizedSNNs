@@ -196,6 +196,7 @@ class QLinearFunctional(torch.autograd.Function):
 
     @staticmethod
     def backward(ctx, grad_output):
+        import pdb; pdb.set_trace()
         input, weight, weight_fa, bias = ctx.saved_tensors
         grad_input = grad_weight = grad_bias = None
 
@@ -276,6 +277,7 @@ class QSConv2dFunctional(torch.autograd.Function):
 
     @staticmethod
     def backward(ctx, grad_output):
+        import pdb; pdb.set_trace()
         input, w_quant, bias_quant, pool_indices = ctx.saved_tensors
         grad_input = grad_weight = grad_bias = None 
         unmpool = nn.MaxUnpool2d(ctx.pooling, stride = ctx.pooling, padding = (ctx.pooling-1)//2)
