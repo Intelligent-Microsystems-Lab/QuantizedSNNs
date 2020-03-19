@@ -108,7 +108,7 @@ def onebatch_DVSGesture(X, y, batch_size, nb_steps, device, shuffle = True):
 
     sparse_matrix = sparse_matrix.reshape(torch.Size([sparse_matrix.shape[0], 1, sparse_matrix.shape[1], sparse_matrix.shape[2], sparse_matrix.shape[3]]))
 
-    y_batch = torch.tensor(y[batch_index], dtype = int)
+    y_batch = torch.tensor(y[sample_index], dtype = int)
     return sparse_matrix.to(device=device), y_batch.to(device=device)
 
 
