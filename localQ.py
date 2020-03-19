@@ -78,6 +78,41 @@ def sparse_data_generator_DVSPoker(X, y, batch_size, nb_steps, shuffle, device, 
         except StopIteration:
             return
 
+def onebatch_DVSGesture(X, y, batch_size, nb_steps, device, shuffle = True):
+    sample_index = np.arange(len(y))
+    nb_steps = nb_steps -1
+    y = np.array(y)
+
+    if shuffle:
+        np.random.shuffle(sample_index)
+    sample_index = sample_index[:batch_size]
+
+    all_events = np.array([[],[],[],[],[]]).T
+
+    for bc,idx in enumerate(sample_index):    
+        start_ts = np.random.choice(np.arange(np.max(X[idx][:,0]) - nb_steps),1)
+        temp = X[idx][X[idx][:,0] >= start_ts]
+        temp = temp[temp[:,0] <= start_ts+nb_steps]
+        temp = np.append(np.ones((temp.shape[0], 1))*bc, temp, axis=1)
+        temp[:,1] = temp[:,1] - start_ts
+        all_events = np.append(all_events, temp, axis = 0)
+
+    # to matrix
+    all_events[:,4][all_events[:,4] == 0] = -1
+    all_events = all_events[:,[0,2,3,1,4]]
+    sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(all_events[:,[True, True, True, True, False]].T), torch.FloatTensor(all_events[:,4])).to_dense()
+
+    # quick trick...
+    sparse_matrix[sparse_matrix < 0] = -1
+    sparse_matrix[sparse_matrix > 0] = 1
+
+    sparse_matrix = sparse_matrix.reshape(torch.Size([sparse_matrix.shape[0], 1, sparse_matrix.shape[1], sparse_matrix.shape[2], sparse_matrix.shape[3]]))
+
+    y_batch = torch.tensor(y[batch_index], dtype = int)
+    return sparse_matrix.to(device=device), y_batch.to(device=device)
+
+
+
 def sparse_data_generator_DVSGesture(X, y, batch_size, nb_steps, shuffle, device, test = False):
     number_of_batches = len(y)//batch_size
     sample_index = np.arange(len(y))
@@ -383,7 +418,7 @@ class LIFConv2dLayer(nn.Module):
                     self.bias.data = quantization.clip(self.bias.data, quantization.global_gb)
 
         # R could be used for refrac... right now its doing nothing....
-        self.P, self.R, self.Q = 0.97 * self.P + self.Q, 0.65 * self.R + self.S, 0.92 * self.Q + input_t
+        self.P, self.R, self.Q = 0.97 * self.P + self.Q, 0.65 * self.R + self.S, 0.95 * self.Q + input_t
         #self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.gamma * self.R + self.S, self.beta * self.Q + input_t
 
         # quantize P, Q

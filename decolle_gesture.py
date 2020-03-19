@@ -8,12 +8,13 @@ import math
 import numpy as np
 import pandas as pd
 import argparse
+from tqdm import tqdm
 import datetime
 import uuid
 
 import quantization
 import localQ
-from localQ import sparse_data_generator_DVSGesture, sparse_data_generator_DVSPoker, LIFConv2dLayer, prep_input
+from localQ import sparse_data_generator_DVSGesture, onebatch_DVSGesture, sparse_data_generator_DVSPoker, LIFConv2dLayer, prep_input
 
 
 # Check whether a GPU is available
@@ -147,37 +148,25 @@ for e in range(epochs):
 
     start_time = time.time()
 
-    for x_local, y_local in sparse_data_generator_DVSGesture(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = True, device = device):
-        y_onehot = torch.Tensor(len(y_local), output_neurons).to(device)
-        y_onehot.zero_()
-        y_onehot.scatter_(1, y_local.reshape([y_local.shape[0],1]), 1)
+    # training
+    #for x_local, y_local in sparse_data_generator_DVSGesture(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = True, device = device):
 
-        #class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
+    x_local, y_local = onebatch_DVSGesture(x_train, y_train, batch_size = batch_size, nb_steps = T / ms,  device = device, shuffle = True)
+    y_onehot = torch.Tensor(len(y_local), output_neurons).to(device)
+    y_onehot.zero_()
+    y_onehot.scatter_(1, y_local.reshape([y_local.shape[0],1]), 1)
 
-        layer1.state_init(x_local.shape[0])
-        layer2.state_init(x_local.shape[0])
-        layer3.state_init(x_local.shape[0])
-        #layer4.state_init(x_local.shape[0])
+    layer1.state_init(x_local.shape[0])
+    layer2.state_init(x_local.shape[0])
+    layer3.state_init(x_local.shape[0])
 
-        # burnin
-        for t in range(int(burnin/ms)):
-            spikes_t          = prep_input(x_local[:,:,:,:,t], input_mode)
-            spikes_t          = downsample_l(spikes_t)*16
-            out_spikes1, _, _ = layer1.forward(spikes_t, y_onehot)
-            out_spikes2, _, _ = layer2.forward(out_spikes1, y_onehot)
-            out_spikes3, _, _ = layer3.forward(out_spikes2, y_onehot)
-            #out_spikes3       = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
-            #out_spikes4, _, _ = layer4.forward(out_spikes3, y_onehot)
-
-        # training
-        for t in range(int(burnin/ms), int(T/ms)):
-            spikes_t                            = prep_input(x_local[:,:,:,:,t], input_mode)
-            spikes_t                            = downsample_l(spikes_t)*16
-            out_spikes1, temp_loss1, temp_corr1 = layer1.forward(spikes_t, y_onehot)
-            out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_onehot)
-            out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_onehot)
-            #out_spikes3                         = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
-            #out_spikes4, temp_loss4, temp_corr4 = layer4.forward(out_spikes3, y_onehot)
+    for t in tqdm(range(int(T/ms))):
+        spikes_t                            = prep_input(x_local[:,:,:,:,t], input_mode)
+        spikes_t                            = downsample_l(spikes_t)*16
+        out_spikes1, temp_loss1, temp_corr1 = layer1.forward(spikes_t, y_onehot)
+        out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_onehot)
+        out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_onehot)
+        if t > int(burnin/ms):
 
             loss_gen = temp_loss1 + temp_loss2 + temp_loss3 #+ temp_loss4
 
@@ -193,65 +182,44 @@ for e in range(epochs):
             #correct4_train += temp_corr4
             total_train += y_local.size(0)
 
-            # debug output
-            #print("{0:.4f} {1:.4f} {2:.4f} {3:.4f}".format(loss_gen.item(), correct1_train/total_train, correct2_train/total_train, correct3_train/total_train))
 
-
-        #correct += (torch.max(class_rec, dim = 1).indices == y_local).sum() 
-        #total += len(y_local)
+        
     train_time = time.time()
 
     # test accuracy
-    for x_local, y_local in sparse_data_generator_DVSGesture(x_test, y_test, batch_size = batch_size, nb_steps = T_test / ms, shuffle = True, device = device, test = True):
-        y_onehot = torch.Tensor(len(y_local), output_neurons).to(device)
-        y_onehot.zero_()
-        y_onehot.scatter_(1, y_local.reshape([y_local.shape[0],1]), 1)
+    if e%10 == 0:
+        for x_local, y_local in sparse_data_generator_DVSGesture(x_test, y_test, batch_size = batch_size, nb_steps = T_test / ms, shuffle = True, device = device, test = True):
+            y_onehot = torch.Tensor(len(y_local), output_neurons).to(device)
+            y_onehot.zero_()
+            y_onehot.scatter_(1, y_local.reshape([y_local.shape[0],1]), 1)
 
-        #class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
+            layer1.state_init(x_local.shape[0])
+            layer2.state_init(x_local.shape[0])
+            layer3.state_init(x_local.shape[0])
 
-        layer1.state_init(x_local.shape[0])
-        layer2.state_init(x_local.shape[0])
-        layer3.state_init(x_local.shape[0])
-        #layer4.state_init(x_local.shape[0])
+            for t in tqdm(range(int(T_test/ms))):
+                spikes_t                            = prep_input(x_local[:,:,:,:,t], input_mode)
+                spikes_t                            = downsample_l(spikes_t)*16
+                out_spikes1, temp_loss1, temp_corr1 = layer1.forward(spikes_t, y_onehot)
+                out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_onehot)
+                out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_onehot)
+                if t > int(burnin/ms):
+                    correct1_test += temp_corr1
+                    correct2_test += temp_corr2
+                    correct3_test += temp_corr3
+                    total_test += y_local.size(0)
 
-        # burnin
-        for t in range(int(burnin/ms)):
-            spikes_t          = prep_input(x_local[:,:,:,:,t], input_mode)
-            spikes_t          = downsample_l(spikes_t)*16
-            out_spikes1, _, _ = layer1.forward(spikes_t, y_onehot)
-            out_spikes2, _, _ = layer2.forward(out_spikes1, y_onehot)
-            out_spikes3, _, _ = layer3.forward(out_spikes2, y_onehot)
-            #out_spikes3       = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
-            #out_spikes4, _, _ = layer4.forward(out_spikes3, y_onehot)
+        inf_time = time.time()
+        diff_layers_acc['test1'].append(correct1_test/total_test)
+        diff_layers_acc['test2'].append(correct2_test/total_test
+        diff_layers_acc['test3'].append(correct3_test/total_test)
+        print("Test Acc 1: {0:.4f} Test Acc 2: {1:.4f} Test Acc 3: {2:.4f} Inf Time: {3:.4f}s".format( correct1_test/total_test, correct2_test/total_test, correct3_test/total_test, inf_time - train_time))
 
-        # testing
-        for t in range(int(burnin/ms), int(T_test/ms)):
-            spikes_t                            = prep_input(x_local[:,:,:,:,t], input_mode)
-            spikes_t                            = downsample_l(spikes_t)*16
-            out_spikes1, temp_loss1, temp_corr1 = layer1.forward(spikes_t, y_onehot)
-            out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_onehot)
-            out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_onehot)
-            #out_spikes3                         = out_spikes3.reshape([x_local.shape[0], np.prod(layer3.out_shape)])
-            #out_spikes4, temp_loss4, temp_corr4 = layer4.forward(out_spikes3, y_onehot)
-
-            
-            #class_rec += out_spikes4
-            correct1_test += temp_corr1
-            correct2_test += temp_corr2
-            correct3_test += temp_corr3
-            #correct4_test += temp_corr4
-            total_test += y_local.size(0)
-
-        #tcorrect += (torch.max(class_rec, dim = 1).indices == y_local).sum() 
-        #ttotal += len(y_local)
-    inf_time = time.time()
 
     diff_layers_acc['train1'].append(correct1_train/total_train)
-    diff_layers_acc['test1'].append(correct1_test/total_test)
     diff_layers_acc['train2'].append(correct2_train/total_train)
-    diff_layers_acc['test2'].append(correct2_test/total_test)
     diff_layers_acc['train3'].append(correct3_train/total_train)
-    diff_layers_acc['test3'].append(correct3_test/total_test)
+    
 
     #correct = correct.item()
     #tcorrect = tcorrect.item()
@@ -259,7 +227,7 @@ for e in range(epochs):
     #test_acc.append(tcorrect/ttotal)
 
 
-    print("Epoch {0} | Loss: {1:.4f} Train Acc 1: {2:.4f} Test Acc 1: {3:.4f} Train Acc 2: {4:.4f} Test Acc 2: {5:.4f} Train Acc 3: {6:.4f} Test Acc 3: {7:.4f} Train Time: {8:.4f}s Inference Time: {9:.4f}s".format(e+1, np.mean(loss_hist), correct1_train/total_train, correct1_test/total_test, correct2_train/total_train, correct2_test/total_test, correct3_train/total_train, correct3_test/total_test, train_time-start_time, inf_time - train_time))
+    print("Epoch {0} | Loss: {1:.4f} Train Acc 1: {2:.4f} Train Acc 2: {4:.4f} Train Acc 3: {6:.4f} Train Time: {8:.4f}s".format(e+1, np.mean(loss_hist), correct1_train/total_train, correct2_train/total_train, correct3_train/total_train, train_time-start_time))
 
 # saving results/weights
 results = {'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer2':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer3':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer4':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'loss':[loss_hist], 'train': train_acc, 'test': test_acc}
