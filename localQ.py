@@ -239,7 +239,7 @@ class QLinearFunctional(torch.autograd.Function):
         if bias is not None and ctx.needs_input_grad[2]:
             grad_bias = torch.zeros_like(bias)
 
-        return grad_input, grad_weight, None, grad_bias, None
+        return grad_input, None, None, None, None
 
 class QLinearLayerSign(nn.Module):
     '''from https://github.com/L0SG/feedback-alignment-pytorch/'''
@@ -447,7 +447,7 @@ class LIFConv2dLayer(nn.Module):
             correct_train = (predicted == y_local).sum().item()
 
 
-        loss_gen = self.loss_fn(rreadout, y_local) #+ self.l1 * 200e-1 * F.relu((self.U+.01).mean()) + self.l2 *1e-1* F.relu(.1-self.U_aux.mean())
+        loss_gen = self.loss_fn(rreadout, y_local) + self.l1 * 200e-1 * F.relu((self.U+.01).mean()) + self.l2 *1e-1* F.relu(.1-self.U_aux.mean())
         #loss_gen = self.loss_fn(self.act(rreadout), y_local) + self.l1 * F.relu(self.U+.01).mean() + self.l2 * F.relu(self.thr+.1-self.U.mean())
         #loss_gen = self.loss_fn(self.act(rreadout), y_local) + self.l1 * F.relu((self.U+.01).mean()) + self.l2 * F.relu(self.thr-self.U).mean()
         #loss_gen = self.loss_fn(self.act(rreadout), y_local) + self.l1 * F.relu((self.U+.01).mean()) + self.l2 * F.relu(self.thr-self.U.mean())
