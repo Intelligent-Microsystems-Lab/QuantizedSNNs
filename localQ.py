@@ -189,7 +189,7 @@ class QSigmoid(torch.autograd.Function):
 
     @staticmethod
     def backward(ctx, grad_output):
-        x = ctx.saved_tensors
+        x, = ctx.saved_tensors
         grad_input = None
 
         if ctx.needs_input_grad[0]:
