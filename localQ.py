@@ -334,7 +334,7 @@ class QSConv2dFunctional(torch.autograd.Function):
 
 
 class LIFConv2dLayer(nn.Module):
-    def __init__(self, inp_shape, kernel_size, out_channels, tau_syn, tau_mem, tau_ref, delta_t, pooling = 1, padding = 0, bias=True, thr = 1, device=torch.device("cpu"), dtype = torch.float, dropout_p = .5, output_neurons = 10, loss_prep_fn = None, loss_fn = None, l1 = 0, l2 = 0, quant_on = False):
+    def __init__(self, inp_shape, kernel_size, out_channels, tau_syn, tau_mem, tau_ref, delta_t, pooling = 1, padding = 0, bias=True, thr = 1, device=torch.device("cpu"), dtype = torch.float, dropout_p = .5, output_neurons = 10, act = None, loss_fn = None, l1 = 0, l2 = 0, quant_on = False):
         super(LIFConv2dLayer, self).__init__()   
         self.device = device
         self.quant_on = quant_on
@@ -356,7 +356,7 @@ class LIFConv2dLayer(nn.Module):
         self.l1 = l1
         self.l2 = l2
         self.loss_fn = loss_fn
-        self.loss_prep_fn = loss_prep_fn
+        self.act = act
 
 
         self.weights = nn.Parameter(torch.empty((self.out_channels, inp_shape[0],  self.kernel_size, self.kernel_size),  device=device, dtype=dtype, requires_grad=True))
@@ -435,8 +435,10 @@ class LIFConv2dLayer(nn.Module):
         self.S = (self.U >= self.thr).float()
         # reset neurons which spiked
         #self.U = self.U * (1-self.S)
+        U_aux = self.act(self.U)
+        rreadout = self.dropout_learning(self.sign_random_readout(U_aux.reshape([input_t.shape[0], np.prod(self.out_shape)]) ))
 
-        rreadout = self.loss_prep_fn(self.sign_random_readout(self.dropout_learning(smoothstep(self.U-self.thr, self.quant_on).reshape([input_t.shape[0], np.prod(self.out_shape)])) * self.dropout_p))
+        #rreadout = self.act(self.sign_random_readout(self.dropout_learning(smoothstep(self.U-self.thr, self.quant_on).reshape([input_t.shape[0], np.prod(self.out_shape)])) * self.dropout_p))
         _, predicted = torch.max(rreadout.data, 1)
 
         if y_local.shape[1] == self.output_neurons:
@@ -445,11 +447,11 @@ class LIFConv2dLayer(nn.Module):
             correct_train = (predicted == y_local).sum().item()
 
 
-        loss_gen = self.loss_fn(rreadout, y_local) + self.l1 * 200e-1 * F.relu((self.U+.01).mean()) + self.l2 *1e-1* F.relu(self.thr+.1-self.U.mean())
-        #loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu(self.U+.01).mean() + self.l2 * F.relu(self.thr+.1-self.U.mean())
-        #loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu((self.U+.01).mean()) + self.l2 * F.relu(self.thr-self.U).mean()
-        #loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu((self.U+.01).mean()) + self.l2 * F.relu(self.thr-self.U.mean())
-        #loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu(self.U+.01).mean() + self.l2 * F.relu(self.thr-self.U).mean()
+        loss_gen = self.loss_fn(rreadout, y_local) + self.l1 * 200e-1 * F.relu((self.U+.01).mean()) + self.l2 *1e-1* F.relu(self.thr+.1-self.U_aux.mean())
+        #loss_gen = self.loss_fn(self.act(rreadout), y_local) + self.l1 * F.relu(self.U+.01).mean() + self.l2 * F.relu(self.thr+.1-self.U.mean())
+        #loss_gen = self.loss_fn(self.act(rreadout), y_local) + self.l1 * F.relu((self.U+.01).mean()) + self.l2 * F.relu(self.thr-self.U).mean()
+        #loss_gen = self.loss_fn(self.act(rreadout), y_local) + self.l1 * F.relu((self.U+.01).mean()) + self.l2 * F.relu(self.thr-self.U.mean())
+        #loss_gen = self.loss_fn(self.act(rreadout), y_local) + self.l1 * F.relu(self.U+.01).mean() + self.l2 * F.relu(self.thr-self.U).mean()
 
         return self.S, loss_gen, correct_train
 
