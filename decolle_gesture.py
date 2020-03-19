@@ -211,7 +211,7 @@ for e in range(epochs):
 
         inf_time = time.time()
         diff_layers_acc['test1'].append(correct1_test/total_test)
-        diff_layers_acc['test2'].append(correct2_test/total_test
+        diff_layers_acc['test2'].append(correct2_test/total_test)
         diff_layers_acc['test3'].append(correct3_test/total_test)
         print("Test Acc 1: {0:.4f} Test Acc 2: {1:.4f} Test Acc 3: {2:.4f} Inf Time: {3:.4f}s".format( correct1_test/total_test, correct2_test/total_test, correct3_test/total_test, inf_time - train_time))
 
