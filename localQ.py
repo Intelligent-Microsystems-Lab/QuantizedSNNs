@@ -181,6 +181,25 @@ def sparse_data_generator_Static(X, y, batch_size, nb_steps, samples, max_hertz,
         except StopIteration:
             return
 
+
+# class QSigmoid(torch.autograd.Function):
+#     @staticmethod
+#     def forward(ctx, x):
+#         ctx.save_for_backward(x)
+#         return (x >= 0).float()
+
+#     @staticmethod
+#     def backward(ctx, grad_output):
+#         x, = ctx.saved_tensors
+#         grad_input = grad_output.clone()
+
+#         grad_input = grad_input/(SuperSpike.scale*torch.abs(x)+1.0)**2
+
+#         # quantize error
+#         grad_input = quantization.quant_err(grad_input)
+
+#         return grad_input
+
 class QLinearFunctional(torch.autograd.Function):
     '''from https://github.com/L0SG/feedback-alignment-pytorch/'''
     @staticmethod
@@ -200,9 +219,9 @@ class QLinearFunctional(torch.autograd.Function):
         grad_input = grad_weight = grad_bias = None
 
         if ctx.quant_on:
-            quant_error = quantization.quant_err(grad_output)
+            quant_error = quantization.quant_err(grad_output.clone())
         else:
-            quant_error = grad_output
+            quant_error = grad_output.clone()
 
         if ctx.needs_input_grad[0]:
             grad_input = quant_error.mm(weight_fa)
@@ -276,7 +295,6 @@ class QSConv2dFunctional(torch.autograd.Function):
 
     @staticmethod
     def backward(ctx, grad_output):
-        import pdb; pdb.set_trace()
         input, w_quant, bias_quant, pool_indices = ctx.saved_tensors
         grad_input = grad_weight = grad_bias = None 
         unmpool = nn.MaxUnpool2d(ctx.pooling, stride = ctx.pooling, padding = (ctx.pooling-1)//2)
