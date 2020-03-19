@@ -435,8 +435,8 @@ class LIFConv2dLayer(nn.Module):
         self.S = (self.U >= self.thr).float()
         # reset neurons which spiked
         #self.U = self.U * (1-self.S)
-        U_aux = self.act(self.U)
-        rreadout = self.dropout_learning(self.sign_random_readout(U_aux.reshape([input_t.shape[0], np.prod(self.out_shape)]) ))
+        self.U_aux = self.act(self.U)
+        rreadout = self.dropout_learning(self.sign_random_readout(self.U_aux.reshape([input_t.shape[0], np.prod(self.out_shape)]) ))
 
         #rreadout = self.act(self.sign_random_readout(self.dropout_learning(smoothstep(self.U-self.thr, self.quant_on).reshape([input_t.shape[0], np.prod(self.out_shape)])) * self.dropout_p))
         _, predicted = torch.max(rreadout.data, 1)
