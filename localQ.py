@@ -436,7 +436,7 @@ class LIFConv2dLayer(nn.Module):
         # reset neurons which spiked
         #self.U = self.U * (1-self.S)
 
-        rreadout = self.sign_random_readout(self.dropout_learning(smoothstep(self.U-self.thr, self.quant_on).reshape([input_t.shape[0], np.prod(self.out_shape)])) * self.dropout_p)
+        rreadout = self.loss_prep_fn(self.sign_random_readout(self.dropout_learning(smoothstep(self.U-self.thr, self.quant_on).reshape([input_t.shape[0], np.prod(self.out_shape)])) * self.dropout_p))
         _, predicted = torch.max(rreadout.data, 1)
 
         if y_local.shape[1] == self.output_neurons:
@@ -445,7 +445,7 @@ class LIFConv2dLayer(nn.Module):
             correct_train = (predicted == y_local).sum().item()
 
 
-        loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 *1e-2* F.relu(self.U+.01).mean() + self.l2 *6e-5* F.relu(self.thr+.1-self.U).mean()
+        loss_gen = self.loss_fn(rreadout, y_local) + self.l1 *1e-2* F.relu(self.U+.01).mean() + self.l2 *6e-5* F.relu(self.thr+.1-self.U).mean()
         #loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu(self.U+.01).mean() + self.l2 * F.relu(self.thr+.1-self.U.mean())
         #loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu((self.U+.01).mean()) + self.l2 * F.relu(self.thr-self.U).mean()
         #loss_gen = self.loss_fn(self.loss_prep_fn(rreadout), y_local) + self.l1 * F.relu((self.U+.01).mean()) + self.l2 * F.relu(self.thr-self.U.mean())
