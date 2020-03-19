@@ -115,7 +115,7 @@ all_parameters = list(layer1.parameters()) + list(layer2.parameters()) + list(la
 if quant_on:
     opt = torch.optim.SGD(all_parameters, lr=1)
 else:
-    opt = torch.optim.Adamax(all_parameters, lr=1.0e-7, betas=[0., .95])
+    opt = torch.optim.Adamax(all_parameters, lr=1.0e-9, betas=[0., .95])
 
 #train_acc = []
 #test_acc = []
