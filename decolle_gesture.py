@@ -182,9 +182,10 @@ for e in range(epochs):
             #correct4_train += temp_corr4
             total_train += y_local.size(0)
 
+    train_time = time.time()
     print("Epoch {0} | Loss: {1:.4f} Train Acc 1: {2:.4f} Train Acc 2: {4:.4f} Train Acc 3: {6:.4f} Train Time: {8:.4f}s".format(e+1, np.mean(loss_hist), correct1_train/total_train, correct2_train/total_train, correct3_train/total_train, train_time-start_time))
         
-    train_time = time.time()
+    
 
     # test accuracy
     if (e+1)%10 == 0:
