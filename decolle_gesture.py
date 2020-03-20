@@ -79,7 +79,7 @@ epochs = 4500
 burnin = 50*ms #40*ms
 batch_size = 72
 tau_ref = torch.Tensor([0*ms]).to(device)
-dropout_p = .5
+dropout_p = .0
 thr = torch.Tensor([0.]).to(device) #that probably should be one... one doesnt really work
 localQ.lc_ampl = .5
 
@@ -122,6 +122,10 @@ diff_layers_acc = {'train1': [], 'test1': [],'train2': [], 'test2': [],'train3':
 
 print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5}{6} {7} l1 {8:.3f} l2 {9:.3f} Inp {10} LR {11} Drop {12}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb, quantization.global_sb, quant_on, l1, l2, input_mode, quantization.global_lr, dropout_p))
 
+
+def acc_comp(rread_hist_train):
+    rhts = torch.stack(rread_hist1_train, dim = 0)
+    return (rhts.mode(0)[0] == y_local).float().mean()
 
 for e in range(epochs):
     #if (e%20 == 0) and (e != 0) and (quantization.global_lr > 1):
@@ -171,12 +175,10 @@ for e in range(epochs):
             rread_hist3_train.append(temp_corr3)
 
     train_time = time.time()
-
-    import pdb; pdb.set_trace()    
-    print("Epoch {0} | Loss: {1:.4f} Train Acc 1: {2:.4f} Train Acc 2: {3:.4f} Train Acc 3: {4:.4f} Train Time: {5:.4f}s".format(e+1, np.mean(loss_hist), correct1_train/total_train, correct2_train/total_train, correct3_train/total_train, train_time-start_time))
+ 
+    print("Epoch {0} | Loss: {1:.4f} Train Acc 1: {2:.4f} Train Acc 2: {3:.4f} Train Acc 3: {4:.4f} Train Time: {5:.4f}s".format(e+1, np.mean(loss_hist), acc_comp(rread_hist1_train), acc_comp(rread_hist2_train), acc_comp(rread_hist3_train), train_time-start_time))
         
     
-
     # test accuracy
     if (e+1)%10 == 0:
         for x_local, y_local in sparse_data_generator_DVSGesture(x_test, y_test, batch_size = batch_size, nb_steps = T_test / ms, shuffle = True, device = device, test = True):
@@ -198,17 +200,16 @@ for e in range(epochs):
                     rread_hist1_test.append(temp_corr1)
                     rread_hist2_test.append(temp_corr2)
                     rread_hist3_test.append(temp_corr3)
-
-        inf_time = time.time()
-        diff_layers_acc['test1'].append(correct1_test/total_test)
-        diff_layers_acc['test2'].append(correct2_test/total_test)
-        diff_layers_acc['test3'].append(correct3_test/total_test)
-        print("Test Acc 1: {0:.4f} Test Acc 2: {1:.4f} Test Acc 3: {2:.4f} Inf Time: {3:.4f}s".format( correct1_test/total_test, correct2_test/total_test, correct3_test/total_test, inf_time - train_time))
+        
+            print("Test Acc 1: {0:.4f} Test Acc 2: {1:.4f} Test Acc 3: {2:.4f} Inf Time: {3:.4f}s".format( acc_comp(rread_hist1_test), acc_comp(rread_hist2_test), acc_comp(rread_hist3_test)))
 
 
-    diff_layers_acc['train1'].append(correct1_train/total_train)
-    diff_layers_acc['train2'].append(correct2_train/total_train)
-    diff_layers_acc['train3'].append(correct3_train/total_train)
+    #diff_layers_acc['test1'].append(correct1_test/total_test)
+    #diff_layers_acc['test2'].append(correct2_test/total_test)
+    #diff_layers_acc['test3'].append(correct3_test/total_test)
+    #diff_layers_acc['train1'].append(correct1_train/total_train)
+    #diff_layers_acc['train2'].append(correct2_train/total_train)
+    #diff_layers_acc['train3'].append(correct3_train/total_train)
     
 
 
