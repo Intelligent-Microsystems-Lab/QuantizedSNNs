@@ -127,14 +127,14 @@ for e in range(epochs):
     #if (e%20 == 0) and (e != 0) and (quantization.global_lr > 1):
     #    quantization.global_lr /= 2
 
-    correct1_train = 0 
-    correct2_train = 0
-    correct3_train = 0
-    total_train = 0
-    correct1_test = 0
-    correct2_test = 0
-    correct3_test = 0
-    total_test = 0
+    rread_hist1_train = [] 
+    rread_hist2_train = []
+    rread_hist3_train = []
+
+    rread_hist1_test = []
+    rread_hist2_test = []
+    rread_hist3_test = []
+
     loss_hist = []
 
     start_time = time.time()
@@ -166,10 +166,9 @@ for e in range(epochs):
             opt.zero_grad()
 
             loss_hist.append(loss_gen.item())
-            correct1_train += temp_corr1
-            correct2_train += temp_corr2
-            correct3_train += temp_corr3
-            total_train += y_local.size(0)
+            rread_hist1_train.append(temp_corr1)
+            rread_hist2_train.append(temp_corr2)
+            rread_hist3_train.append(temp_corr3)
 
     train_time = time.time()
     print("Epoch {0} | Loss: {1:.4f} Train Acc 1: {2:.4f} Train Acc 2: {3:.4f} Train Acc 3: {4:.4f} Train Time: {5:.4f}s".format(e+1, np.mean(loss_hist), correct1_train/total_train, correct2_train/total_train, correct3_train/total_train, train_time-start_time))
@@ -194,10 +193,9 @@ for e in range(epochs):
                 out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_onehot)
                 out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_onehot)
                 if t > int(burnin/ms):
-                    correct1_test += temp_corr1
-                    correct2_test += temp_corr2
-                    correct3_test += temp_corr3
-                    total_test += y_local.size(0)
+                    rread_hist1_test.append(temp_corr1)
+                    rread_hist2_test.append(temp_corr2)
+                    rread_hist3_test.append(temp_corr3)
 
         inf_time = time.time()
         diff_layers_acc['test1'].append(correct1_test/total_test)

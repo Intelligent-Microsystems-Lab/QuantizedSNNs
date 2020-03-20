@@ -437,16 +437,16 @@ class LIFConv2dLayer(nn.Module):
         self.U_aux = F.sigmoid(self.U)
         rreadout = self.dropout_learning(self.sign_random_readout(self.U_aux.reshape([input_t.shape[0], np.prod(self.out_shape)]) ))
 
-        _, predicted = torch.max(rreadout.data, 1)
+        #_, predicted = torch.max(rreadout.data, 1)
 
-        if y_local.shape[1] == self.output_neurons:
-            correct_train = (predicted == y_local.max(dim = 1)[1]).sum().item()
-        else:
-            correct_train = (predicted == y_local).sum().item()
+        #if y_local.shape[1] == self.output_neurons:
+        #    correct_train = (predicted == y_local.max(dim = 1)[1]).sum().item()
+        #else:
+        #    correct_train = (predicted == y_local).sum().item()
 
         loss_gen = self.loss_fn(rreadout, y_local) + self.l1 * 200e-1 * F.relu((self.U+.01)).mean() + self.l2 *1e-1* F.relu(.1-self.U_aux.mean())
 
         import pdb; pdb.set_trace()
-        return self.S, loss_gen, correct_train
+        return self.S, loss_gen, rreadout
 
 
