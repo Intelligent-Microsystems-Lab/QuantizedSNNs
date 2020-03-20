@@ -91,7 +91,7 @@ tau_mem = torch.Tensor([5*ms, 35*ms]).to(device)#[mem_tau*ms-mem_tau*ms*var_perc
 tau_ref = torch.Tensor([5*ms, 35*ms]).to(device)
 tau_syn = torch.Tensor([5*ms, 10*ms]).to(device)#[syn_tau*ms-syn_tau*ms*var_perc, syn_tau*ms+syn_tau*ms*var_perc]
 
-input_mode = 0 #two channel trick, down sample etc.
+input_mode = 3 #two channel trick, down sample etc.
 
 sig_fn = nn.Sigmoid()
 log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll

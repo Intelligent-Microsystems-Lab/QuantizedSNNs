@@ -42,6 +42,9 @@ def prep_input(x_local, input_mode):
     #bi directional
     if input_mode == 2:
         return x_local
+    #bi directional two channels
+    if input_mode == 3:
+        return torch.cat((x_local, x_local), dim = 1)
     else:
         print("No valid input mode")
         return -1
