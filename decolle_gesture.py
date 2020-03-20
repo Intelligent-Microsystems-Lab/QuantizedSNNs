@@ -100,7 +100,7 @@ softmax_fn = nn.Softmax(dim=1)
 sl1_loss = torch.nn.SmoothL1Loss()
 
 # construct layers
-downsample_l = nn.AvgPool2d(kernel_size = 4, stride = 4)
+downsample_l = nn.MaxPool2d(kernel_size = 4, stride = 4)
 
 layer1 = LIFConv2dLayer(inp_shape = (2, 32, 32), kernel_size = 7, out_channels = 64, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, act = sig_fn, loss_fn = sl1_loss, l1 = l1, l2 = l2, quant_on = quant_on).to(device)
 
@@ -153,7 +153,7 @@ for e in range(epochs):
 
     for t in tqdm(range(int(T/ms))):
         spikes_t                            = prep_input(x_local[:,:,:,:,t], input_mode)
-        spikes_t                            = downsample_l(spikes_t)*16
+        spikes_t                            = downsample_l(spikes_t)
         out_spikes1, temp_loss1, temp_corr1 = layer1.forward(spikes_t, y_onehot)
         out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_onehot)
         out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_onehot)
@@ -171,6 +171,8 @@ for e in range(epochs):
             rread_hist3_train.append(temp_corr3)
 
     train_time = time.time()
+
+    import pdb; pdb.set_trace()    
     print("Epoch {0} | Loss: {1:.4f} Train Acc 1: {2:.4f} Train Acc 2: {3:.4f} Train Acc 3: {4:.4f} Train Time: {5:.4f}s".format(e+1, np.mean(loss_hist), correct1_train/total_train, correct2_train/total_train, correct3_train/total_train, train_time-start_time))
         
     
@@ -188,7 +190,7 @@ for e in range(epochs):
 
             for t in tqdm(range(int(T_test/ms))):
                 spikes_t                            = prep_input(x_local[:,:,:,:,t], input_mode)
-                spikes_t                            = downsample_l(spikes_t)*16
+                spikes_t                            = downsample_l(spikes_t)
                 out_spikes1, temp_loss1, temp_corr1 = layer1.forward(spikes_t, y_onehot)
                 out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_onehot)
                 out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_onehot)
