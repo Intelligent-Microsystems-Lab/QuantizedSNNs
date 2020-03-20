@@ -360,11 +360,11 @@ class LIFConv2dLayer(nn.Module):
 
 
         self.weights = nn.Parameter(torch.empty((self.out_channels, inp_shape[0],  self.kernel_size, self.kernel_size),  device=device, dtype=dtype, requires_grad=True))
-        self.stdv = np.sqrt(lc_ampl/torch.tensor(self.weights.shape).prod().item())
+        self.stdv =  1 / np.sqrt(torch.tensor(self.weights.shape).prod().item()) / 250
         if self.quant_on:
             torch.nn.init.uniform_(self.weights, a = -self.L, b = self.L)
         else:
-            torch.nn.init.uniform_(self.weights, a = -self.stdv, b = self.stdv)
+            torch.nn.init.uniform_(self.weights, a = -self.stdv*1e-2, b = self.stdv*1e-2)
 
 
         if bias:
