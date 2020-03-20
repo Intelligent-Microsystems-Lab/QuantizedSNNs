@@ -433,7 +433,8 @@ class LIFConv2dLayer(nn.Module):
 
         self.S = (self.U >= self.thr).float()
 
-        self.U_aux = QSigmoid.apply(self.U)
+        #self.U_aux = QSigmoid.apply(self.U)
+        self.U_aux = nn.Sigmoid(self.U)
         rreadout = self.dropout_learning(self.sign_random_readout(self.U_aux.reshape([input_t.shape[0], np.prod(self.out_shape)]) ))
 
         _, predicted = torch.max(rreadout.data, 1)
