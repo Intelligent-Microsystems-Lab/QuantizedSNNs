@@ -29,6 +29,48 @@ delta_t = 1*ms
 quant_on = False
 
 
+
+def save_vid_of_input(x_temp, y_temp):
+    # # visualize
+    import matplotlib.pyplot as plt
+    import matplotlib.animation as animation
+
+    gest_mapping = {
+        0:"club",
+        1:"diamond",
+        2:"heart",
+        3:"spade",
+    }
+
+
+    plt.clf()
+    fig1 = plt.figure()
+
+    ims = []
+    for j in np.arange(x_local.shape[0]):
+        #temp_show = downsample(x_local[:,:,:,:,j])*16
+        for i in np.arange(x_local.shape[4]):
+
+            #temp_show = downsample(x_local[:,:,:,:,i])*16
+
+            #temp_show = torch.cat((temp_show, temp_show), dim = 1)
+            temp_show = torch.cat((x_local[:,:,:,:,i], x_local[:,:,:,:,i]), dim = 1)
+            mask1 = (temp_show > 0) # this might change
+            mask2 = (temp_show < 0)
+            mask1[:,0,:,:] = False
+            mask2[:,1,:,:] = False
+            temp_show = torch.zeros_like(temp_show)
+            temp_show[mask1] = 1 
+            temp_show[mask2] = 1
+
+            ims.append((plt.imshow( temp_show[j,0,:,:].cpu()), plt.text(.5, .1, gest_mapping[y_temp[j].item()], fontsize=12), ))
+            
+    im_ani = animation.ArtistAnimation(fig1, ims, interval=1, repeat_delay=2000, blit=True)
+    im_ani.save('../dvs_poker_{date:%Y-%m-%d_%H:%M:%S}.mp4'.format( date=datetime.datetime.now()))
+
+
+
+
 # # DVS Poker
 # # load data
 # with open('../slow_poker_500_train.pickle', 'rb') as f:
@@ -154,6 +196,7 @@ for e in range(epochs):
         spikes_t                            = downsample_l(spikes_t)
         spikes_t[spikes_t > 0]              = 1
         spikes_t[spikes_t < 0]              = -1
+
         out_spikes1, temp_loss1, temp_corr1 = layer1.forward(spikes_t, y_onehot)
         out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_onehot)
         out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_onehot)
@@ -176,11 +219,13 @@ for e in range(epochs):
         
     
     # test accuracy
-    if (e+1)%10 == 0:
+    if (e+1)%1 == 0:
         for x_local, y_local in sparse_data_generator_DVSGesture(x_test, y_test, batch_size = batch_size, nb_steps = T_test / ms, shuffle = False, device = device, test = True):
             rread_hist1_test = []
             rread_hist2_test = []
             rread_hist3_test = []
+
+            import pdb; pdb.set_trace()
 
             y_onehot = torch.Tensor(len(y_local), output_neurons).to(device)
             y_onehot.zero_()
