@@ -111,8 +111,8 @@ def onebatch_DVSGesture(X, y, batch_size, nb_steps, device, shuffle = True):
     sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(all_events[:,[True, True, True, True, False]].T), torch.FloatTensor(all_events[:,4])).to_dense()
 
     # quick trick...
-    sparse_matrix[sparse_matrix < 0] = -1
-    sparse_matrix[sparse_matrix > 0] = 1
+    #sparse_matrix[sparse_matrix < 0] = -1
+    #sparse_matrix[sparse_matrix > 0] = 1
 
     sparse_matrix = sparse_matrix.reshape(torch.Size([sparse_matrix.shape[0], 1, sparse_matrix.shape[1], sparse_matrix.shape[2], sparse_matrix.shape[3]]))
 
@@ -153,8 +153,8 @@ def sparse_data_generator_DVSGesture(X, y, batch_size, nb_steps, shuffle, device
         sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(all_events[:,[True, True, True, True, False]].T), torch.FloatTensor(all_events[:,4])).to_dense()
 
         # quick trick...
-        sparse_matrix[sparse_matrix < 0] = -1
-        sparse_matrix[sparse_matrix > 0] = 1
+        #sparse_matrix[sparse_matrix < 0] = -1
+        #sparse_matrix[sparse_matrix > 0] = 1
 
         sparse_matrix = sparse_matrix.reshape(torch.Size([sparse_matrix.shape[0], 1, sparse_matrix.shape[1], sparse_matrix.shape[2], sparse_matrix.shape[3]]))
 

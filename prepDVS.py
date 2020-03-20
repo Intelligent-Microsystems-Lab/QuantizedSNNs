@@ -63,6 +63,7 @@ def read_aedat31(filename, labels_f, test_set = False):
         single_gesture = stim[stim[:, 0] >= i[1]]
         single_gesture = single_gesture[single_gesture[:, 0] <= i[2]]
 
+        import pdb; pdb.set_trace()
         # bin them 1ms
         single_gesture[:,0] = np.floor(single_gesture[:,0]/1000)
         single_gesture[:,0] = single_gesture[:,0] - np.min(single_gesture[:,0])
