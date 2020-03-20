@@ -13,7 +13,7 @@ import quantization
 lc_ampl = .5
 
 
-def acc_comp(rread_hist_train):
+def acc_comp(rread_hist_train, y_local):
     rhts = torch.stack(rread_hist_train, dim = 0)
     return (rhts.mode(0)[0] == y_local).float().mean()
 

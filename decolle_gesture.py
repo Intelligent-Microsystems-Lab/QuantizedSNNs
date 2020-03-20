@@ -177,7 +177,7 @@ for e in range(epochs):
     train_time = time.time()
     import pdb; pdb.set_trace()
  
-    print("Epoch {0} | Loss: {1:.4f} Train Acc 1: {2:.4f} Train Acc 2: {3:.4f} Train Acc 3: {4:.4f} Train Time: {5:.4f}s".format(e+1, np.mean(loss_hist), acc_comp(rread_hist1_train), acc_comp(rread_hist2_train), acc_comp(rread_hist3_train), train_time-start_time))
+    print("Epoch {0} | Loss: {1:.4f} Train Acc 1: {2:.4f} Train Acc 2: {3:.4f} Train Acc 3: {4:.4f} Train Time: {5:.4f}s".format(e+1, np.mean(loss_hist), acc_comp(rread_hist1_train, y_local), acc_comp(rread_hist2_train, y_local), acc_comp(rread_hist3_train, y_local), train_time-start_time))
         
     
     # test accuracy
@@ -204,7 +204,7 @@ for e in range(epochs):
                     rread_hist2_test.append(temp_corr2)
                     rread_hist3_test.append(temp_corr3)
         
-            print("Test Acc 1: {0:.4f} Test Acc 2: {1:.4f} Test Acc 3: {2:.4f}".format( acc_comp(rread_hist1_test), acc_comp(rread_hist2_test), acc_comp(rread_hist3_test)))
+            print("Test Acc 1: {0:.4f} Test Acc 2: {1:.4f} Test Acc 3: {2:.4f}".format( acc_comp(rread_hist1_test, y_local), acc_comp(rread_hist2_test, y_local), acc_comp(rread_hist3_test, y_local)))
 
 
     #diff_layers_acc['test1'].append(correct1_test/total_test)
