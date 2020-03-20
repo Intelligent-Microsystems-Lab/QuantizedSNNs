@@ -14,7 +14,7 @@ import uuid
 
 import quantization
 import localQ
-from localQ import sparse_data_generator_DVSGesture, onebatch_DVSGesture, sparse_data_generator_DVSPoker, LIFConv2dLayer, prep_input
+from localQ import sparse_data_generator_DVSGesture, onebatch_DVSGesture, sparse_data_generator_DVSPoker, LIFConv2dLayer, prep_input, acc_comp
 
 torch.autograd.set_detect_anomaly(True)
 
@@ -123,9 +123,7 @@ diff_layers_acc = {'train1': [], 'test1': [],'train2': [], 'test2': [],'train3':
 print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5}{6} {7} l1 {8:.3f} l2 {9:.3f} Inp {10} LR {11} Drop {12}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb, quantization.global_sb, quant_on, l1, l2, input_mode, quantization.global_lr, dropout_p))
 
 
-def acc_comp(rread_hist_train):
-    rhts = torch.stack(rread_hist_train, dim = 0)
-    return (rhts.mode(0)[0] == y_local).float().mean()
+
 
 for e in range(epochs):
     #if (e%20 == 0) and (e != 0) and (quantization.global_lr > 1):
@@ -175,6 +173,7 @@ for e in range(epochs):
             rread_hist3_train.append(temp_corr3)
 
     train_time = time.time()
+    import pdb; pdb.set_trace()
  
     print("Epoch {0} | Loss: {1:.4f} Train Acc 1: {2:.4f} Train Acc 2: {3:.4f} Train Acc 3: {4:.4f} Train Time: {5:.4f}s".format(e+1, np.mean(loss_hist), acc_comp(rread_hist1_train), acc_comp(rread_hist2_train), acc_comp(rread_hist3_train), train_time-start_time))
         
@@ -201,7 +200,7 @@ for e in range(epochs):
                     rread_hist2_test.append(temp_corr2)
                     rread_hist3_test.append(temp_corr3)
         
-            print("Test Acc 1: {0:.4f} Test Acc 2: {1:.4f} Test Acc 3: {2:.4f} Inf Time: {3:.4f}s".format( acc_comp(rread_hist1_test), acc_comp(rread_hist2_test), acc_comp(rread_hist3_test)))
+            print("Test Acc 1: {0:.4f} Test Acc 2: {1:.4f} Test Acc 3: {2:.4f}".format( acc_comp(rread_hist1_test), acc_comp(rread_hist2_test), acc_comp(rread_hist3_test)))
 
 
     #diff_layers_acc['test1'].append(correct1_test/total_test)

@@ -12,6 +12,11 @@ import quantization
 
 lc_ampl = .5
 
+
+def acc_comp(rread_hist_train):
+    rhts = torch.stack(rread_hist_train, dim = 0)
+    return (rhts.mode(0)[0] == y_local).float().mean()
+
 def clee_spikes(T, rates):
     spikes = np.ones((T, + np.prod(rates.shape)))        
     spikes[np.random.binomial(1, (1000. - rates.flatten())/1000, size=(T, np.prod(rates.shape))).astype('bool')] = 0
