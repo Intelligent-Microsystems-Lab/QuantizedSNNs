@@ -177,7 +177,7 @@ for e in range(epochs):
     
     # test accuracy
     if (e+1)%10 == 0:
-        for x_local, y_local in sparse_data_generator_DVSGesture(x_test, y_test, batch_size = batch_size, nb_steps = T_test / ms, shuffle = True, device = device, test = True):
+        for x_local, y_local in sparse_data_generator_DVSGesture(x_test, y_test, batch_size = batch_size, nb_steps = T_test / ms, shuffle = False, device = device, test = True):
             rread_hist1_test = []
             rread_hist2_test = []
             rread_hist3_test = []
@@ -198,6 +198,8 @@ for e in range(epochs):
                 out_spikes1, temp_loss1, temp_corr1 = layer1.forward(spikes_t, y_onehot)
                 out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_onehot)
                 out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_onehot)
+
+                import pdb; pdb.set_trace()
                 if t > int(burnin/ms):
                     rread_hist1_test.append(temp_corr1)
                     rread_hist2_test.append(temp_corr2)
