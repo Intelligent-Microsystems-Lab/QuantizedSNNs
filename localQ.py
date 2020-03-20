@@ -446,7 +446,7 @@ class LIFConv2dLayer(nn.Module):
 
         loss_gen = self.loss_fn(rreadout, y_local) + self.l1 * 200e-1 * F.relu((self.U+.01)).mean() + self.l2 *1e-1* F.relu(.1-self.U_aux.mean())
 
-
+        import pdb; pdb.set_trace()
         return self.S, loss_gen, correct_train
 
 
