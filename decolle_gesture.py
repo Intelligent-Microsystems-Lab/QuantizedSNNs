@@ -124,7 +124,7 @@ print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5}{6} {7} l1 {8:.3f} l2 {9:.3f} Inp 
 
 
 def acc_comp(rread_hist_train):
-    rhts = torch.stack(rread_hist1_train, dim = 0)
+    rhts = torch.stack(rread_hist_train, dim = 0)
     return (rhts.mode(0)[0] == y_local).float().mean()
 
 for e in range(epochs):
