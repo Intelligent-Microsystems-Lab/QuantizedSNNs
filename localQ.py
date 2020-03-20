@@ -185,7 +185,7 @@ class QSigmoid(torch.autograd.Function):
     @staticmethod
     def forward(ctx, x):
         ctx.save_for_backward(x)
-        return 1/ (1 + torch.exp(-x))
+        return 1 / (1 + torch.exp(-x))
 
     @staticmethod
     def backward(ctx, grad_output):
@@ -212,8 +212,7 @@ class QLinearFunctional(torch.autograd.Function):
     @staticmethod
     def forward(ctx, input, weight, weight_fa, bias=None, quant_on = True):
         ctx.quant_on = quant_on
-        input[input > 0]  = 1 #correct for dropout scale
-        input[input <= 0] = 0
+
         ctx.save_for_backward(input, weight, weight_fa, bias)
         output = input.mm(weight.t())
         if bias is not None:
@@ -446,7 +445,6 @@ class LIFConv2dLayer(nn.Module):
 
         loss_gen = self.loss_fn(rreadout, y_local) + self.l1 * 200e-1 * F.relu((self.U+.01)).mean() + self.l2 *1e-1* F.relu(.1-self.U_aux.mean())
 
-        import pdb; pdb.set_trace()
         return self.S, loss_gen, correct_train
 
 
