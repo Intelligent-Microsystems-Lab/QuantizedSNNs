@@ -133,10 +133,6 @@ for e in range(epochs):
     rread_hist2_train = []
     rread_hist3_train = []
 
-    rread_hist1_test = []
-    rread_hist2_test = []
-    rread_hist3_test = []
-
     loss_hist = []
 
     start_time = time.time()
@@ -182,6 +178,10 @@ for e in range(epochs):
     # test accuracy
     if (e+1)%10 == 0:
         for x_local, y_local in sparse_data_generator_DVSGesture(x_test, y_test, batch_size = batch_size, nb_steps = T_test / ms, shuffle = True, device = device, test = True):
+            rread_hist1_test = []
+            rread_hist2_test = []
+            rread_hist3_test = []
+
             y_onehot = torch.Tensor(len(y_local), output_neurons).to(device)
             y_onehot.zero_()
             y_onehot.scatter_(1, y_local.reshape([y_local.shape[0],1]), 1)
