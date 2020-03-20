@@ -106,6 +106,7 @@ def onebatch_DVSGesture(X, y, batch_size, nb_steps, device, shuffle = True):
         all_events = np.append(all_events, temp, axis = 0)
 
     # to matrix
+    import pdb; pdb.set_trace()
     all_events[:,4][all_events[:,4] == 0] = -1
     all_events = all_events[:,[0,2,3,1,4]]
     sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(all_events[:,[True, True, True, True, False]].T), torch.FloatTensor(all_events[:,4])).to_dense()
