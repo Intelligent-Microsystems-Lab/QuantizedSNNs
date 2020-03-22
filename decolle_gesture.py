@@ -210,7 +210,7 @@ for e in range(epochs):
             diff_layers_acc['test1'].append(acc_comp(rread_hist1_test, y_local))
             diff_layers_acc['test2'].append(acc_comp(rread_hist2_test, y_local))
             diff_layers_acc['test3'].append(acc_comp(rread_hist3_test, y_local))
-            print("Test Acc 1: {0:.4f} Test Acc 2: {1:.4f} Test Acc 3: {2:.4f}".format( diff_layers_acc['test1'][-1], diff_layers_acc['test1'][-1], diff_layers_acc['test1'][-1]))
+            print("Test Acc 1: {0:.4f} Test Acc 2: {1:.4f} Test Acc 3: {2:.4f}".format( diff_layers_acc['test1'][-1], diff_layers_acc['test2'][-1], diff_layers_acc['test3'][-1]))
 
 
             
