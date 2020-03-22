@@ -224,10 +224,9 @@ for e in range(epochs):
     
 
 # saving results/weights
-#results = {'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer2':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer3':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer4':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'loss':[loss_hist], 'acc': diff_layers_acc}
+results = {'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer2':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer3':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer4':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'loss':[loss_hist], 'acc': diff_layers_acc}
 
 
-results = {'layer1':[layer1.weights.detach().cpu()], 'layer2':[layer1.weights.detach().cpu()], 'layer3':[layer1.weights.detach().cpu()], 'loss':[loss_hist], 'acc': diff_layers_acc}
 with open('results/'+str(uuid.uuid1())+'.pkl', 'wb') as f:
     pickle.dump(results, f)
 
