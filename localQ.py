@@ -221,6 +221,7 @@ class QLinearFunctional(torch.autograd.Function):
     def forward(ctx, input, weight, weight_fa, bias=None, quant_on = True):
         ctx.quant_on = quant_on
 
+        import pdb; pdb.set_trace()
         ctx.save_for_backward(input, weight, weight_fa, bias)
         output = input.mm(weight.t())
         if bias is not None:
@@ -447,8 +448,8 @@ class LIFConv2dLayer(nn.Module):
             rreadout = self.dropout_learning(self.sign_random_readout(self.U_aux.reshape([input_t.shape[0], np.prod(self.out_shape)]) ))
 
             if train_flag:
-                import pdb; pdb.set_trace()
                 loss_gen = self.loss_fn(rreadout, y_local) + self.l1 * 200e-1 * F.relu((self.U+.01)).mean() + self.l2 *1e-1* F.relu(.1-self.U_aux.mean())
+                #import pdb; pdb.set_trace()
             else:
                 loss_gen = None
         else:
