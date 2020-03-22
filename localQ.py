@@ -76,8 +76,8 @@ def sparse_data_generator_DVSPoker(X, y, batch_size, nb_steps, shuffle, device, 
         sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(all_events[:,[True, True, True, True, False]].T), torch.FloatTensor(all_events[:,4])).to_dense()
 
         # quick trick...
-        sparse_matrix[sparse_matrix < 0] = -1
-        sparse_matrix[sparse_matrix > 0] = 1
+        #sparse_matrix[sparse_matrix < 0] = -1
+        #sparse_matrix[sparse_matrix > 0] = 1
 
         sparse_matrix = sparse_matrix.reshape(torch.Size([sparse_matrix.shape[0], 1, sparse_matrix.shape[1], sparse_matrix.shape[2], sparse_matrix.shape[3]]))
 
@@ -112,9 +112,6 @@ def onebatch_DVSGesture(X, y, batch_size, nb_steps, device, shuffle = True):
     all_events = all_events[:,[0,2,3,1,4]]
     sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(all_events[:,[True, True, True, True, False]].T), torch.FloatTensor(all_events[:,4])).to_dense()
 
-    # quick trick...
-    #sparse_matrix[sparse_matrix < 0] = -1
-    #sparse_matrix[sparse_matrix > 0] = 1
 
     sparse_matrix = sparse_matrix.reshape(torch.Size([sparse_matrix.shape[0], 1, sparse_matrix.shape[1], sparse_matrix.shape[2], sparse_matrix.shape[3]]))
 
@@ -154,10 +151,6 @@ def sparse_data_generator_DVSGesture(X, y, batch_size, nb_steps, shuffle, device
         all_events = all_events[:,[0,2,3,1,4]]
         sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(all_events[:,[True, True, True, True, False]].T), torch.FloatTensor(all_events[:,4])).to_dense()
 
-        # quick trick...
-        #sparse_matrix[sparse_matrix < 0] = -1
-        #sparse_matrix[sparse_matrix > 0] = 1
-
         sparse_matrix = sparse_matrix.reshape(torch.Size([sparse_matrix.shape[0], 1, sparse_matrix.shape[1], sparse_matrix.shape[2], sparse_matrix.shape[3]]))
 
         y_batch = torch.tensor(y[batch_index], dtype = int)
@@ -191,6 +184,8 @@ def sparse_data_generator_Static(X, y, batch_size, nb_steps, samples, max_hertz,
         except StopIteration:
             return
 
+
+# that function is broken....
 class QSigmoid(torch.autograd.Function):
     @staticmethod
     def forward(ctx, x):
@@ -244,7 +239,7 @@ class QLinearFunctional(torch.autograd.Function):
 class QLinearLayerSign(nn.Module):
     '''from https://github.com/L0SG/feedback-alignment-pytorch/'''
     # we dont have a bias 
-    def __init__(self, input_features, output_features, pass_through = False, quant_on = True):
+    def __init__(self, input_features, output_features, bias = True, pass_through = False, quant_on = True):
         super(QLinearLayerSign, self).__init__()
         self.input_features = input_features
         self.output_features = output_features
@@ -254,6 +249,10 @@ class QLinearLayerSign(nn.Module):
         self.weights = nn.Parameter(torch.Tensor(output_features, input_features), requires_grad=False)
         self.stdv = lc_ampl/np.sqrt(torch.tensor(self.weights.shape).prod().item())
         torch.nn.init.uniform_(self.weights, a = -self.stdv, b = self.stdv)
+        
+        if bias is not None:
+            self.bias = nn.Parameter(torch.Tensor(output_features), requires_grad=False)
+            torch.nn.init.uniform_(self.bias, a = -self.stdv, b = self.stdv)
 
         self.weight_fa = self.weights
         #self.weight_fa = nn.Parameter(torch.Tensor(output_features, input_features), requires_grad=False)
@@ -271,7 +270,7 @@ class QLinearLayerSign(nn.Module):
         #     self.weights.data = torch.ceil(torch.abs(self.weights.data) * scale ) / scale * s_sign
         
     def forward(self, input):
-        return QLinearFunctional.apply(input, self.weights, self.weight_fa, None, self.quant_on)
+        return QLinearFunctional.apply(input, self.weights, self.weight_fa, self.bias, self.quant_on)
 
 
 
@@ -289,12 +288,12 @@ class QSConv2dFunctional(torch.autograd.Function):
 
         output = F.conv2d(input = input, weight = w_quant, bias = bias_quant, padding = ctx.padding)
 
-        ctx.save_for_backward(input, w_quant, bias_quant) #pool_indices
+        ctx.save_for_backward(input, w_quant, bias_quant) 
         return output
 
     @staticmethod
     def backward(ctx, grad_output):
-        input, w_quant, bias_quant = ctx.saved_tensors #pool_indices
+        input, w_quant, bias_quant = ctx.saved_tensors 
         grad_input = grad_weight = grad_bias = None 
 
         if ctx.quant_on:
@@ -364,11 +363,11 @@ class LIFConv2dLayer(nn.Module):
             self.register_parameter('bias', None)
 
         self.mpool = nn.MaxPool2d(kernel_size = self.pooling, stride = self.pooling, padding = (self.pooling-1)//2, return_indices=False)
-        self.out_shape2 = self.mpool(QSConv2dFunctional.apply(torch.zeros((1,)+self.inp_shape).to(device), self.weights, self.bias, self.scale, self.padding, self.quant_on)).shape[1:] #self.pooling, 
+        self.out_shape2 = self.mpool(QSConv2dFunctional.apply(torch.zeros((1,)+self.inp_shape).to(device), self.weights, self.bias, self.scale, self.padding, self.quant_on)).shape[1:]
         self.out_shape = QSConv2dFunctional.apply(torch.zeros((1,)+self.inp_shape).to(device), self.weights, self.bias, self.scale, self.padding, self.quant_on).shape[1:]
         self.thr = thr
 
-        self.sign_random_readout = QLinearLayerSign(np.prod(self.out_shape2), output_neurons, self.quant_on).to(device)
+        self.sign_random_readout = QLinearLayerSign(np.prod(self.out_shape2), output_neurons, quant_on = self.quant_on).to(device)
 
         if tau_syn.shape[0] == 2:
             self.tau_syn = torch.Tensor(torch.Size(self.inp_shape)).uniform_(tau_syn[0], tau_syn[1]).to(device)
@@ -377,14 +376,12 @@ class LIFConv2dLayer(nn.Module):
         else:
             self.beta = torch.Tensor([torch.exp( - delta_t / tau_syn)]).to(device)
 
-
         if tau_mem.shape[0] == 2:
             self.tau_mem = torch.Tensor(torch.Size(self.inp_shape)).uniform_(tau_mem[0], tau_mem[1]).to(device)
             self.alpha   = 1. - 1e-3 / self.tau_mem
             self.tau_mem = 1. / (1. - self.alpha)
         else:
             self.alpha = torch.Tensor([torch.exp( - delta_t / tau_mem)]).to(device)
-
 
         if tau_ref.shape[0] == 2:
             self.gamma = torch.exp( -delta_t / torch.Tensor(torch.Size(self.out_shape)).uniform_(tau_ref[0], tau_ref[1]).to(device))
