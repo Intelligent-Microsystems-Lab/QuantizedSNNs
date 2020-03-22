@@ -205,13 +205,10 @@ class QSigmoid(torch.autograd.Function):
         
 
         if ctx.needs_input_grad[0]:
-            zero_map = (x > 50) ^ (x < -50)
+            #zero_map = (x > 50) ^ (x < -50)
             grad_input = (torch.exp(-x))/((1+torch.exp(-x))**2)
-            grad_input[zero_map] = 0.
+            #grad_input[zero_map] = 0.
 
-        #if torch.isnan(grad_input).sum() != 0:
-        #    grad_input[torch.isnan(grad_input)] = 0
-        #    import pdb; pdb.set_trace()
         # quantize error
         #grad_input = quantization.quant_err(grad_input)
 
@@ -288,17 +285,9 @@ class QSConv2dFunctional(torch.autograd.Function):
             w_quant = weights
             bias_quant = bias
         ctx.padding = padding
-        #ctx.pooling = pooling 
-        #ctx.size_pool = None
         ctx.quant_on = quant_on
-        #pool_indices = torch.ones(0)
 
         output = F.conv2d(input = input, weight = w_quant, bias = bias_quant, padding = ctx.padding)
-        
-        #if ctx.pooling is not None:
-        #    mpool = nn.MaxPool2d(kernel_size = ctx.pooling, stride = ctx.pooling, padding = (ctx.pooling-1)//2, return_indices=True)
-        #    ctx.size_pool = output.shape
-        #    output, pool_indices = mpool(output)
 
         ctx.save_for_backward(input, w_quant, bias_quant) #pool_indices
         return output
@@ -307,10 +296,7 @@ class QSConv2dFunctional(torch.autograd.Function):
     def backward(ctx, grad_output):
         input, w_quant, bias_quant = ctx.saved_tensors #pool_indices
         grad_input = grad_weight = grad_bias = None 
-        #unmpool = nn.MaxUnpool2d(ctx.pooling, stride = ctx.pooling, padding = (ctx.pooling-1)//2)
 
-        #if ctx.pooling is not None:
-        #    grad_output = unmpool(grad_output, pool_indices, output_size = torch.Size(ctx.size_pool))
         if ctx.quant_on:
             quant_error = quantization.quant_err(grad_output)
         else:
@@ -426,17 +412,14 @@ class LIFConv2dLayer(nn.Module):
                 if self.bias is not None:
                     self.bias.data = quantization.clip(self.bias.data, quantization.global_gb)
 
-
-        # taus/alpha should be randomized but for now... 
         self.P, self.R, self.Q = self.alpha * self.P + self.tau_mem * self.Q, 0.65 * self.R, self.beta * self.Q + self.tau_syn * input_t
-        #self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.gamma * self.R + self.S, self.beta * self.Q + input_t
 
         # quantize P, Q
         if self.quant_on:
             self.P, _ = quantization.quant_generic(self.P, quantization.global_pb)
             self.Q, _ = quantization.quant_generic(self.Q, quantization.global_qb)
 
-        self.U = QSConv2dFunctional.apply(self.P, self.weights, self.bias, self.scale, self.padding, self.quant_on) + self.R #self.pooling,
+        self.U = QSConv2dFunctional.apply(self.P, self.weights, self.bias, self.scale, self.padding, self.quant_on) + self.R 
 
         # quantize U
         if self.quant_on:
@@ -445,9 +428,10 @@ class LIFConv2dLayer(nn.Module):
         self.S = (self.U >= self.thr).float()
         self.R -= self.S * 1
 
-        #self.U_aux = QSigmoid.apply(self.U)
+
         if test_flag or train_flag:
-            self.U_aux = torch.sigmoid(self.U)
+            #self.U_aux = torch.sigmoid(self.U)
+            self.U_aux = QSigmoid.apply(self.U)
             self.U_aux = self.mpool(self.U_aux)
             rreadout = self.dropout_learning(self.sign_random_readout(self.U_aux.reshape([input_t.shape[0], np.prod(self.out_shape2)]) ))
 
