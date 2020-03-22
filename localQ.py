@@ -429,6 +429,7 @@ class LIFConv2dLayer(nn.Module):
             self.P, _ = quantization.quant_generic(self.P, quantization.global_pb)
             self.Q, _ = quantization.quant_generic(self.Q, quantization.global_qb)
 
+        import pdb; pdb.set_trace()
         self.U = QSConv2dFunctional.apply(self.P, self.weights, self.bias, self.scale, self.padding, self.quant_on) - self.R #self.pooling,
 
         # quantize U
