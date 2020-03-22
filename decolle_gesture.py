@@ -125,7 +125,6 @@ print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5}{6} {7} l1 {8:.3f} l2 {9:.3f} Inp 
 
 
 for e in range(epochs):
-    import pdb; pdb.set_trace()
     if ((e+1)%1000)==0:
         opt.param_groups[-1]['lr']/=5
 
