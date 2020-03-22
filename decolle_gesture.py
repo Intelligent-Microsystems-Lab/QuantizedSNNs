@@ -193,7 +193,7 @@ for e in range(epochs):
 
     for t in tqdm(range(int(T/ms))):
         train_flag = (t > int(burnin/ms))
-        
+
         spikes_t                            = prep_input(x_local[:,:,:,:,t], input_mode)
         spikes_t                            = downsample_l(spikes_t)
         spikes_t[spikes_t > 0]              = 1
@@ -220,7 +220,7 @@ for e in range(epochs):
         
     
     # test accuracy
-    if (e+1)%1 == 0:
+    if (e+1)%10 == 0:
         for x_local, y_local in sparse_data_generator_DVSGesture(x_test, y_test, batch_size = batch_size, nb_steps = T_test / ms, shuffle = False, device = device, test = True):
             rread_hist1_test = []
             rread_hist2_test = []

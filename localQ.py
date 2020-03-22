@@ -454,6 +454,8 @@ class LIFConv2dLayer(nn.Module):
             loss_gen = None
             rreadout = torch.tensor([[0]])
 
+        import pdb; pdb.set_trace()
+
         return self.S, loss_gen, rreadout.argmax(1)
 
 
