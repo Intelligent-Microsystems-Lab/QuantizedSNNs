@@ -181,6 +181,7 @@ for e in range(epochs):
 
     train_time = time.time()
 
+    import pdb; pdb.set_trace()
     diff_layers_acc['train1'].append(np.mean(batch_corr['train1']))
     diff_layers_acc['train2'].append(np.mean(batch_corr['train2']))
     diff_layers_acc['train3'].append(np.mean(batch_corr['train3']))
