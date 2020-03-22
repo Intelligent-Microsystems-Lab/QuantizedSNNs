@@ -371,7 +371,7 @@ class LIFConv2dLayer(nn.Module):
         self.out_shape = QSConv2dFunctional.apply(torch.zeros((1,)+self.inp_shape).to(device), self.weights, self.bias, self.scale, self.padding, self.quant_on).shape[1:]
         self.thr = thr
 
-        self.sign_random_readout = QLinearLayerSign(np.prod(self.out_shape2), output_neurons, self.quant_on).to(device)
+        self.sign_random_readout = QLinearLayerSign(input_features = np.prod(self.out_shape2), output_features = output_neurons, pass_through = False, quant_on = self.quant_on).to(device)
 
         if tau_syn.shape[0] == 2:
             self.tau_syn = torch.Tensor(torch.Size(self.inp_shape)).uniform_(tau_syn[0], tau_syn[1]).to(device)
