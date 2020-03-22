@@ -420,8 +420,9 @@ class LIFConv2dLayer(nn.Module):
                 if self.bias is not None:
                     self.bias.data = quantization.clip(self.bias.data, quantization.global_gb)
 
-        # R could be used for refrac... right now its doing nothing....
-        self.P, self.R, self.Q = 0.97 * self.P + self.Q, 0.65 * self.R + self.S, 0.95 * self.Q + input_t
+
+        # taus/alpha should be randomized but for now... 
+        self.P, self.R, self.Q = 0.95 * self.P + 20 * self.Q, 0.65 * self.R, 0.87 * self.Q + 7.5 * input_t
         #self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.gamma * self.R + self.S, self.beta * self.Q + input_t
 
         # quantize P, Q
@@ -429,13 +430,14 @@ class LIFConv2dLayer(nn.Module):
             self.P, _ = quantization.quant_generic(self.P, quantization.global_pb)
             self.Q, _ = quantization.quant_generic(self.Q, quantization.global_qb)
 
-        self.U = QSConv2dFunctional.apply(self.P, self.weights, self.bias, self.scale, self.padding, self.quant_on) - self.R #self.pooling,
+        self.U = QSConv2dFunctional.apply(self.P, self.weights, self.bias, self.scale, self.padding, self.quant_on) + self.R #self.pooling,
 
         # quantize U
         if self.quant_on:
             self.U, _ = quantization.quant_generic(self.U, quantization.global_ub)
 
         self.S = (self.U >= self.thr).float()
+        self.R -= self.S * 1
 
         #self.U_aux = QSigmoid.apply(self.U)
         if test_flag or train_flag:
@@ -445,7 +447,6 @@ class LIFConv2dLayer(nn.Module):
 
             if train_flag:
                 loss_gen = self.loss_fn(rreadout, y_local) + self.l1 * 200e-1 * F.relu((self.U+.01)).mean() + self.l2 *1e-1* F.relu(.1-self.U_aux.mean())
-                import pdb; pdb.set_trace()
             else:
                 loss_gen = None
         else:
