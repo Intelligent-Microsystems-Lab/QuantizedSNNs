@@ -232,7 +232,7 @@ class QLinearFunctional(torch.autograd.Function):
     @staticmethod
     def backward(ctx, grad_output):
         input, weight, weight_fa, bias = ctx.saved_tensors
-        grad_input = grad_weight = grad_bias = None
+        grad_input = None
 
         if ctx.quant_on:
             quant_error = quantization.quant_err(grad_output)
@@ -240,10 +240,7 @@ class QLinearFunctional(torch.autograd.Function):
             quant_error = grad_output
 
         if ctx.needs_input_grad[0]:
-            import pdb; pdb.set_trace()
-            grad_input = torch.einsum('ab,cb->ac' ,quant_error, weight_fa)
-            grad_input = quant_error.mm(weight_fa)
-
+            grad_input = torch.einsum('ab,bc->ac', quant_error, weight_fa)
 
         return grad_input, None, None, None, None
 
