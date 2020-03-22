@@ -328,15 +328,15 @@ class QSConv2dFunctional(torch.autograd.Function):
         # computed quantized bias
         if bias_quant is not None and ctx.needs_input_grad[2]:
             if ctx.quant_on:
-                grad_bias = quantization.quant_grad(torch.einsum("abcd->b",(quant_error))).float()
+                grad_bias = quantization.quant_grad(quant_error.sum((0,2,3)).squeeze(0)).float()
             else:
-                grad_bias = torch.einsum("abcd->b",(quant_error))
+                grad_bias = quant_error.sum((0,2,3)).squeeze(0)
 
         return grad_input, grad_weight, grad_bias, None, None, None, None
 
 
 class LIFConv2dLayer(nn.Module):
-    def __init__(self, inp_shape, kernel_size, out_channels, tau_syn, tau_mem, tau_ref, delta_t, pooling = 1, padding = 0, bias=False, thr = 1, device=torch.device("cpu"), dtype = torch.float, dropout_p = .5, output_neurons = 10, act = None, loss_fn = None, l1 = 0, l2 = 0, quant_on = False):
+    def __init__(self, inp_shape, kernel_size, out_channels, tau_syn, tau_mem, tau_ref, delta_t, pooling = 1, padding = 0, bias = False, thr = 1, device=torch.device("cpu"), dtype = torch.float, dropout_p = .5, output_neurons = 10, act = None, loss_fn = None, l1 = 0, l2 = 0, quant_on = False):
         super(LIFConv2dLayer, self).__init__()   
         self.device = device
         self.quant_on = quant_on
