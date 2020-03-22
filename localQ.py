@@ -408,7 +408,7 @@ class LIFConv2dLayer(nn.Module):
     def state_init(self, batch_size):
         self.P = torch.zeros((batch_size,) + self.inp_shape).detach().to(self.device)
         self.Q = torch.zeros((batch_size,) + self.inp_shape).detach().to(self.device)
-        self.R = torch.zeros((batch_size,) + self.out_shape).detach().to(self.device)
+        self.R = torch.zeros((batch_size,) + self.out_shape2).detach().to(self.device)
         self.S = torch.zeros((batch_size,) + self.out_shape).detach().to(self.device)
         self.U = torch.zeros((batch_size,) + self.out_shape2).detach().to(self.device)
 
@@ -429,7 +429,6 @@ class LIFConv2dLayer(nn.Module):
             self.P, _ = quantization.quant_generic(self.P, quantization.global_pb)
             self.Q, _ = quantization.quant_generic(self.Q, quantization.global_qb)
 
-        import pdb; pdb.set_trace()
         self.U = QSConv2dFunctional.apply(self.P, self.weights, self.bias, self.scale, self.padding, self.quant_on) - self.R #self.pooling,
 
         # quantize U
