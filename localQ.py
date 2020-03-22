@@ -13,8 +13,10 @@ import quantization
 lc_ampl = .5
 
 
-def acc_comp(rread_hist_train, y_local):
+def acc_comp(rread_hist_train, y_local, bools = False):
     rhts = torch.stack(rread_hist_train, dim = 0)
+    if bools:
+        return (rhts.mode(0)[0] == y_local).float()
     return (rhts.mode(0)[0] == y_local).float().mean()
 
 def clee_spikes(T, rates):
@@ -234,7 +236,6 @@ class QLinearFunctional(torch.autograd.Function):
         grad_input = None
 
         if ctx.quant_on:
-            import pdb; pdb.set_trace()
             quant_error = quantization.quant_err(grad_output)
         else:
             quant_error = grad_output
