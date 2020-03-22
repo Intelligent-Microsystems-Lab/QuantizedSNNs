@@ -221,9 +221,10 @@ class QLinearFunctional(torch.autograd.Function):
     def forward(ctx, input, weight, weight_fa, bias=None, quant_on = True):
         ctx.quant_on = quant_on
 
-        import pdb; pdb.set_trace()
         ctx.save_for_backward(input, weight, weight_fa, bias)
-        output = input.mm(weight.t())
+
+        output = torch.einsum('ab,cb->ac', input, weight)
+        #output = input.mm(weight.t())
         if bias is not None:
             output += bias.unsqueeze(0).expand_as(output)
         return output
@@ -239,13 +240,10 @@ class QLinearFunctional(torch.autograd.Function):
             quant_error = grad_output
 
         if ctx.needs_input_grad[0]:
+            import pdb; pdb.set_trace()
+            grad_input = torch.einsum('ab,cb->ac' ,quant_error, weight_fa)
             grad_input = quant_error.mm(weight_fa)
 
-        # those weights should not be updated
-        if ctx.needs_input_grad[1]:
-            grad_weight = torch.zeros_like(weight_fa)
-        if bias is not None and ctx.needs_input_grad[2]:
-            grad_bias = torch.zeros_like(bias)
 
         return grad_input, None, None, None, None
 
@@ -316,7 +314,6 @@ class QSConv2dFunctional(torch.autograd.Function):
 
         if ctx.pooling is not None:
             grad_output = unmpool(grad_output, pool_indices, output_size = torch.Size(ctx.size_pool))
-
         if ctx.quant_on:
             quant_error = quantization.quant_err(grad_output)
         else:
@@ -342,7 +339,7 @@ class QSConv2dFunctional(torch.autograd.Function):
 
 
 class LIFConv2dLayer(nn.Module):
-    def __init__(self, inp_shape, kernel_size, out_channels, tau_syn, tau_mem, tau_ref, delta_t, pooling = 1, padding = 0, bias=True, thr = 1, device=torch.device("cpu"), dtype = torch.float, dropout_p = .5, output_neurons = 10, act = None, loss_fn = None, l1 = 0, l2 = 0, quant_on = False):
+    def __init__(self, inp_shape, kernel_size, out_channels, tau_syn, tau_mem, tau_ref, delta_t, pooling = 1, padding = 0, bias=False, thr = 1, device=torch.device("cpu"), dtype = torch.float, dropout_p = .5, output_neurons = 10, act = None, loss_fn = None, l1 = 0, l2 = 0, quant_on = False):
         super(LIFConv2dLayer, self).__init__()   
         self.device = device
         self.quant_on = quant_on
