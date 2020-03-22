@@ -51,8 +51,8 @@ with open('data/train_dvs_gesture.pickle', 'rb') as f:
 x_train = data[0]
 y_train = np.array(data[1], dtype = int) - 1
 
-x_train = x_train[:72]
-y_train = y_train[:72]
+x_train = x_train[:144]
+y_train = y_train[:144]
 
 with open('data/test_dvs_gesture.pickle', 'rb') as f:
     data = pickle.load(f)
@@ -182,9 +182,9 @@ for e in range(epochs):
     train_time = time.time()
 
     import pdb; pdb.set_trace()
-    diff_layers_acc['train1'].append(np.mean(batch_corr['train1']))
-    diff_layers_acc['train2'].append(np.mean(batch_corr['train2']))
-    diff_layers_acc['train3'].append(np.mean(batch_corr['train3']))
+    diff_layers_acc['train1'].append(torch.stack(batch_corr['train1']).mean())
+    diff_layers_acc['train2'].append(torch.stack(batch_corr['train2']).mean())
+    diff_layers_acc['train3'].append(torch.stack(batch_corr['train3']).mean())
     diff_layers_acc['loss'].append(np.mean(loss_hist)/4)
         
     
@@ -224,9 +224,9 @@ for e in range(epochs):
 
     inf_time = time.time()
 
-    diff_layers_acc['test1'].append(np.mean(batch_corr['test1']))
-    diff_layers_acc['test2'].append(np.mean(batch_corr['test2']))
-    diff_layers_acc['test3'].append(np.mean(batch_corr['test3']))
+    diff_layers_acc['test1'].append(torch.stack(batch_corr['test1']).mean())
+    diff_layers_acc['test2'].append(torch.stack(batch_corr['test2']).mean())
+    diff_layers_acc['test3'].append(torch.stack(batch_corr['test3']).mean())
 
     print("{0} \t {1:.4f} \t {2:.4f} \t  {3:.4f} \t {4:.4f} \t {5:.4f} \t {6:.4f} \t {7:.4f} \t {8:.4f} \t {9:.4f}".format(e+1, diff_layers_acc['loss'][-1], diff_layers_acc['train1'][-1], diff_layers_acc['train2'][-1], diff_layers_acc['train3'][-1], diff_layers_acc['test1'][-1], diff_layers_acc['test2'][-1], diff_layers_acc['test3'][-1], train_time - start_time, inf_time - train_time))
 
