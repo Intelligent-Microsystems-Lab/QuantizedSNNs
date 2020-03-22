@@ -181,7 +181,6 @@ for e in range(epochs):
 
     train_time = time.time()
 
-    import pdb; pdb.set_trace()
     diff_layers_acc['train1'].append(torch.stack(batch_corr['train1']).mean())
     diff_layers_acc['train2'].append(torch.stack(batch_corr['train2']).mean())
     diff_layers_acc['train3'].append(torch.stack(batch_corr['train3']).mean())
