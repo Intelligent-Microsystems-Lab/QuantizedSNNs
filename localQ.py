@@ -385,14 +385,20 @@ class LIFConv2dLayer(nn.Module):
         self.sign_random_readout = QLinearLayerSign(np.prod(self.out_shape2), output_neurons, self.quant_on).to(device)
 
         if tau_syn.shape[0] == 2:
-            self.beta = torch.exp( -delta_t / torch.Tensor(torch.Size(self.inp_shape)).uniform_(tau_syn[0], tau_syn[1]).to(device))
+            self.tau_syn = torch.Tensor(torch.Size(self.inp_shape)).uniform_(tau_syn[0], tau_syn[1]).to(device)
+            self.beta    = 1. - 1e-3 / self.tau_syn
+            self.tau_syn = 1. / (1. - self.beta)
         else:
             self.beta = torch.Tensor([torch.exp( - delta_t / tau_syn)]).to(device)
+
+
         if tau_mem.shape[0] == 2:
-            #2, 32, 32
-            self.alpha = torch.exp( -delta_t / torch.Tensor(torch.Size(self.inp_shape)).uniform_(tau_mem[0], tau_mem[1]).to(device))
+            self.tau_mem = torch.Tensor(torch.Size(self.inp_shape)).uniform_(tau_mem[0], tau_mem[1]).to(device)
+            self.alpha   = 1. - 1e-3 / self.tau_mem
+            self.tau_mem = 1. / (1. - self.alpha)
         else:
             self.alpha = torch.Tensor([torch.exp( - delta_t / tau_mem)]).to(device)
+
 
         if tau_ref.shape[0] == 2:
             self.gamma = torch.exp( -delta_t / torch.Tensor(torch.Size(self.out_shape)).uniform_(tau_ref[0], tau_ref[1]).to(device))
@@ -422,6 +428,7 @@ class LIFConv2dLayer(nn.Module):
 
 
         # taus/alpha should be randomized but for now... 
+        import pdb; pdb.set_trace()
         self.P, self.R, self.Q = 0.95 * self.P + 20 * self.Q, 0.65 * self.R, 0.87 * self.Q + 7.5 * input_t
         #self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.gamma * self.R + self.S, self.beta * self.Q + input_t
 
