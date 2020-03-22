@@ -379,7 +379,7 @@ class LIFConv2dLayer(nn.Module):
 
         self.mpool = nn.MaxPool2d(kernel_size = self.pooling, stride = self.pooling, padding = (self.pooling-1)//2, return_indices=False)
         self.out_shape = self.mpool(QSConv2dFunctional.apply(torch.zeros((1,)+self.inp_shape).to(device), self.weights, self.bias, self.scale, self.padding, self.quant_on)).shape[1:] #self.pooling, 
-        self.out_shape2 = QSConv2dFunctional.apply(torch.zeros((1,)+self.inp_shape).to(device), self.weights, self.bias, self.scale, self.padding, self.quant_on).shape[1:]
+        #self.out_shape2 = QSConv2dFunctional.apply(torch.zeros((1,)+self.inp_shape).to(device), self.weights, self.bias, self.scale, self.padding, self.quant_on).shape[1:]
         self.thr = thr
 
         self.sign_random_readout = QLinearLayerSign(np.prod(self.out_shape), output_neurons, self.quant_on).to(device)
@@ -408,9 +408,9 @@ class LIFConv2dLayer(nn.Module):
     def state_init(self, batch_size):
         self.P = torch.zeros((batch_size,) + self.inp_shape).detach().to(self.device)
         self.Q = torch.zeros((batch_size,) + self.inp_shape).detach().to(self.device)
-        self.R = torch.zeros((batch_size,) + self.out_shape2).detach().to(self.device)
+        self.R = torch.zeros((batch_size,) + self.out_shape).detach().to(self.device)
         self.S = torch.zeros((batch_size,) + self.out_shape).detach().to(self.device)
-        self.U = torch.zeros((batch_size,) + self.out_shape2).detach().to(self.device)
+        self.U = torch.zeros((batch_size,) + self.out_shape).detach().to(self.device)
 
     
     def forward(self, input_t, y_local, train_flag = False, test_flag = False):
@@ -436,7 +436,6 @@ class LIFConv2dLayer(nn.Module):
             self.U, _ = quantization.quant_generic(self.U, quantization.global_ub)
 
         self.S = (self.U >= self.thr).float()
-        self.S = self.mpool(self.S)
 
         #self.U_aux = QSigmoid.apply(self.U)
         if test_flag or train_flag:
@@ -454,6 +453,6 @@ class LIFConv2dLayer(nn.Module):
             rreadout = torch.tensor([[0]])
 
 
-        return self.S, loss_gen, rreadout.argmax(1)
+        return self.mpool(self.S), loss_gen, rreadout.argmax(1)
 
 
