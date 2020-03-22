@@ -192,16 +192,17 @@ for e in range(epochs):
     layer3.state_init(x_local.shape[0])
 
     for t in tqdm(range(int(T/ms))):
+        train_flag = (t > int(burnin/ms))
+        
         spikes_t                            = prep_input(x_local[:,:,:,:,t], input_mode)
         spikes_t                            = downsample_l(spikes_t)
         spikes_t[spikes_t > 0]              = 1
         spikes_t[spikes_t < 0]              = -1
 
-        out_spikes1, temp_loss1, temp_corr1 = layer1.forward(spikes_t, y_onehot)
-        out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_onehot)
-        out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_onehot)
-        if t > int(burnin/ms):
-
+        out_spikes1, temp_loss1, temp_corr1 = layer1.forward(spikes_t, y_onehot, train_flag = train_flag)
+        out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_onehot, train_flag = train_flag)
+        out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_onehot, train_flag = train_flag)
+        if train_flag:
             loss_gen = temp_loss1 + temp_loss2 + temp_loss3 #+ temp_loss4
 
             loss_gen.backward()
@@ -225,8 +226,6 @@ for e in range(epochs):
             rread_hist2_test = []
             rread_hist3_test = []
 
-            import pdb; pdb.set_trace()
-
             y_onehot = torch.Tensor(len(y_local), output_neurons).to(device)
             y_onehot.zero_()
             y_onehot.scatter_(1, y_local.reshape([y_local.shape[0],1]), 1)
@@ -236,16 +235,17 @@ for e in range(epochs):
             layer3.state_init(x_local.shape[0])
 
             for t in tqdm(range(int(T_test/ms))):
+                test_flag = (t > int(burnin/ms))
+
                 spikes_t                            = prep_input(x_local[:,:,:,:,t], input_mode)
                 spikes_t                            = downsample_l(spikes_t)
                 spikes_t[spikes_t > 0]              = 1
                 spikes_t[spikes_t < 0]              = -1
-                out_spikes1, temp_loss1, temp_corr1 = layer1.forward(spikes_t, y_onehot)
-                out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_onehot)
-                out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_onehot)
+                out_spikes1, temp_loss1, temp_corr1 = layer1.forward(spikes_t, y_onehot, test_flag = test_flag)
+                out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_onehot, test_flag = test_flag)
+                out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_onehot, test_flag = test_flag)
 
-                import pdb; pdb.set_trace()
-                if t > int(burnin/ms):
+                if test_flag:
                     rread_hist1_test.append(temp_corr1)
                     rread_hist2_test.append(temp_corr2)
                     rread_hist3_test.append(temp_corr3)

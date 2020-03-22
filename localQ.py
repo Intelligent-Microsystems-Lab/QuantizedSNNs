@@ -417,7 +417,7 @@ class LIFConv2dLayer(nn.Module):
         self.U = torch.zeros((batch_size,) + self.out_shape).detach().to(self.device)
 
     
-    def forward(self, input_t, y_local):
+    def forward(self, input_t, y_local, train_flag = False, test_flag = False):
         if self.quant_on:
             with torch.no_grad():
                 self.weights.data = quantization.clip(self.weights.data, quantization.global_gb)
@@ -442,9 +442,17 @@ class LIFConv2dLayer(nn.Module):
         self.S = (self.U >= self.thr).float()
 
         #self.U_aux = QSigmoid.apply(self.U)
-        self.U_aux = torch.sigmoid(self.U)
-        rreadout = self.dropout_learning(self.sign_random_readout(self.U_aux.reshape([input_t.shape[0], np.prod(self.out_shape)]) ))
-        loss_gen = self.loss_fn(rreadout, y_local) + self.l1 * 200e-1 * F.relu((self.U+.01)).mean() + self.l2 *1e-1* F.relu(.1-self.U_aux.mean())
+        if test_flag or train_flag:
+            self.U_aux = torch.sigmoid(self.U)
+            rreadout = self.dropout_learning(self.sign_random_readout(self.U_aux.reshape([input_t.shape[0], np.prod(self.out_shape)]) ))
+
+            if train_flag:
+                loss_gen = self.loss_fn(rreadout, y_local) + self.l1 * 200e-1 * F.relu((self.U+.01)).mean() + self.l2 *1e-1* F.relu(.1-self.U_aux.mean())
+            else:
+                loss_gen = None
+        else:
+            loss_gen = None
+            rreadout = torch.tensor([[0]])
 
         return self.S, loss_gen, rreadout.argmax(1)
 
