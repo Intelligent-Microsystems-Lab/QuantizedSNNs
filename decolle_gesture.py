@@ -125,7 +125,7 @@ diff_layers_acc = {'train1': [], 'test1': [],'train2': [], 'test2': [],'train3':
 print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5}{6} {7} l1 {8:.3f} l2 {9:.3f} Inp {10} LR {11} Drop {12}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb, quantization.global_sb, quant_on, l1, l2, input_mode, quantization.global_lr, dropout_p))
 
 
-print("Epoch \t Loss \t Train1 \t Train2 \t Train3 \t Test1 \t Test2 \t Test3 \t TrainT \t TestT")
+print("Epoch Loss   Train1 Train2 Train3 Test1  Test2  Test3  TrainT  TestT")
 
 for e in range(epochs):
     #if ((e+1)%1000)==0:
@@ -227,7 +227,7 @@ for e in range(epochs):
     diff_layers_acc['test2'].append(torch.cat(batch_corr['test2']).mean())
     diff_layers_acc['test3'].append(torch.cat(batch_corr['test3']).mean())
 
-    print("{0} \t {1:.4f} \t {2:.4f} \t  {3:.4f} \t {4:.4f} \t {5:.4f} \t {6:.4f} \t {7:.4f} \t {8:.4f} \t {9:.4f}".format(e+1, diff_layers_acc['loss'][-1], diff_layers_acc['train1'][-1], diff_layers_acc['train2'][-1], diff_layers_acc['train3'][-1], diff_layers_acc['test1'][-1], diff_layers_acc['test2'][-1], diff_layers_acc['test3'][-1], train_time - start_time, inf_time - train_time))
+    print("{0:02d}    {1:.4f} {2:.4f} {3:.4f} {4:.4f} {5:.4f} {6:.4f} {7:.4f} {8:.4f} {9:.4f}".format(e+1, diff_layers_acc['loss'][-1], diff_layers_acc['train1'][-1], diff_layers_acc['train2'][-1], diff_layers_acc['train3'][-1], diff_layers_acc['test1'][-1], diff_layers_acc['test2'][-1], diff_layers_acc['test3'][-1], train_time - start_time, inf_time - train_time))
 
     
 
