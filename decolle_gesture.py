@@ -51,8 +51,8 @@ with open('data/train_dvs_gesture.pickle', 'rb') as f:
 x_train = data[0]
 y_train = np.array(data[1], dtype = int) - 1
 
-x_train = x_train[:144]
-y_train = y_train[:144]
+# x_train = x_train[:144]
+# y_train = y_train[:144]
 
 with open('data/test_dvs_gesture.pickle', 'rb') as f:
     data = pickle.load(f)
@@ -65,13 +65,13 @@ T_test = 1800*ms
 
 
 # set quant level
-quantization.global_wb = 2
-quantization.global_ub = 2
-quantization.global_qb = 2
-quantization.global_pb = 2
-quantization.global_gb = 2
-quantization.global_eb = 2
-quantization.global_rb = 2
+quantization.global_wb = 32
+quantization.global_ub = 32
+quantization.global_qb = 32
+quantization.global_pb = 32
+quantization.global_gb = 32
+quantization.global_eb = 32
+quantization.global_rb = 32
 quantization.global_lr = 1#8
 quantization.global_sb = 1
 quantization.global_beta = 1.5#quantization.step_d(quantization.global_wb)-.5 #1.5 #
@@ -125,7 +125,7 @@ diff_layers_acc = {'train1': [], 'test1': [],'train2': [], 'test2': [],'train3':
 print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5}{6} {7} l1 {8:.3f} l2 {9:.3f} Inp {10} LR {11} Drop {12}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb, quantization.global_sb, quant_on, l1, l2, input_mode, quantization.global_lr, dropout_p))
 
 
-print("Epoch Loss   Train1 Train2 Train3 Test1  Test2  Test3  TrainT  TestT")
+print("Epoch Loss   Train1 Train2 Train3 Test1  Test2  Test3  TrainT   TestT")
 
 for e in range(epochs):
     #if ((e+1)%1000)==0:
