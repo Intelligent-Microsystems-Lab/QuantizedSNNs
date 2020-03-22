@@ -430,8 +430,8 @@ class LIFConv2dLayer(nn.Module):
 
 
         if test_flag or train_flag:
-            #self.U_aux = torch.sigmoid(self.U)
-            self.U_aux = QSigmoid.apply(self.U)
+            self.U_aux = torch.sigmoid(self.U)
+            #self.U_aux = QSigmoid.apply(self.U)
             self.U_aux = self.mpool(self.U_aux)
             rreadout = self.dropout_learning(self.sign_random_readout(self.U_aux.reshape([input_t.shape[0], np.prod(self.out_shape2)]) ))
 
