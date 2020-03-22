@@ -247,7 +247,7 @@ class QLinearFunctional(torch.autograd.Function):
 class QLinearLayerSign(nn.Module):
     '''from https://github.com/L0SG/feedback-alignment-pytorch/'''
     # we dont have a bias 
-    def __init__(self, input_features, output_features, pass_through = False, quant_on = True):
+    def __init__(self, input_features, output_features, pass_through = False, quant_on = True, bias = True):
         super(QLinearLayerSign, self).__init__()
         self.input_features = input_features
         self.output_features = output_features
@@ -257,6 +257,12 @@ class QLinearLayerSign(nn.Module):
         self.weights = nn.Parameter(torch.Tensor(output_features, input_features), requires_grad=False)
         self.stdv = lc_ampl/np.sqrt(torch.tensor(self.weights.shape).prod().item())
         torch.nn.init.uniform_(self.weights, a = -self.stdv, b = self.stdv)
+
+        if bias:
+            self.bias = nn.Parameter(torch.Tensor(output_features), requires_grad=False)
+            torch.nn.init.uniform_(self.bias, a = -self.stdv, b = self.stdv)
+        else:
+            self.bias = None
 
         self.weight_fa = self.weights
         #self.weight_fa = nn.Parameter(torch.Tensor(output_features, input_features), requires_grad=False)
@@ -274,7 +280,7 @@ class QLinearLayerSign(nn.Module):
         #     self.weights.data = torch.ceil(torch.abs(self.weights.data) * scale ) / scale * s_sign
         
     def forward(self, input):
-        return QLinearFunctional.apply(input, self.weights, self.weight_fa, None, self.quant_on)
+        return QLinearFunctional.apply(input, self.weights, self.weight_fa, self.bias, self.quant_on)
 
 
 
