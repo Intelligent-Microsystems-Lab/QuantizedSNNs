@@ -234,6 +234,7 @@ class QLinearFunctional(torch.autograd.Function):
         grad_input = None
 
         if ctx.quant_on:
+            import pdb; pdb.set_trace()
             quant_error = quantization.quant_err(grad_output)
         else:
             quant_error = grad_output
@@ -279,7 +280,7 @@ class QLinearLayerSign(nn.Module):
 
 class QSConv2dFunctional(torch.autograd.Function):
     @staticmethod
-    def forward(ctx, input, weights, bias, scale, padding = 0, quant_on = True): #pooling = None,
+    def forward(ctx, input, weights, bias, scale, padding = 0, quant_on = True):
         if quant_on:
             w_quant = quantization.quant_w(weights, scale)
             bias_quant = quantization.quant_w(bias, scale)
@@ -291,12 +292,12 @@ class QSConv2dFunctional(torch.autograd.Function):
 
         output = F.conv2d(input = input, weight = w_quant, bias = bias_quant, padding = ctx.padding)
 
-        ctx.save_for_backward(input, w_quant, bias_quant) #pool_indices
+        ctx.save_for_backward(input, w_quant, bias_quant) 
         return output
 
     @staticmethod
     def backward(ctx, grad_output):
-        input, w_quant, bias_quant = ctx.saved_tensors #pool_indices
+        input, w_quant, bias_quant = ctx.saved_tensors 
         grad_input = grad_weight = grad_bias = None 
 
         if ctx.quant_on:
