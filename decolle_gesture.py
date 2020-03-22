@@ -122,7 +122,7 @@ diff_layers_acc = {'train1': [], 'test1': [],'train2': [], 'test2': [],'train3':
 print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5}{6} {7} l1 {8:.3f} l2 {9:.3f} Inp {10} LR {11} Drop {12}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb, quantization.global_sb, quant_on, l1, l2, input_mode, quantization.global_lr, dropout_p))
 
 
-
+print("Epoch \t Loss \t Train1 \t Train2 \t Train3 \t Test1 \t Test2 \t Test3 \t TrainT \t TestT")
 
 for e in range(epochs):
     #if ((e+1)%1000)==0:
@@ -178,14 +178,14 @@ for e in range(epochs):
 
     train_time = time.time()
 
-    diff_layers_acc['train1'].append(batch_corr['train1'].mean())
-    diff_layers_acc['train2'].append(batch_corr['train2'].mean())
-    diff_layers_acc['train3'].append(batch_corr['train3'].mean())
+    diff_layers_acc['train1'].append(np.mean(batch_corr['train1']))
+    diff_layers_acc['train2'].append(np.mean(batch_corr['train2']))
+    diff_layers_acc['train3'].append(np.mean(batch_corr['train3']))
     diff_layers_acc['loss'].append(np.mean(loss_hist)/4)
         
     
     # test accuracy
-    for x_local, y_local in sparse_data_generator_DVSGesture(x_test, y_test, batch_size = batch_size, nb_steps = T_test / ms, shuffle = False, device = device, test = True):
+    for x_local, y_local in sparse_data_generator_DVSGesture(x_test, y_test, batch_size = batch_size, nb_steps = T_test / ms, shuffle = True, device = device, test = True):
         rread_hist1_test = []
         rread_hist2_test = []
         rread_hist3_test = []
@@ -218,11 +218,13 @@ for e in range(epochs):
         batch_corr['test2'].append(acc_comp(rread_hist2_train, y_local, True))
         batch_corr['test3'].append(acc_comp(rread_hist3_train, y_local, True))
 
-    diff_layers_acc['test1'].append(batch_corr['test1'].mean())
-    diff_layers_acc['test2'].append(batch_corr['test2'].mean())
-    diff_layers_acc['test3'].append(batch_corr['test3'].mean())
+    inf_time = time.time()
 
-    print("Epoch {0} | {1:.4f} {2:.4f} {3:.4f} {4:.4f} {5:.4f} {6:.4f} {7:.4f}".format(e+1, diff_layers_acc['loss'][-1], diff_layers_acc['train1'][-1], diff_layers_acc['train2'][-1], diff_layers_acc['train3'][-1], diff_layers_acc['test1'][-1], diff_layers_acc['test2'][-1], diff_layers_acc['test3'][-1]))
+    diff_layers_acc['test1'].append(np.mean(batch_corr['test1']))
+    diff_layers_acc['test2'].append(np.mean(batch_corr['test2']))
+    diff_layers_acc['test3'].append(np.mean(batch_corr['test3']))
+
+    print("{0} \t {1:.4f} \t {2:.4f} \t  {3:.4f} \t {4:.4f} \t {5:.4f} \t {6:.4f} \t {7:.4f} \t {8:.4f} \t {9:.4f}".format(e+1, diff_layers_acc['loss'][-1], diff_layers_acc['train1'][-1], diff_layers_acc['train2'][-1], diff_layers_acc['train3'][-1], diff_layers_acc['test1'][-1], diff_layers_acc['test2'][-1], diff_layers_acc['test3'][-1], train_time - start_time, inf_time - train_time))
 
     
 
