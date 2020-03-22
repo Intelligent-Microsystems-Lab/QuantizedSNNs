@@ -120,7 +120,7 @@ else:
     opt = torch.optim.Adamax(all_parameters, lr=1.0e-9, betas=[0., .95])
 
 
-diff_layers_acc = {'train1': [], 'test1': [],'train2': [], 'test2': [],'train3': [], 'test3': []}
+diff_layers_acc = {'train1': [], 'test1': [],'train2': [], 'test2': [],'train3': [], 'test3': [], 'loss':[]}
 
 print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5}{6} {7} l1 {8:.3f} l2 {9:.3f} Inp {10} LR {11} Drop {12}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb, quantization.global_sb, quant_on, l1, l2, input_mode, quantization.global_lr, dropout_p))
 
