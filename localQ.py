@@ -436,13 +436,12 @@ class LIFConv2dLayer(nn.Module):
             self.U, _ = quantization.quant_generic(self.U, quantization.global_ub)
 
         self.S = (self.U >= self.thr).float()
-        import pdb; pdb.set_trace()
-        self.S = mpool(self.S)
+        self.S = self.mpool(self.S)
 
         #self.U_aux = QSigmoid.apply(self.U)
         if test_flag or train_flag:
             self.U_aux = torch.sigmoid(self.U)
-            self.U_aux = mpool(self.U_aux)
+            self.U_aux = self.mpool(self.U_aux)
             rreadout = self.dropout_learning(self.sign_random_readout(self.U_aux.reshape([input_t.shape[0], np.prod(self.out_shape)]) ))
 
             if train_flag:
