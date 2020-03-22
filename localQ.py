@@ -280,7 +280,7 @@ class QLinearLayerSign(nn.Module):
 
 class QSConv2dFunctional(torch.autograd.Function):
     @staticmethod
-    def forward(ctx, input, weights, bias, scale, padding = 0, pooling = None, quant_on = True):
+    def forward(ctx, input, weights, bias, scale, padding = 0, quant_on = True): #pooling = None,
         if quant_on:
             w_quant = quantization.quant_w(weights, scale)
             bias_quant = quantization.quant_w(bias, scale)
@@ -288,29 +288,29 @@ class QSConv2dFunctional(torch.autograd.Function):
             w_quant = weights
             bias_quant = bias
         ctx.padding = padding
-        ctx.pooling = pooling 
-        ctx.size_pool = None
+        #ctx.pooling = pooling 
+        #ctx.size_pool = None
         ctx.quant_on = quant_on
-        pool_indices = torch.ones(0)
+        #pool_indices = torch.ones(0)
 
         output = F.conv2d(input = input, weight = w_quant, bias = bias_quant, padding = ctx.padding)
         
-        if ctx.pooling is not None:
-            mpool = nn.MaxPool2d(kernel_size = ctx.pooling, stride = ctx.pooling, padding = (ctx.pooling-1)//2, return_indices=True)
-            ctx.size_pool = output.shape
-            output, pool_indices = mpool(output)
+        #if ctx.pooling is not None:
+        #    mpool = nn.MaxPool2d(kernel_size = ctx.pooling, stride = ctx.pooling, padding = (ctx.pooling-1)//2, return_indices=True)
+        #    ctx.size_pool = output.shape
+        #    output, pool_indices = mpool(output)
 
-        ctx.save_for_backward(input, w_quant, bias_quant, pool_indices)
+        ctx.save_for_backward(input, w_quant, bias_quant) #pool_indices
         return output
 
     @staticmethod
     def backward(ctx, grad_output):
-        input, w_quant, bias_quant, pool_indices = ctx.saved_tensors
+        input, w_quant, bias_quant = ctx.saved_tensors #pool_indices
         grad_input = grad_weight = grad_bias = None 
-        unmpool = nn.MaxUnpool2d(ctx.pooling, stride = ctx.pooling, padding = (ctx.pooling-1)//2)
+        #unmpool = nn.MaxUnpool2d(ctx.pooling, stride = ctx.pooling, padding = (ctx.pooling-1)//2)
 
-        if ctx.pooling is not None:
-            grad_output = unmpool(grad_output, pool_indices, output_size = torch.Size(ctx.size_pool))
+        #if ctx.pooling is not None:
+        #    grad_output = unmpool(grad_output, pool_indices, output_size = torch.Size(ctx.size_pool))
         if ctx.quant_on:
             quant_error = quantization.quant_err(grad_output)
         else:
@@ -368,7 +368,6 @@ class LIFConv2dLayer(nn.Module):
         else:
             torch.nn.init.uniform_(self.weights, a = -self.stdv*1e-2, b = self.stdv*1e-2)
 
-
         if bias:
             self.bias = nn.Parameter(torch.empty(self.out_channels, device=device, dtype=dtype, requires_grad=True))
             if self.quant_on:
@@ -382,6 +381,8 @@ class LIFConv2dLayer(nn.Module):
         self.thr = thr
 
         self.sign_random_readout = QLinearLayerSign(np.prod(self.out_shape), output_neurons, self.quant_on).to(device)
+
+        self.mpool = nn.MaxPool2d(kernel_size = self.pooling, stride = self.pooling, padding = (self.pooling-1)//2, return_indices=False)
 
         if tau_syn.shape[0] == 2:
             self.beta = torch.exp( -delta_t / torch.Tensor(torch.Size(self.inp_shape)).uniform_(tau_syn[0], tau_syn[1]).to(device))
@@ -428,17 +429,20 @@ class LIFConv2dLayer(nn.Module):
             self.P, _ = quantization.quant_generic(self.P, quantization.global_pb)
             self.Q, _ = quantization.quant_generic(self.Q, quantization.global_qb)
 
-        self.U = QSConv2dFunctional.apply(self.P, self.weights, self.bias, self.scale, self.padding, self.pooling, self.quant_on) - self.R
+        self.U = QSConv2dFunctional.apply(self.P, self.weights, self.bias, self.scale, self.padding, self.quant_on) - self.R #self.pooling,
 
         # quantize U
         if self.quant_on:
             self.U, _ = quantization.quant_generic(self.U, quantization.global_ub)
 
         self.S = (self.U >= self.thr).float()
+        import pdb; pdb.set_trace()
+        self.S = mpool(self.S)
 
         #self.U_aux = QSigmoid.apply(self.U)
         if test_flag or train_flag:
             self.U_aux = torch.sigmoid(self.U)
+            self.U_aux = mpool(self.U_aux)
             rreadout = self.dropout_learning(self.sign_random_readout(self.U_aux.reshape([input_t.shape[0], np.prod(self.out_shape)]) ))
 
             if train_flag:
