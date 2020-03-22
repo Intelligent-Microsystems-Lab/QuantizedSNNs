@@ -125,8 +125,9 @@ print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5}{6} {7} l1 {8:.3f} l2 {9:.3f} Inp 
 
 
 for e in range(epochs):
-    #if (e%20 == 0) and (e != 0) and (quantization.global_lr > 1):
-    #    quantization.global_lr /= 2
+    import pdb; pdb.set_trace()
+    if ((e+1)%1000)==0:
+        opt.param_groups[-1]['lr']/=5
 
     rread_hist1_train = [] 
     rread_hist2_train = []
@@ -173,7 +174,7 @@ for e in range(epochs):
 
     train_time = time.time()
  
-    print("Epoch {0} | Loss: {1:.4f} Train Acc 1: {2:.4f} Train Acc 2: {3:.4f} Train Acc 3: {4:.4f} Train Time: {5:.4f}s".format(e+1, np.mean(loss_hist)/4, acc_comp(rread_hist1_train, y_local), acc_comp(rread_hist2_train, y_local), acc_comp(rread_hist3_train, y_local), train_time-start_time))
+    #print("Epoch {0} | Loss: {1:.4f} Train Acc 1: {2:.4f} Train Acc 2: {3:.4f} Train Acc 3: {4:.4f} Train Time: {5:.4f}s".format(e+1, np.mean(loss_hist)/4, acc_comp(rread_hist1_train, y_local), acc_comp(rread_hist2_train, y_local), acc_comp(rread_hist3_train, y_local), train_time-start_time))
         
     
     # test accuracy
@@ -207,12 +208,13 @@ for e in range(epochs):
                     rread_hist2_test.append(temp_corr2)
                     rread_hist3_test.append(temp_corr3)
         
-            print("Test Acc 1: {0:.4f} Test Acc 2: {1:.4f} Test Acc 3: {2:.4f}".format( acc_comp(rread_hist1_test, y_local), acc_comp(rread_hist2_test, y_local), acc_comp(rread_hist3_test, y_local)))
+            diff_layers_acc['test1'].append(acc_comp(rread_hist1_test, y_local))
+            diff_layers_acc['test2'].append(acc_comp(rread_hist2_test, y_local))
+            diff_layers_acc['test3'].append(acc_comp(rread_hist3_test, y_local))
+            print("Test Acc 1: {0:.4f} Test Acc 2: {1:.4f} Test Acc 3: {2:.4f}".format( diff_layers_acc['test1'][-1], diff_layers_acc['test1'][-1], diff_layers_acc['test1'][-1]))
 
 
-    #diff_layers_acc['test1'].append(correct1_test/total_test)
-    #diff_layers_acc['test2'].append(correct2_test/total_test)
-    #diff_layers_acc['test3'].append(correct3_test/total_test)
+            
     #diff_layers_acc['train1'].append(correct1_train/total_train)
     #diff_layers_acc['train2'].append(correct2_train/total_train)
     #diff_layers_acc['train3'].append(correct3_train/total_train)
@@ -223,8 +225,10 @@ for e in range(epochs):
     
 
 # saving results/weights
-results = {'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer2':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer3':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer4':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'loss':[loss_hist], 'acc': diff_layers_acc}
+#results = {'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer2':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer3':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer4':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'loss':[loss_hist], 'acc': diff_layers_acc}
 
+
+results = {'layer1':[layer1.weights.detach().cpu()], 'layer2':[layer1.weights.detach().cpu()], 'layer3':[layer1.weights.detach().cpu()], 'loss':[loss_hist], 'acc': diff_layers_acc}
 with open('results/'+str(uuid.uuid1())+'.pkl', 'wb') as f:
     pickle.dump(results, f)
 
