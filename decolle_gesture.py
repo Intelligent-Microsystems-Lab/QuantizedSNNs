@@ -217,10 +217,9 @@ for e in range(epochs):
                 rread_hist2_test.append(temp_corr2)
                 rread_hist3_test.append(temp_corr3)
 
-        import pdb; pdb.set_trace()
-        batch_corr['test1'].append(acc_comp(rread_hist1_train, y_local, True))
-        batch_corr['test2'].append(acc_comp(rread_hist2_train, y_local, True))
-        batch_corr['test3'].append(acc_comp(rread_hist3_train, y_local, True))
+        batch_corr['test1'].append(acc_comp(rread_hist1_test, y_local, True))
+        batch_corr['test2'].append(acc_comp(rread_hist2_test, y_local, True))
+        batch_corr['test3'].append(acc_comp(rread_hist3_test, y_local, True))
 
     inf_time = time.time()
 
