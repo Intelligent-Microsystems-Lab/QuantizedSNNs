@@ -216,7 +216,7 @@ for e in range(epochs):
 
     train_time = time.time()
  
-    print("Epoch {0} | Loss: {1:.4f} Train Acc 1: {2:.4f} Train Acc 2: {3:.4f} Train Acc 3: {4:.4f} Train Time: {5:.4f}s".format(e+1, np.mean(loss_hist), acc_comp(rread_hist1_train, y_local), acc_comp(rread_hist2_train, y_local), acc_comp(rread_hist3_train, y_local), train_time-start_time))
+    print("Epoch {0} | Loss: {1:.4f} Train Acc 1: {2:.4f} Train Acc 2: {3:.4f} Train Acc 3: {4:.4f} Train Time: {5:.4f}s".format(e+1, np.mean(loss_hist)/4, acc_comp(rread_hist1_train, y_local), acc_comp(rread_hist2_train, y_local), acc_comp(rread_hist3_train, y_local), train_time-start_time))
         
     
     # test accuracy

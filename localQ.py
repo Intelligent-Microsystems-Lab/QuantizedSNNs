@@ -44,7 +44,9 @@ def prep_input(x_local, input_mode):
         return x_local
     #bi directional two channels
     if input_mode == 3:
-        return torch.cat((x_local, x_local), dim = 1)
+        down_spikes = torch.cat((x_local, x_local), dim = 1)
+        down_spikes[down_spikes != 0] = 1
+        return down_spikes
     else:
         print("No valid input mode")
         return -1
