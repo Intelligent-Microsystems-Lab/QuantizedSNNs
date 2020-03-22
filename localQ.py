@@ -76,8 +76,8 @@ def sparse_data_generator_DVSPoker(X, y, batch_size, nb_steps, shuffle, device, 
         sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(all_events[:,[True, True, True, True, False]].T), torch.FloatTensor(all_events[:,4])).to_dense()
 
         # quick trick...
-        #sparse_matrix[sparse_matrix < 0] = -1
-        #sparse_matrix[sparse_matrix > 0] = 1
+        sparse_matrix[sparse_matrix < 0] = -1
+        sparse_matrix[sparse_matrix > 0] = 1
 
         sparse_matrix = sparse_matrix.reshape(torch.Size([sparse_matrix.shape[0], 1, sparse_matrix.shape[1], sparse_matrix.shape[2], sparse_matrix.shape[3]]))
 
@@ -112,6 +112,9 @@ def onebatch_DVSGesture(X, y, batch_size, nb_steps, device, shuffle = True):
     all_events = all_events[:,[0,2,3,1,4]]
     sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(all_events[:,[True, True, True, True, False]].T), torch.FloatTensor(all_events[:,4])).to_dense()
 
+    # quick trick...
+    #sparse_matrix[sparse_matrix < 0] = -1
+    #sparse_matrix[sparse_matrix > 0] = 1
 
     sparse_matrix = sparse_matrix.reshape(torch.Size([sparse_matrix.shape[0], 1, sparse_matrix.shape[1], sparse_matrix.shape[2], sparse_matrix.shape[3]]))
 
@@ -150,6 +153,10 @@ def sparse_data_generator_DVSGesture(X, y, batch_size, nb_steps, shuffle, device
         all_events[:,4][all_events[:,4] == 0] = -1
         all_events = all_events[:,[0,2,3,1,4]]
         sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(all_events[:,[True, True, True, True, False]].T), torch.FloatTensor(all_events[:,4])).to_dense()
+
+        # quick trick...
+        #sparse_matrix[sparse_matrix < 0] = -1
+        #sparse_matrix[sparse_matrix > 0] = 1
 
         sparse_matrix = sparse_matrix.reshape(torch.Size([sparse_matrix.shape[0], 1, sparse_matrix.shape[1], sparse_matrix.shape[2], sparse_matrix.shape[3]]))
 
@@ -288,12 +295,12 @@ class QSConv2dFunctional(torch.autograd.Function):
 
         output = F.conv2d(input = input, weight = w_quant, bias = bias_quant, padding = ctx.padding)
 
-        ctx.save_for_backward(input, w_quant, bias_quant) 
+        ctx.save_for_backward(input, w_quant, bias_quant) #pool_indices
         return output
 
     @staticmethod
     def backward(ctx, grad_output):
-        input, w_quant, bias_quant = ctx.saved_tensors 
+        input, w_quant, bias_quant = ctx.saved_tensors #pool_indices
         grad_input = grad_weight = grad_bias = None 
 
         if ctx.quant_on:
@@ -363,11 +370,11 @@ class LIFConv2dLayer(nn.Module):
             self.register_parameter('bias', None)
 
         self.mpool = nn.MaxPool2d(kernel_size = self.pooling, stride = self.pooling, padding = (self.pooling-1)//2, return_indices=False)
-        self.out_shape2 = self.mpool(QSConv2dFunctional.apply(torch.zeros((1,)+self.inp_shape).to(device), self.weights, self.bias, self.scale, self.padding, self.quant_on)).shape[1:]
+        self.out_shape2 = self.mpool(QSConv2dFunctional.apply(torch.zeros((1,)+self.inp_shape).to(device), self.weights, self.bias, self.scale, self.padding, self.quant_on)).shape[1:] #self.pooling, 
         self.out_shape = QSConv2dFunctional.apply(torch.zeros((1,)+self.inp_shape).to(device), self.weights, self.bias, self.scale, self.padding, self.quant_on).shape[1:]
         self.thr = thr
 
-        self.sign_random_readout = QLinearLayerSign(np.prod(self.out_shape2), output_neurons, quant_on = self.quant_on).to(device)
+        self.sign_random_readout = QLinearLayerSign(input_features = np.prod(self.out_shape2), output_features = output_neurons, bias = False, quant_on = self.quant_on).to(device)
 
         if tau_syn.shape[0] == 2:
             self.tau_syn = torch.Tensor(torch.Size(self.inp_shape)).uniform_(tau_syn[0], tau_syn[1]).to(device)
@@ -376,12 +383,14 @@ class LIFConv2dLayer(nn.Module):
         else:
             self.beta = torch.Tensor([torch.exp( - delta_t / tau_syn)]).to(device)
 
+
         if tau_mem.shape[0] == 2:
             self.tau_mem = torch.Tensor(torch.Size(self.inp_shape)).uniform_(tau_mem[0], tau_mem[1]).to(device)
             self.alpha   = 1. - 1e-3 / self.tau_mem
             self.tau_mem = 1. / (1. - self.alpha)
         else:
             self.alpha = torch.Tensor([torch.exp( - delta_t / tau_mem)]).to(device)
+
 
         if tau_ref.shape[0] == 2:
             self.gamma = torch.exp( -delta_t / torch.Tensor(torch.Size(self.out_shape)).uniform_(tau_ref[0], tau_ref[1]).to(device))
