@@ -428,8 +428,7 @@ class LIFConv2dLayer(nn.Module):
 
 
         # taus/alpha should be randomized but for now... 
-        import pdb; pdb.set_trace()
-        self.P, self.R, self.Q = 0.95 * self.P + 20 * self.Q, 0.65 * self.R, 0.87 * self.Q + 7.5 * input_t
+        self.P, self.R, self.Q = self.alpha * self.P + self.tau_mem * self.Q, 0.65 * self.R, self.beta * self.Q + self.tau_syn * input_t
         #self.P, self.R, self.Q = self.alpha * self.P + self.Q, self.gamma * self.R + self.S, self.beta * self.Q + input_t
 
         # quantize P, Q
