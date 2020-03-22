@@ -441,7 +441,7 @@ class LIFConv2dLayer(nn.Module):
         if test_flag or train_flag:
             self.U_aux = torch.sigmoid(self.U)
             self.U_aux = self.mpool(self.U_aux)
-            rreadout = self.dropout_learning(self.sign_random_readout(self.U_aux.reshape([input_t.shape[0], np.prod(self.out_shape)]) ))
+            rreadout = self.dropout_learning(self.sign_random_readout(self.U_aux.reshape([input_t.shape[0], np.prod(self.out_shape2)]) ))
 
             if train_flag:
                 loss_gen = self.loss_fn(rreadout, y_local) + self.l1 * 200e-1 * F.relu((self.U+.01)).mean() + self.l2 *1e-1* F.relu(.1-self.U_aux.mean())
