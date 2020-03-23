@@ -193,7 +193,7 @@ def sparse_data_generator_Static(X, y, batch_size, nb_steps, samples, max_hertz,
         except StopIteration:
             return
 
-# that function is broken....
+# that function is broken.... but also probablt not needed
 class QSigmoid(torch.autograd.Function):
     @staticmethod
     def forward(ctx, x):
@@ -274,7 +274,7 @@ class QLinearLayerSign(nn.Module):
         if quant_on:
             import pdb; pdb.set_trace()
 
-            
+
             scale = quantization.step_d(quantization.global_sb)
             self.weights.data = torch.round(self.weights.data * scale ) / scale
         
@@ -434,11 +434,15 @@ class LIFConv2dLayer(nn.Module):
         self.S = (self.U >= self.thr).float()
         self.R -= self.S * 1
 
+        if self.quant_on:
+            self.R, _ = quantization.quant_generic(self.R, quantization.global_ub)
+
 
         if test_flag or train_flag:
             self.U_aux = torch.sigmoid(self.U)
             #self.U_aux = QSigmoid.apply(self.U)
             self.U_aux = self.mpool(self.U_aux)
+
             rreadout = self.dropout_learning(self.sign_random_readout(self.U_aux.reshape([input_t.shape[0], np.prod(self.out_shape2)]) ))
 
             if train_flag:
@@ -451,5 +455,6 @@ class LIFConv2dLayer(nn.Module):
 
 
         return self.mpool(self.S), loss_gen, rreadout.argmax(1)
+
 
 
