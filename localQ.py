@@ -193,7 +193,6 @@ def sparse_data_generator_Static(X, y, batch_size, nb_steps, samples, max_hertz,
         except StopIteration:
             return
 
-
 # that function is broken....
 class QSigmoid(torch.autograd.Function):
     @staticmethod
@@ -328,7 +327,7 @@ class QSConv2dFunctional(torch.autograd.Function):
 
 
 class LIFConv2dLayer(nn.Module):
-    def __init__(self, inp_shape, kernel_size, out_channels, tau_syn, tau_mem, tau_ref, delta_t, pooling = 1, padding = 0, bias = True, thr = 1, device=torch.device("cpu"), dtype = torch.float, dropout_p = .5, output_neurons = 10, act = None, loss_fn = None, l1 = 0, l2 = 0, quant_on = False):
+    def __init__(self, inp_shape, kernel_size, out_channels, tau_syn, tau_mem, tau_ref, delta_t, pooling = 1, padding = 0, bias = True, thr = 1, device=torch.device("cpu"), dtype = torch.float, dropout_p = .5, output_neurons = 10, loss_fn = None, l1 = 0, l2 = 0, quant_on = False):
         super(LIFConv2dLayer, self).__init__()   
         self.device = device
         self.quant_on = quant_on
@@ -350,8 +349,6 @@ class LIFConv2dLayer(nn.Module):
         self.l1 = l1
         self.l2 = l2
         self.loss_fn = loss_fn
-        self.act = act
-
 
         self.weights = nn.Parameter(torch.empty((self.out_channels, inp_shape[0],  self.kernel_size, self.kernel_size),  device=device, dtype=dtype, requires_grad=True))
         self.stdv =  1 / np.sqrt(torch.tensor(self.weights.shape).prod().item()) / 250

@@ -24,9 +24,7 @@ if torch.cuda.is_available():
 else:
     device = torch.device("cpu")
 dtype = torch.float
-ms = 1e-3
-delta_t = 1*ms
-quant_on = False
+
 
 # # DVS Poker
 # # load data
@@ -56,11 +54,6 @@ with open('data/test_dvs_gesture.pickle', 'rb') as f:
 x_test = data[0]
 y_test = np.array(data[1], dtype = int) - 1
 
-output_neurons = 11
-T = 500*ms
-T_test = 1800*ms
-
-
 # set quant level
 quantization.global_wb = 32
 quantization.global_ub = 32
@@ -69,44 +62,44 @@ quantization.global_pb = 32
 quantization.global_gb = 32
 quantization.global_eb = 32
 quantization.global_rb = 32
-quantization.global_lr = 1#8
-quantization.global_sb = 1
+quantization.global_sb = 32
+quantization.global_lr = 1
 quantization.global_beta = 1.5#quantization.step_d(quantization.global_wb)-.5 #1.5 #
 
 # set parameters
-epochs = 300
-lr_div = 60
-burnin = 50*ms #40*ms
-batch_size = 72
-tau_ref = torch.Tensor([0*ms]).to(device)
-dropout_p = .5
-thr = torch.Tensor([0.]).to(device) #that probably should be one... one doesnt really work
-localQ.lc_ampl = .5
-
-l1 = .001#0.973#.5#0.5807472565567517#.5#0.485#
-l2 = .001#1.099 #5#1.4068230901221566#.5#0.621#
-
-
-tau_mem = torch.Tensor([5*ms, 35*ms]).to(device)#[mem_tau*ms-mem_tau*ms*var_perc, mem_tau*ms+mem_tau*ms*var_perc]
-tau_ref = torch.Tensor([5*ms, 35*ms]).to(device)
-tau_syn = torch.Tensor([5*ms, 10*ms]).to(device)#[syn_tau*ms-syn_tau*ms*var_perc, syn_tau*ms+syn_tau*ms*var_perc]
-
+ms = 1e-3
+delta_t = 1*ms
+quant_on = False
 input_mode = 3 #two channel trick, down sample etc.
 
-sig_fn = nn.Sigmoid()
-log_softmax_fn = nn.LogSoftmax(dim=1) # log probs for nll
-nll_loss = torch.nn.NLLLoss()
-softmax_fn = nn.Softmax(dim=1)
+output_neurons = 11
+T = 500*ms
+T_test = 1800*ms
+burnin = 50*ms
+epochs = 300
+lr_div = 60
+batch_size = 72
+
+dropout_p = .5
+localQ.lc_ampl = .5
+l1 = .001
+l2 = .001
+
+thr = torch.Tensor([0.]).to(device) #that probably should be one... one doesnt really work
+tau_mem = torch.Tensor([5*ms, 35*ms]).to(device)
+tau_ref = torch.Tensor([5*ms, 35*ms]).to(device)
+tau_syn = torch.Tensor([5*ms, 10*ms]).to(device)
+
 sl1_loss = torch.nn.SmoothL1Loss()
 
 # construct layers
 downsample_l = nn.AvgPool2d(kernel_size = 4, stride = 4)
 
-layer1 = LIFConv2dLayer(inp_shape = (2, 32, 32), kernel_size = 7, out_channels = 64, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, act = sig_fn, loss_fn = sl1_loss, l1 = l1, l2 = l2, quant_on = quant_on).to(device)
+layer1 = LIFConv2dLayer(inp_shape = (2, 32, 32), kernel_size = 7, out_channels = 64, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, quant_on = quant_on).to(device)
 
-layer2 = LIFConv2dLayer(inp_shape = layer1.out_shape2, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 1, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, act = sig_fn, loss_fn = sl1_loss, l1 = l1, l2 = l2, quant_on = quant_on).to(device)
+layer2 = LIFConv2dLayer(inp_shape = layer1.out_shape2, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 1, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, quant_on = quant_on).to(device)
 
-layer3 = LIFConv2dLayer(inp_shape = layer2.out_shape2, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, act = sig_fn, loss_fn = sl1_loss, l1 = l1, l2 = l2, quant_on = quant_on).to(device)
+layer3 = LIFConv2dLayer(inp_shape = layer2.out_shape2, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, quant_on = quant_on).to(device)
 
 
 all_parameters = list(layer1.parameters()) + list(layer2.parameters()) + list(layer3.parameters())
@@ -134,7 +127,6 @@ for e in range(epochs):
     start_time = time.time()
 
     # training
-    import pdb; pdb.set_trace()
     for x_local, y_local in sparse_data_generator_DVSGesture(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = True, device = device):
 
         y_onehot = torch.Tensor(len(y_local), output_neurons).to(device)
