@@ -268,7 +268,7 @@ class QLinearLayerSign(nn.Module):
                 torch.nn.init.uniform_(self.bias, a = -self.stdv, b = self.stdv)
             else:
                 self.bias = None
-        else
+        else:
             self.stdv = lc_ampl/np.sqrt(torch.tensor(self.weights.shape).prod().item())
             torch.nn.init.uniform_(self.weights, a = -self.stdv, b = self.stdv)
             torch.nn.init.uniform_(self.weight_fa, a = -self.stdv, b = self.stdv)
