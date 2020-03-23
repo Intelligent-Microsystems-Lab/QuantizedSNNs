@@ -51,9 +51,6 @@ with open('data/train_dvs_gesture.pickle', 'rb') as f:
 x_train = data[0]
 y_train = np.array(data[1], dtype = int) - 1
 
-# x_train = x_train[:144]
-# y_train = y_train[:144]
-
 with open('data/test_dvs_gesture.pickle', 'rb') as f:
     data = pickle.load(f)
 x_test = data[0]
@@ -77,7 +74,8 @@ quantization.global_sb = 1
 quantization.global_beta = 1.5#quantization.step_d(quantization.global_wb)-.5 #1.5 #
 
 # set parameters
-epochs = 4500
+epochs = 300
+lr_div = 60
 burnin = 50*ms #40*ms
 batch_size = 72
 tau_ref = torch.Tensor([0*ms]).to(device)
@@ -128,8 +126,8 @@ print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5}{6} {7} l1 {8:.3f} l2 {9:.3f} Inp 
 print("Epoch Loss   Train1 Train2 Train3 Test1  Test2  Test3  TrainT   TestT")
 
 for e in range(epochs):
-    #if ((e+1)%1000)==0:
-    #    opt.param_groups[-1]['lr']/=5
+    if ((e+1)%lr_div)==0:
+        opt.param_groups[-1]['lr']/=5
 
 
     batch_corr = {'train1': [], 'test1': [],'train2': [], 'test2': [],'train3': [], 'test3': [], 'loss':[]}
@@ -139,7 +137,6 @@ for e in range(epochs):
     import pdb; pdb.set_trace()
     for x_local, y_local in sparse_data_generator_DVSGesture(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = True, device = device):
 
-        #x_local, y_local = onebatch_DVSGesture(x_train, y_train, batch_size = batch_size, nb_steps = T / ms,  device = device, shuffle = True)
         y_onehot = torch.Tensor(len(y_local), output_neurons).to(device)
         y_onehot.zero_()
         y_onehot.scatter_(1, y_local.reshape([y_local.shape[0],1]), 1)
@@ -230,11 +227,6 @@ for e in range(epochs):
 
     print("{0:02d}    {1:.4f} {2:.4f} {3:.4f} {4:.4f} {5:.4f} {6:.4f} {7:.4f} {8:.4f} {9:.4f}".format(e+1, diff_layers_acc['loss'][-1], diff_layers_acc['train1'][-1], diff_layers_acc['train2'][-1], diff_layers_acc['train3'][-1], diff_layers_acc['test1'][-1], diff_layers_acc['test2'][-1], diff_layers_acc['test3'][-1], train_time - start_time, inf_time - train_time))
 
-    
-
-
-
-    
 
 # saving results/weights
 results = {'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer2':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer3':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer4':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'acc': diff_layers_acc}
