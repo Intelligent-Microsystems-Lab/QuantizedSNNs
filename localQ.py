@@ -267,13 +267,16 @@ class QLinearLayerSign(nn.Module):
         #self.weight_fa = self.weights
         # match signs
         self.weight_fa = nn.Parameter(torch.Tensor(output_features, input_features), requires_grad=False)
+
         torch.nn.init.uniform_(self.weight_fa, a = -self.stdv, b = self.stdv)
         self.weight_fa.data *= torch.sign((torch.sign(self.weights.data) == torch.sign(self.weight_fa.data)).float() -.5)
 
         if quant_on:
             import pdb; pdb.set_trace()
+
+            
             scale = quantization.step_d(quantization.global_sb)
-            self.weights.data = torch.ceil(torch.abs(self.weights.data) * scale ) / scale
+            self.weights.data = torch.round(self.weights.data * scale ) / scale
         
     def forward(self, input):
         return QLinearFunctional.apply(input, self.weights, self.weight_fa, self.bias, self.quant_on)
