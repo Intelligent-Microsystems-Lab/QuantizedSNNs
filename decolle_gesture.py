@@ -136,6 +136,7 @@ for e in range(epochs):
     start_time = time.time()
 
     # training
+    import pdb; pdb.set_trace()
     for x_local, y_local in sparse_data_generator_DVSGesture(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = True, device = device):
 
         #x_local, y_local = onebatch_DVSGesture(x_train, y_train, batch_size = batch_size, nb_steps = T / ms,  device = device, shuffle = True)
