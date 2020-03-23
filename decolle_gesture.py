@@ -181,9 +181,9 @@ for e in range(epochs):
 
     train_time = time.time()
 
-    diff_layers_acc['train1'].append(torch.stack(batch_corr['train1'], dim = 0).mean())
-    diff_layers_acc['train2'].append(torch.stack(batch_corr['train2'], dim = 0).mean())
-    diff_layers_acc['train3'].append(torch.stack(batch_corr['train3'], dim = 0).mean())
+    diff_layers_acc['train1'].append(torch.cat(batch_corr['train1']).mean())
+    diff_layers_acc['train2'].append(torch.cat(batch_corr['train2']).mean())
+    diff_layers_acc['train3'].append(torch.cat(batch_corr['train3']).mean())
     diff_layers_acc['loss'].append(np.mean(loss_hist)/4)
         
     
