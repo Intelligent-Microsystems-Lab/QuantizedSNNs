@@ -234,7 +234,7 @@ for e in range(epochs):
     ax1.plot(t, diff_layers_acc['test3'], 'r-', label = 'Test 3')
 
     ax2 = ax1.twinx()
-    ax2.set_ylabel('Loss', color=color)
+    ax2.set_ylabel('Loss')
     ax2.plot(t, diff_layers_acc['loss'], 'k-', label = 'Loss')
 
     plt.legend(loc='best')
