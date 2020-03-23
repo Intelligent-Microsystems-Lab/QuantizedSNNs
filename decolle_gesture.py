@@ -224,7 +224,7 @@ for e in range(epochs):
     import matplotlib.pyplot as plt
     fig, ax1 = plt.subplots()
     ax1.set_xlabel('Epochs')
-    ax1.set_ylabel('Accuracy', color=color)
+    ax1.set_ylabel('Accuracy')
     t = np.arange(len(diff_layers_acc['loss']))
     ax1.plot(t, diff_layers_acc['train1'], 'g--', label = 'Train 1')
     ax1.plot(t, diff_layers_acc['train2'], 'b--', label = 'Train 2')

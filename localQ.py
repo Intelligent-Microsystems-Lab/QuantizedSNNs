@@ -255,28 +255,41 @@ class QLinearLayerSign(nn.Module):
 
         # weight and bias for forward pass
         self.weights = nn.Parameter(torch.Tensor(output_features, input_features), requires_grad=False)
-        self.stdv = lc_ampl/np.sqrt(torch.tensor(self.weights.shape).prod().item())
-        torch.nn.init.uniform_(self.weights, a = -self.stdv, b = self.stdv)
-
-        if bias:
-            self.bias = nn.Parameter(torch.Tensor(output_features), requires_grad=False)
-            torch.nn.init.uniform_(self.bias, a = -self.stdv, b = self.stdv)
-        else:
-            self.bias = None
-
-        #self.weight_fa = self.weights
-        # match signs
+        self.bias = nn.Parameter(torch.Tensor(output_features), requires_grad=False)
         self.weight_fa = nn.Parameter(torch.Tensor(output_features, input_features), requires_grad=False)
 
-        torch.nn.init.uniform_(self.weight_fa, a = -self.stdv, b = self.stdv)
-        self.weight_fa.data *= torch.sign((torch.sign(self.weights.data) == torch.sign(self.weight_fa.data)).float() -.5)
 
         if quant_on:
             import pdb; pdb.set_trace()
+            self.stdv = lc_ampl/np.sqrt(torch.tensor(self.weights.shape).prod().item())
+            torch.nn.init.uniform_(self.weights, a = -self.stdv, b = self.stdv)
+            torch.nn.init.uniform_(self.weight_fa, a = -self.stdv, b = self.stdv)
+            if bias:
+                torch.nn.init.uniform_(self.bias, a = -self.stdv, b = self.stdv)
+            else:
+                self.bias = None
+        else
+            self.stdv = lc_ampl/np.sqrt(torch.tensor(self.weights.shape).prod().item())
+            torch.nn.init.uniform_(self.weights, a = -self.stdv, b = self.stdv)
+            torch.nn.init.uniform_(self.weight_fa, a = -self.stdv, b = self.stdv)
+            if bias:
+                torch.nn.init.uniform_(self.bias, a = -self.stdv, b = self.stdv)
+            else:
+                self.bias = None
 
+        
+        
+    
+        
+        
 
-            scale = quantization.step_d(quantization.global_sb)
-            self.weights.data = torch.round(self.weights.data * scale ) / scale
+        # match signs
+        #self.weight_fa = self.weights
+        self.weight_fa.data *= torch.sign((torch.sign(self.weights.data) == torch.sign(self.weight_fa.data)).float() -.5)
+
+        
+            
+
         
     def forward(self, input):
         return QLinearFunctional.apply(input, self.weights, self.weight_fa, self.bias, self.quant_on)
