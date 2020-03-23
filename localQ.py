@@ -266,21 +266,22 @@ class QLinearLayerSign(nn.Module):
             self.bias = None
 
         #self.weight_fa = self.weights
+        # match signs
         self.weight_fa = nn.Parameter(torch.Tensor(output_features, input_features), requires_grad=False)
+        torch.nn.init.uniform_(self.weight_fa, a = -self.stdv, b = self.stdv)
+        self.weight_fa.data *= torch.sign((torch.sign(self.weights.data) == torch.sign(self.weight_fa.data)).float() -.5)
 
-        self.weight_fa.data.normal_(1, .5)
-        self.weight_fa.data[self.weight_fa.data<0] = 0
-        self.weight_fa.data[:] *= self.weights.data[:]
-
-        import pdb; pdb.set_trace()
+        #self.weight_fa.data[self.weight_fa.data<0] = 0
+        #self.weight_fa.data[:] *= self.weights.data[:]
+        #import pdb; pdb.set_trace()
 
         # if pass_through:
         #     self.weights.data = torch.ones_like(self.weights.data)
 
-        # if quant_on and not pass_through:
-        #     scale = quantization.step_d(quantization.global_sb)
-        #     s_sign = torch.sign(self.weights.data)
-        #     self.weights.data = torch.ceil(torch.abs(self.weights.data) * scale ) / scale * s_sign
+        if quant_on:
+            scale = quantization.step_d(quantization.global_sb)
+            s_sign = torch.sign(self.weights.data)
+            self.weights.data = torch.ceil(torch.abs(self.weights.data) * scale ) / scale * s_sign
         
     def forward(self, input):
         return QLinearFunctional.apply(input, self.weights, self.weight_fa, self.bias, self.quant_on)
