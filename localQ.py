@@ -265,12 +265,14 @@ class QLinearLayerSign(nn.Module):
         else:
             self.bias = None
 
-        self.weight_fa = self.weights
-        #self.weight_fa = nn.Parameter(torch.Tensor(output_features, input_features), requires_grad=False)
+        #self.weight_fa = self.weights
+        self.weight_fa = nn.Parameter(torch.Tensor(output_features, input_features), requires_grad=False)
 
-        #self.weight_fa.data.normal_(1, .5)
-        #self.weight_fa.data[self.weight_fa.data<0] = 0
-        #self.weight_fa.data[:] *= self.weights.data[:]
+        self.weight_fa.data.normal_(1, .5)
+        self.weight_fa.data[self.weight_fa.data<0] = 0
+        self.weight_fa.data[:] *= self.weights.data[:]
+
+        import pdb; pdb.set_trace()
 
         # if pass_through:
         #     self.weights.data = torch.ones_like(self.weights.data)
