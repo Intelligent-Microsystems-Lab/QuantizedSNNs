@@ -261,13 +261,23 @@ class QLinearLayerSign(nn.Module):
 
         if quant_on:
             import pdb; pdb.set_trace()
-            self.stdv = lc_ampl/np.sqrt(torch.tensor(self.weights.shape).prod().item())
-            torch.nn.init.uniform_(self.weights, a = -self.stdv, b = self.stdv)
-            torch.nn.init.uniform_(self.weight_fa, a = -self.stdv, b = self.stdv)
+            self.L_min = quantization.global_beta/quantization.step_d(torch.tensor([float(quantization.global_wb)]))
+            self.L = np.max([np.sqrt( 6/self.input_features), self.L_min])
+            self.scale = 2 ** round(math.log(self.L_min / self.L, 2.0))
+            self.scale = self.scale if self.scale > 1 else 1.0
+
+
+            torch.nn.init.uniform_(self.weights, a = -self.L, b = self.L)
+            torch.nn.init.uniform_(self.weight_fa, a = -self.L, b = self.L)
             if bias:
-                torch.nn.init.uniform_(self.bias, a = -self.stdv, b = self.stdv)
+                torch.nn.init.uniform_(self.bias, a = -self.L, b = self.L)
             else:
                 self.bias = None
+
+            with torch.no_grad():
+                self.weights.data = quantization.quant_w(bias, scale)#quantization.clip(quantization.quant_generic(self.weights.data, quantization.global_gb)[0], quantization.global_wb)
+                if self.bias is not None:
+                    self.bias.data = quantization.quant_w(bias, scale) #quantization.clip(quantization.quant_generic(self.bias.data, quantization.global_gb)[0], quantization.global_wb)
         else:
             self.stdv = lc_ampl/np.sqrt(torch.tensor(self.weights.shape).prod().item())
             torch.nn.init.uniform_(self.weights, a = -self.stdv, b = self.stdv)
@@ -277,19 +287,10 @@ class QLinearLayerSign(nn.Module):
             else:
                 self.bias = None
 
-        
-        
-    
-        
-        
-
         # match signs
         #self.weight_fa = self.weights
         self.weight_fa.data *= torch.sign((torch.sign(self.weights.data) == torch.sign(self.weight_fa.data)).float() -.5)
-
-        
             
-
         
     def forward(self, input):
         return QLinearFunctional.apply(input, self.weights, self.weight_fa, self.bias, self.quant_on)
