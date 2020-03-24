@@ -49,8 +49,6 @@ with open('data/train_dvs_gesture.pickle', 'rb') as f:
 x_train = data[0]
 y_train = np.array(data[1], dtype = int) - 1
 
-x_train = x_train[:144]
-y_train = y_train[:144]
 
 with open('data/test_dvs_gesture.pickle', 'rb') as f:
     data = pickle.load(f)

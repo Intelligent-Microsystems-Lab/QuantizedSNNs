@@ -192,7 +192,7 @@ class QLinearFunctional(torch.autograd.Function):
 
         # quant act
         if quant_on:
-            output, clip_info = quant_act(output)
+            output, clip_info = quantization.quant_act(output)
         else:
             clip_info = None
 
