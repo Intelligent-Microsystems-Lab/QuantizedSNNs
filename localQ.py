@@ -422,8 +422,10 @@ class LIFConv2dLayer(nn.Module):
 
         # quantize P, Q
         if self.quant_on:
-            self.P, _ = quantization.quant_generic(self.P, quantization.global_pb)
-            self.Q, _ = quantization.quant_generic(self.Q, quantization.global_qb)
+            self.P = torch.clamp(torch.round(self.P), -quantization.step_d(quantization.global_pb)+1, quantization.step_d(quantization.global_pb))
+            self.Q = torch.clamp(torch.round(self.Q), -quantization.step_d(quantization.global_qb)+1, quantization.step_d(quantization.global_qb))
+            #self.P, _ = quantization.quant_generic(self.P, quantization.global_pb)
+            #self.Q, _ = quantization.quant_generic(self.Q, quantization.global_qb)
 
         self.U = QSConv2dFunctional.apply(self.P, self.weights, self.bias, self.scalew, self.padding, self.quant_on) + self.R 
 
@@ -437,7 +439,6 @@ class LIFConv2dLayer(nn.Module):
         if self.quant_on:
             self.R, _ = quantization.quant_generic(self.R, quantization.global_ub)
 
-
         if test_flag or train_flag:
             self.U_aux = torch.sigmoid(self.U) # quantize this function.... at some point
             self.U_aux = self.mpool(self.U_aux)
@@ -445,7 +446,6 @@ class LIFConv2dLayer(nn.Module):
             rreadout = self.dropout_learning(self.sign_random_readout(self.U_aux.reshape([input_t.shape[0], np.prod(self.out_shape2)]) ))
 
             if train_flag:
-                import pdb; pdb.set_trace()
                 loss_gen = self.loss_fn(rreadout, y_local) + self.l1 * 200e-1 * F.relu((self.U+.01)).mean() + self.l2 *1e-1* F.relu(.1-self.U_aux.mean())
             else:
                 loss_gen = None
