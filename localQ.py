@@ -321,6 +321,9 @@ class LIFConv2dLayer(nn.Module):
         self.inp_shape = inp_shape
         self.kernel_size = kernel_size
         self.out_channels = out_channels  
+
+        self.weights = nn.Parameter(torch.empty((self.out_channels, inp_shape[0],  self.kernel_size, self.kernel_size),  device=device, dtype=dtype, requires_grad=True))
+
         self.fan_in = kernel_size * kernel_size * inp_shape[0]
         self.L_min = quantization.global_beta/quantization.step_d(torch.tensor([float(quantization.global_gb)]))
         self.L = np.max([1 / np.sqrt(torch.tensor(self.weights.shape).prod().item()) / 250 *1e-2, self.L_min])
@@ -338,7 +341,7 @@ class LIFConv2dLayer(nn.Module):
         self.l2 = l2
         self.loss_fn = loss_fn
 
-        self.weights = nn.Parameter(torch.empty((self.out_channels, inp_shape[0],  self.kernel_size, self.kernel_size),  device=device, dtype=dtype, requires_grad=True))
+        
         self.stdv =  1 / np.sqrt(torch.tensor(self.weights.shape).prod().item()) / 250
         if self.quant_on:
             torch.nn.init.uniform_(self.weights, a = -self.L, b = self.L)
