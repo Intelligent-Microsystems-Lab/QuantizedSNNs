@@ -64,8 +64,8 @@ quantization.global_pb = 8
 quantization.global_gb = 8
 quantization.global_eb = 8
 quantization.global_rb = 8
-quantization.global_sb = 1
-quantization.global_lr = 4
+quantization.global_sb = 8
+quantization.global_lr = int(quantization.global_ab/4)
 quantization.global_beta = 1.5#quantization.step_d(quantization.global_wb)-.5 #1.5 #
 
 # set parameters
@@ -124,7 +124,9 @@ print("Epoch Loss   Train1 Train2 Train3 Test1  Test2  Test3  TrainT   TestT")
 for e in range(epochs):
     if ((e+1)%lr_div)==0:
         if quant_on:
-            quantization.global_lr /= 8
+            quantization.global_lr /= 4
+            if quantization.global_lr <= 1/16:
+                quantization.global_lr = 1/16
         else:
             opt.param_groups[-1]['lr'] /= 5
 
