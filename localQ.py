@@ -36,6 +36,7 @@ def create_graph(plot_file_name, diff_layers_acc):
 
     fig.tight_layout()
     plt.savefig(plot_file_name)
+    plt.close()
 
 
 def acc_comp(rread_hist_train, y_local, bools = False):
