@@ -225,8 +225,9 @@ class QLinearLayerSign(nn.Module):
 
         if quant_on:
             import pdb; pdb.set_trace()
-            self.L_min = quantization.global_beta/quantization.step_d(torch.tensor([float(quantization.global_wb)]))
-            self.L = np.max([np.sqrt( 6/self.input_features), self.L_min])
+            self.L_min = quantization.global_beta/quantization.step_d(torch.tensor([float(quantization.global_sb)]))
+            #self.L = np.max([np.sqrt(6/self.input_features), self.L_min])
+            self.L = np.max([lc_ampl/np.sqrt(torch.tensor(self.weights.shape).prod().item()), self.L_min])
             self.scale = 2 ** round(math.log(self.L_min / self.L, 2.0))
             self.scale = self.scale if self.scale > 1 else 1.0
 
@@ -239,9 +240,10 @@ class QLinearLayerSign(nn.Module):
                 self.bias = None
 
             with torch.no_grad():
-                self.weights.data = quantization.quant_w(bias, scale)#quantization.clip(quantization.quant_generic(self.weights.data, quantization.global_gb)[0], quantization.global_wb)
+                self.weights.data = quantization.quant_w_custom(self.weights.data, quantization.global_sb, self.scale)
+                self.weight_fa.data = quantization.quant_w_custom(self.weight_fa.data, quantization.global_sb, self.scale)
                 if self.bias is not None:
-                    self.bias.data = quantization.quant_w(bias, scale) #quantization.clip(quantization.quant_generic(self.bias.data, quantization.global_gb)[0], quantization.global_wb)
+                    self.bias.data = quantization.quant_w_custom(self.bias.data, quantization.global_sb, self.scale)
         else:
             self.stdv = lc_ampl/np.sqrt(torch.tensor(self.weights.shape).prod().item())
             torch.nn.init.uniform_(self.weights, a = -self.stdv, b = self.stdv)
