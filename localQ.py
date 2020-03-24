@@ -6,11 +6,37 @@ import pickle
 import time
 import math
 import numpy as np
+import matplotlib.pyplot as plt
 
 import quantization
 
 
 lc_ampl = .5
+
+
+
+def create_graph(plot_file_name, diff_layers_acc):
+    fig, ax1 = plt.subplots()
+    ax1.title("DVS Gesture")
+    ax1.set_xlabel('Epochs')
+    ax1.set_ylabel('Accuracy')
+    t = np.arange(len(diff_layers_acc['loss']))
+    ax1.plot(t, diff_layers_acc['train1'], 'g--', label = 'Train 1')
+    ax1.plot(t, diff_layers_acc['train2'], 'b--', label = 'Train 2')
+    ax1.plot(t, diff_layers_acc['train3'], 'r--', label = 'Train 3')
+    ax1.plot(t, diff_layers_acc['test1'], 'g-', label = 'Test 1')
+    ax1.plot(t, diff_layers_acc['test2'], 'b-', label = 'Test 2')
+    ax1.plot(t, diff_layers_acc['test3'], 'r-', label = 'Test 3')
+    ax1.plot([], [], 'k-', label = 'Loss')
+    ax1.legend(bbox_to_anchor=(1.04,1), loc="upper left")
+
+    ax2 = ax1.twinx()
+    ax2.set_ylabel('Loss')
+    ax2.plot(t, diff_layers_acc['loss'], 'k-', label = 'Loss')
+
+    plt.legend(loc='best')
+    fig.tight_layout()
+    plt.savefig(plot_file_name)
 
 
 def acc_comp(rread_hist_train, y_local, bools = False):

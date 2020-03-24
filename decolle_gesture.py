@@ -222,30 +222,7 @@ for e in range(epochs):
     diff_layers_acc['test3'].append(torch.cat(batch_corr['test3']).mean())
 
     print("{0:02d}    {1:.4f} {2:.4f} {3:.4f} {4:.4f} {5:.4f} {6:.4f} {7:.4f} {8:.4f} {9:.4f}".format(e+1, diff_layers_acc['loss'][-1], diff_layers_acc['train1'][-1], diff_layers_acc['train2'][-1], diff_layers_acc['train3'][-1], diff_layers_acc['test1'][-1], diff_layers_acc['test2'][-1], diff_layers_acc['test3'][-1], train_time - start_time, inf_time - train_time))
-
-
-    import matplotlib.pyplot as plt
-    fig, ax1 = plt.subplots()
-    ax1.title("DVS Gesture")
-    ax1.set_xlabel('Epochs')
-    ax1.set_ylabel('Accuracy')
-    t = np.arange(len(diff_layers_acc['loss']))
-    ax1.plot(t, diff_layers_acc['train1'], 'g--', label = 'Train 1')
-    ax1.plot(t, diff_layers_acc['train2'], 'b--', label = 'Train 2')
-    ax1.plot(t, diff_layers_acc['train3'], 'r--', label = 'Train 3')
-    ax1.plot(t, diff_layers_acc['test1'], 'g-', label = 'Test 1')
-    ax1.plot(t, diff_layers_acc['test2'], 'b-', label = 'Test 2')
-    ax1.plot(t, diff_layers_acc['test3'], 'r-', label = 'Test 3')
-    ax1.plot([], [], 'k-', label = 'Loss')
-    ax1.legend(bbox_to_anchor=(1.04,1), loc="upper left")
-
-    ax2 = ax1.twinx()
-    ax2.set_ylabel('Loss')
-    ax2.plot(t, diff_layers_acc['loss'], 'k-', label = 'Loss')
-
-    plt.legend(loc='best')
-    fig.tight_layout()
-    plt.savefig(plot_file_name)
+    create_graph(plot_file_name, diff_layers_acc)
 
 
 # saving results/weights
