@@ -224,7 +224,6 @@ class QLinearLayerSign(nn.Module):
         self.bias = nn.Parameter(torch.Tensor(output_features), requires_grad=False)
 
         if quant_on:
-            import pdb; pdb.set_trace()
             self.L_min = quantization.global_beta/quantization.step_d(torch.tensor([float(quantization.global_sb)]))
             #self.L = np.max([np.sqrt(6/self.input_features), self.L_min])
             self.L = np.max([lc_ampl/np.sqrt(torch.tensor(self.weights.shape).prod().item()), self.L_min])
@@ -239,11 +238,13 @@ class QLinearLayerSign(nn.Module):
             else:
                 self.bias = None
 
+            # quantize them
             with torch.no_grad():
                 self.weights.data = quantization.quant_w_custom(self.weights.data, quantization.global_sb, self.scale)
                 self.weight_fa.data = quantization.quant_w_custom(self.weight_fa.data, quantization.global_sb, self.scale)
                 if self.bias is not None:
                     self.bias.data = quantization.quant_w_custom(self.bias.data, quantization.global_sb, self.scale)
+            import pdb; pdb.set_trace()
         else:
             self.stdv = lc_ampl/np.sqrt(torch.tensor(self.weights.shape).prod().item())
             torch.nn.init.uniform_(self.weights, a = -self.stdv, b = self.stdv)
