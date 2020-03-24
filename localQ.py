@@ -15,7 +15,7 @@ lc_ampl = .5
 def create_graph(plot_file_name, diff_layers_acc):
     fig, ax1 = plt.subplots()
     fig.set_size_inches(8.4, 4.8)
-    plt.title("DVS Gesture")
+    plt.title("DVS Gesture" + " B" + str(quantization.global_ab) + " LRB" + str(quantization.global_sb))
     ax1.set_xlabel('Epochs')
     ax1.set_ylabel('Accuracy')
     t = np.arange(len(diff_layers_acc['loss']))
