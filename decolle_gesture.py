@@ -65,13 +65,13 @@ quantization.global_gb = 32
 quantization.global_eb = 32
 quantization.global_rb = 32
 quantization.global_sb = 32
-quantization.global_lr = 8
+quantization.global_lr = 4
 quantization.global_beta = 1.5#quantization.step_d(quantization.global_wb)-.5 #1.5 #
 
 # set parameters
 ms = 1e-3
 delta_t = 1*ms
-quant_on = True
+quant_on = False
 input_mode = 3 #two channel trick, down sample etc.
 
 output_neurons = 11
@@ -124,9 +124,9 @@ print("Epoch Loss   Train1 Train2 Train3 Test1  Test2  Test3  TrainT   TestT")
 for e in range(epochs):
     if ((e+1)%lr_div)==0:
         if quant_on:
-            quantization.global_lr /= 2
+            quantization.global_lr /= 8
         else:
-            opt.param_groups[-1]['lr']/=5
+            opt.param_groups[-1]['lr'] /= 5
 
 
     batch_corr = {'train1': [], 'test1': [],'train2': [], 'test2': [],'train3': [], 'test3': [], 'loss':[]}
@@ -224,7 +224,7 @@ for e in range(epochs):
     diff_layers_acc['test3'].append(torch.cat(batch_corr['test3']).mean())
 
     print("{0:02d}    {1:.4f} {2:.4f} {3:.4f} {4:.4f} {5:.4f} {6:.4f} {7:.4f} {8:.4f} {9:.4f}".format(e+1, diff_layers_acc['loss'][-1], diff_layers_acc['train1'][-1], diff_layers_acc['train2'][-1], diff_layers_acc['train3'][-1], diff_layers_acc['test1'][-1], diff_layers_acc['test2'][-1], diff_layers_acc['test3'][-1], train_time - start_time, inf_time - train_time))
-    create_graph(plot_file_name, diff_layers_acc)
+    create_graph(plot_file_name, diff_layers_acc, quant_on)
 
 
 # saving results/weights
