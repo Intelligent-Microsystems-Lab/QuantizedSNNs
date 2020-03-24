@@ -10,13 +10,11 @@ import matplotlib.pyplot as plt
 
 import quantization
 
-
 lc_ampl = .5
-
-
 
 def create_graph(plot_file_name, diff_layers_acc):
     fig, ax1 = plt.subplots()
+    fig.set_size_inches(8.4, 4.8)
     plt.title("DVS Gesture")
     ax1.set_xlabel('Epochs')
     ax1.set_ylabel('Accuracy')
@@ -28,7 +26,7 @@ def create_graph(plot_file_name, diff_layers_acc):
     ax1.plot(t, diff_layers_acc['test2'], 'b-', label = 'Test 2')
     ax1.plot(t, diff_layers_acc['test3'], 'r-', label = 'Test 3')
     ax1.plot([], [], 'k-', label = 'Loss')
-    ax1.legend(bbox_to_anchor=(1.15,1), loc="upper left")
+    ax1.legend(bbox_to_anchor=(1.20,1), loc="upper left")
 
     ax2 = ax1.twinx()
     ax2.set_ylabel('Loss')
@@ -116,41 +114,6 @@ def sparse_data_generator_DVSPoker(X, y, batch_size, nb_steps, shuffle, device, 
         except StopIteration:
             return
 
-def onebatch_DVSGesture(X, y, batch_size, nb_steps, device, shuffle = True):
-    sample_index = np.arange(len(y))
-    nb_steps = nb_steps -1
-    y = np.array(y)
-
-    if shuffle:
-        np.random.shuffle(sample_index)
-    sample_index = sample_index[:batch_size]
-
-    all_events = np.array([[],[],[],[],[]]).T
-
-    for bc,idx in enumerate(sample_index):    
-        start_ts = np.random.choice(np.arange(np.max(X[idx][:,0]) - nb_steps),1)
-        temp = X[idx][X[idx][:,0] >= start_ts]
-        temp = temp[temp[:,0] <= start_ts+nb_steps]
-        temp = np.append(np.ones((temp.shape[0], 1))*bc, temp, axis=1)
-        temp[:,1] = temp[:,1] - start_ts
-        all_events = np.append(all_events, temp, axis = 0)
-
-    # to matrix
-    all_events[:,4][all_events[:,4] == 0] = -1 #setting negative events from 0 to -1
-    all_events = all_events[:,[0,2,3,1,4]]
-    sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(all_events[:,[True, True, True, True, False]].T), torch.FloatTensor(all_events[:,4])).to_dense()
-
-    # quick trick...
-    #sparse_matrix[sparse_matrix < 0] = -1
-    #sparse_matrix[sparse_matrix > 0] = 1
-
-    sparse_matrix = sparse_matrix.reshape(torch.Size([sparse_matrix.shape[0], 1, sparse_matrix.shape[1], sparse_matrix.shape[2], sparse_matrix.shape[3]]))
-
-    y_batch = torch.tensor(y[sample_index], dtype = int)
-    return sparse_matrix.to(device=device), y_batch.to(device=device)
-
-
-
 def sparse_data_generator_DVSGesture(X, y, batch_size, nb_steps, shuffle, device, test = False):
     number_of_batches = int(np.ceil(len(y)/batch_size))
     sample_index = np.arange(len(y))
@@ -218,30 +181,6 @@ def sparse_data_generator_Static(X, y, batch_size, nb_steps, samples, max_hertz,
             counter += 1
         except StopIteration:
             return
-
-# that function is broken.... but also probablt not needed
-class QSigmoid(torch.autograd.Function):
-    @staticmethod
-    def forward(ctx, x):
-        ctx.save_for_backward(x)
-        return 1 / (1 + torch.exp(-x))
-
-    @staticmethod
-    def backward(ctx, grad_output):
-        x, = ctx.saved_tensors
-        grad_input = None
-
-        
-
-        if ctx.needs_input_grad[0]:
-            #zero_map = (x > 50) ^ (x < -50)
-            grad_input = (torch.exp(-x))/((1+torch.exp(-x))**2)
-            #grad_input[zero_map] = 0.
-
-        # quantize error
-        #grad_input = quantization.quant_err(grad_input)
-
-        return grad_input
 
 class QLinearFunctional(torch.autograd.Function):
     '''from https://github.com/L0SG/feedback-alignment-pytorch/'''
@@ -480,7 +419,6 @@ class LIFConv2dLayer(nn.Module):
 
         if test_flag or train_flag:
             self.U_aux = torch.sigmoid(self.U)
-            #self.U_aux = QSigmoid.apply(self.U)
             self.U_aux = self.mpool(self.U_aux)
 
             rreadout = self.dropout_learning(self.sign_random_readout(self.U_aux.reshape([input_t.shape[0], np.prod(self.out_shape2)]) ))
