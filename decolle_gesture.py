@@ -67,7 +67,7 @@ quantization.global_gb = 32
 quantization.global_eb = 32
 quantization.global_rb = 32
 quantization.global_sb = 32
-quantization.global_lr = 1
+quantization.global_lr = 8
 quantization.global_beta = 1.5#quantization.step_d(quantization.global_wb)-.5 #1.5 #
 
 # set parameters
@@ -125,7 +125,10 @@ print("Epoch Loss   Train1 Train2 Train3 Test1  Test2  Test3  TrainT   TestT")
 
 for e in range(epochs):
     if ((e+1)%lr_div)==0:
-        opt.param_groups[-1]['lr']/=5
+        if quant_on:
+            quantization.global_lr /= 2
+        else:
+            opt.param_groups[-1]['lr']/=5
 
 
     batch_corr = {'train1': [], 'test1': [],'train2': [], 'test2': [],'train3': [], 'test3': [], 'loss':[]}
