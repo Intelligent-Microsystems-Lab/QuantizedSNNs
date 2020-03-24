@@ -207,7 +207,7 @@ class QLinearFunctional(torch.autograd.Function):
         grad_input = None
 
         if ctx.quant_on:
-            quant_error = quantization.quant_err(grad_output) * clip_info
+            quant_error = quantization.quant_err(grad_output) * clip_info.float()
         else:
             quant_error = grad_output
 
