@@ -67,7 +67,7 @@ def quant_w_custom(x, xb, scale = 1):
         return 0
 
     with torch.no_grad():
-        y = quant(clip(x, xb) , bx)
+        y = quant(clip(x, xb), xb)
         diff = (y - x)
 
     return (x + diff)/scale
