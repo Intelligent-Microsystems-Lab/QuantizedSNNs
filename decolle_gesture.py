@@ -14,7 +14,7 @@ import uuid
 
 import quantization
 import localQ
-from localQ import sparse_data_generator_DVSGesture, onebatch_DVSGesture, sparse_data_generator_DVSPoker, LIFConv2dLayer, prep_input, acc_comp
+from localQ import sparse_data_generator_DVSGesture, onebatch_DVSGesture, sparse_data_generator_DVSPoker, LIFConv2dLayer, prep_input, acc_comp, create_graph
 
 torch.autograd.set_detect_anomaly(True)
 
