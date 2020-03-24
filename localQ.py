@@ -220,9 +220,8 @@ class QLinearLayerSign(nn.Module):
 
         # weight and bias for forward pass
         self.weights = nn.Parameter(torch.Tensor(output_features, input_features), requires_grad=False)
-        self.bias = nn.Parameter(torch.Tensor(output_features), requires_grad=False)
         self.weight_fa = nn.Parameter(torch.Tensor(output_features, input_features), requires_grad=False)
-
+        self.bias = nn.Parameter(torch.Tensor(output_features), requires_grad=False)
 
         if quant_on:
             import pdb; pdb.set_trace()
@@ -252,7 +251,7 @@ class QLinearLayerSign(nn.Module):
             else:
                 self.bias = None
 
-        # match signs
+        # sign concordant weights in fwd and bwd pass
         #self.weight_fa = self.weights
         self.weight_fa.data *= torch.sign((torch.sign(self.weights.data) == torch.sign(self.weight_fa.data)).float() -.5)
             

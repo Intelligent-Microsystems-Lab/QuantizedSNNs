@@ -72,7 +72,7 @@ quantization.global_beta = 1.5#quantization.step_d(quantization.global_wb)-.5 #1
 # set parameters
 ms = 1e-3
 delta_t = 1*ms
-quant_on = False
+quant_on = True
 input_mode = 3 #two channel trick, down sample etc.
 
 output_neurons = 11
