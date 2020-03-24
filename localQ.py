@@ -191,7 +191,10 @@ class QLinearFunctional(torch.autograd.Function):
             output += bias.unsqueeze(0).expand_as(output)
 
         # quant act
-        output, clip_info = quant_act(output)
+        if quant_on:
+            output, clip_info = quant_act(output)
+        else:
+            clip_info = None
 
         ctx.quant_on = quant_on
         ctx.save_for_backward(input, weight, weight_fa, bias, clip_info)
@@ -206,7 +209,7 @@ class QLinearFunctional(torch.autograd.Function):
         if ctx.quant_on:
             quant_error = quantization.quant_err(grad_output) * clip_info
         else:
-            quant_error = grad_output * clip_info
+            quant_error = grad_output
 
         if ctx.needs_input_grad[0]:
             grad_input = torch.einsum('ab,bc->ac', quant_error, weight_fa)
