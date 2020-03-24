@@ -56,15 +56,15 @@ x_test = data[0]
 y_test = np.array(data[1], dtype = int) - 1
 
 # set quant level
-quantization.global_ab = 4
-quantization.global_wb = 4
-quantization.global_ub = 4
-quantization.global_qb = 4
-quantization.global_pb = 4
-quantization.global_gb = 4
-quantization.global_eb = 4
-quantization.global_rb = 4
-quantization.global_sb = 4
+quantization.global_ab = 16
+quantization.global_wb = 16
+quantization.global_ub = 16
+quantization.global_qb = 16
+quantization.global_pb = 16
+quantization.global_gb = 16
+quantization.global_eb = 16
+quantization.global_rb = 16
+quantization.global_sb = 16
 quantization.global_lr = int(quantization.global_ab/4)
 quantization.global_beta = 1.5#quantization.step_d(quantization.global_wb)-.5 #1.5 #
 
