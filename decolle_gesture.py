@@ -66,7 +66,7 @@ quantization.global_pb = 32
 quantization.global_gb = 32
 quantization.global_eb = 32
 quantization.global_rb = 32
-quantization.global_sb = 1
+quantization.global_sb = 32
 quantization.global_lr = 1
 quantization.global_beta = 1.5#quantization.step_d(quantization.global_wb)-.5 #1.5 #
 
