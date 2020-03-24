@@ -417,8 +417,6 @@ class LIFConv2dLayer(nn.Module):
 
         self.P, self.R, self.Q = self.alpha * self.P + self.tau_mem * self.Q, 0.65 * self.R, self.beta * self.Q + self.tau_syn * input_t
 
-        import pdb; pdb.set_trace()
-
         # quantize P, Q
         if self.quant_on:
             self.P, _ = quantization.quant_generic(self.P, quantization.global_pb)
@@ -444,6 +442,7 @@ class LIFConv2dLayer(nn.Module):
             rreadout = self.dropout_learning(self.sign_random_readout(self.U_aux.reshape([input_t.shape[0], np.prod(self.out_shape2)]) ))
 
             if train_flag:
+                import pdb; pdb.set_trace()
                 loss_gen = self.loss_fn(rreadout, y_local) + self.l1 * 200e-1 * F.relu((self.U+.01)).mean() + self.l2 *1e-1* F.relu(.1-self.U_aux.mean())
             else:
                 loss_gen = None
