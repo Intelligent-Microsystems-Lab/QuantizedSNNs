@@ -340,9 +340,9 @@ class LIFConv2dLayer(nn.Module):
         self.weights = nn.Parameter(torch.empty((self.out_channels, inp_shape[0],  self.kernel_size, self.kernel_size),  device=device, dtype=dtype, requires_grad=True))
 
         self.stdv =  1 / np.sqrt(torch.tensor(self.weights.shape).prod().item()) / 250
-        if quantization.global_gb is not None:
+        if (quantization.global_gb is not None) or (quantization.global_wb is not None): 
             self.fan_in = kernel_size * kernel_size * inp_shape[0]
-            self.L_min = quantization.global_beta/quantization.step_d(torch.tensor([float(quantization.global_gb)]))
+            self.L_min = quantization.global_beta/quantization.step_d(torch.tensor([float(quantization.global_wb)]))
             self.L = np.max([1 / np.sqrt(torch.tensor(self.weights.shape).prod().item()) / 250 *1e-2, self.L_min])
             #self.L = np.max([np.sqrt( 6/self.fan_in), self.L_min])
             self.scale = 2 ** round(math.log(self.L_min / self.L, 2.0))
@@ -353,7 +353,7 @@ class LIFConv2dLayer(nn.Module):
 
         if bias:
             self.bias = nn.Parameter(torch.empty(self.out_channels, device=device, dtype=dtype, requires_grad=True))
-            if quantization.global_gb is not None:
+            if (quantization.global_gb is not None) or (quantization.global_wb is not None):
                 self.L_bias = np.max([1 / np.sqrt(torch.tensor(self.weights.shape).prod().item()) / 250, self.L_min]) 
                 torch.nn.init.uniform_(self.bias, a = -self.L_bias, b = self.L_bias)
             else:
@@ -390,11 +390,11 @@ class LIFConv2dLayer(nn.Module):
             self.gamma = torch.Tensor([torch.exp( - delta_t / tau_ref)]).to(device)
 
 
-        if quantization.global_gb is not None:
+        if (quantization.global_gb is not None) or (quantization.global_wb is not None):
             with torch.no_grad():
-                self.weights.data = quantization.quant_w_custom(self.weights.data, quantization.global_gb, self.scale)
+                self.weights.data = quantization.quant_w_custom(self.weights.data, quantization.global_wb, self.scale)
                 if self.bias is not None:
-                    self.bias.data = quantization.quant_w_custom(self.bias.data, quantization.global_gb, self.scale)
+                    self.bias.data = quantization.quant_w_custom(self.bias.data, quantization.global_wb, self.scale)
 
         self.L_minw = quantization.global_beta/quantization.step_d(torch.tensor([float(quantization.global_wb)]))
         self.Lw = np.max([1 / np.sqrt(torch.tensor(self.weights.shape).prod().item()) / 250 *1e-2, self.L_min])
@@ -413,9 +413,9 @@ class LIFConv2dLayer(nn.Module):
     def forward(self, input_t, y_local, train_flag = False, test_flag = False):
         if quantization.global_gb is not None:
             with torch.no_grad():
-                self.weights.data = quantization.quant_w_custom(self.weights.data, quantization.global_gb, self.scale)
+                self.weights.data = quantization.quant_w_custom(self.weights.data, quantization.global_gb, 1)
                 if self.bias is not None:
-                    self.bias.data = quantization.quant_w_custom(self.bias.data, quantization.global_gb, self.scale)
+                    self.bias.data = quantization.quant_w_custom(self.bias.data, quantization.global_gb, 1)
 
         self.P, self.R, self.Q = self.alpha * self.P + self.tau_mem * self.Q, 0.65 * self.R, self.beta * self.Q + self.tau_syn * input_t
 

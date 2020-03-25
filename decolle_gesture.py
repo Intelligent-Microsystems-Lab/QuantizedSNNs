@@ -57,14 +57,14 @@ y_test = np.array(data[1], dtype = int) - 1
 
 # set quant level
 quantization.global_ab = None
-quantization.global_wb = None
+quantization.global_wb = 2
 quantization.global_ub = None
 quantization.global_qb = None
 quantization.global_pb = None
 quantization.global_gb = None
 quantization.global_eb = None
 quantization.global_rb = None
-quantization.global_sb = None
+quantization.global_sb = 1
 quantization.global_lr = max([int(quantization.global_ab/8), 1])
 quantization.global_beta = 1.5#quantization.step_d(quantization.global_wb)-.5 #1.5 #
 
