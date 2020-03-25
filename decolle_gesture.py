@@ -91,7 +91,7 @@ tau_mem = torch.Tensor([5*ms, 35*ms]).to(device)
 tau_ref = torch.Tensor([5*ms, 35*ms]).to(device)
 tau_syn = torch.Tensor([5*ms, 10*ms]).to(device)
 
-sl1_loss = torch.nn.SmoothL1Loss()
+sl1_loss = torch.nn.MSELoss()#torch.nn.SmoothL1Loss()
 
 # construct layers
 downsample_l = nn.AvgPool2d(kernel_size = 4, stride = 4)
