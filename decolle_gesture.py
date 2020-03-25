@@ -65,7 +65,7 @@ quantization.global_gb = None
 quantization.global_eb = None
 quantization.global_rb = None
 quantization.global_sb = 1
-quantization.global_lr = max([int(quantization.global_ab/8), 1])
+quantization.global_lr = max([int(quantization.global_ab/8), 1]) if quantization.global_gb is not None else None
 quantization.global_beta = 1.5#quantization.step_d(quantization.global_wb)-.5 #1.5 #
 
 # set parameters
