@@ -352,6 +352,7 @@ class LIFConv2dLayer(nn.Module):
             torch.nn.init.uniform_(self.weights, a = -self.stdv*1e-2, b = self.stdv*1e-2)
 
         if bias:
+            self.scale = 1
             self.bias = nn.Parameter(torch.empty(self.out_channels, device=device, dtype=dtype, requires_grad=True))
             if (quantization.global_gb is not None) or (quantization.global_wb is not None):
                 self.L_bias = np.max([1 / np.sqrt(torch.tensor(self.weights.shape).prod().item()) / 250, self.L_min]) 
