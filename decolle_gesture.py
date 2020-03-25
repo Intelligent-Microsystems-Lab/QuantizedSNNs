@@ -56,22 +56,21 @@ x_test = data[0]
 y_test = np.array(data[1], dtype = int) - 1
 
 # set quant level
-quantization.global_ab = 32
-quantization.global_wb = 32
-quantization.global_ub = 32
-quantization.global_qb = 32
-quantization.global_pb = 32
-quantization.global_gb = 32
-quantization.global_eb = 32
-quantization.global_rb = 32
-quantization.global_sb = 32
+quantization.global_ab = None
+quantization.global_wb = None
+quantization.global_ub = None
+quantization.global_qb = None
+quantization.global_pb = None
+quantization.global_gb = None
+quantization.global_eb = None
+quantization.global_rb = None
+quantization.global_sb = None
 quantization.global_lr = max([int(quantization.global_ab/8), 1])
 quantization.global_beta = 1.5#quantization.step_d(quantization.global_wb)-.5 #1.5 #
 
 # set parameters
 ms = 1e-3
 delta_t = 1*ms
-quant_on = True
 input_mode = 3 #two channel trick, down sample etc.
 
 output_neurons = 11
@@ -97,17 +96,17 @@ sl1_loss = torch.nn.SmoothL1Loss()
 # construct layers
 downsample_l = nn.AvgPool2d(kernel_size = 4, stride = 4)
 
-layer1 = LIFConv2dLayer(inp_shape = (2, 32, 32), kernel_size = 7, out_channels = 64, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, quant_on = quant_on).to(device)
+layer1 = LIFConv2dLayer(inp_shape = (2, 32, 32), kernel_size = 7, out_channels = 64, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2).to(device)
 
-layer2 = LIFConv2dLayer(inp_shape = layer1.out_shape2, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 1, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, quant_on = quant_on).to(device)
+layer2 = LIFConv2dLayer(inp_shape = layer1.out_shape2, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 1, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2).to(device)
 
-layer3 = LIFConv2dLayer(inp_shape = layer2.out_shape2, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, quant_on = quant_on).to(device)
+layer3 = LIFConv2dLayer(inp_shape = layer2.out_shape2, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2).to(device)
 
 
 all_parameters = list(layer1.parameters()) + list(layer2.parameters()) + list(layer3.parameters())
 
 # initlialize optimizier
-if quant_on:
+if quantization.global_gb is not None:
     opt = torch.optim.SGD(all_parameters, lr=1)
 else:
     opt = torch.optim.Adamax(all_parameters, lr=1.0e-9, betas=[0., .95])
@@ -115,15 +114,15 @@ else:
 
 diff_layers_acc = {'train1': [], 'test1': [],'train2': [], 'test2': [],'train3': [], 'test3': [], 'loss':[]}
 
-print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5}{6} {7} l1 {8:.3f} l2 {9:.3f} Inp {10} LR {11} Drop {12}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb, quantization.global_sb, quant_on, l1, l2, input_mode, quantization.global_lr, dropout_p))
+print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5}{6} l1 {7:.3f} l2 {8:.3f} Inp {9} LR {10} Drop {11}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb, quantization.global_sb, l1, l2, input_mode, quantization.global_lr, dropout_p))
 
-plot_file_name = "figures/DVS_WPQUEG{0}{1}{2}{3}{4}{5}{6}{7}_Inp{8}_LR{9}_Drop_{10}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb, quantization.global_sb, quant_on, input_mode, quantization.global_lr, dropout_p)+datetime.datetime.now().strftime("_%Y%m%d_%H%M%S") + ".png"
+plot_file_name = "figures/DVS_WPQUEG{0}{1}{2}{3}{4}{5}{6}_Inp{7}_LR{8}_Drop_{9}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb, quantization.global_sb, input_mode, quantization.global_lr, dropout_p)+datetime.datetime.now().strftime("_%Y%m%d_%H%M%S") + ".png"
 
 print("Epoch Loss   Train1 Train2 Train3 Test1  Test2  Test3  TrainT   TestT")
 
 for e in range(epochs):
     if ((e+1)%lr_div)==0:
-        if quant_on:
+        if quantization.global_gb is not None:
             quantization.global_lr /= 4
             if quantization.global_lr <= 1/16:
                 quantization.global_lr = 1/16
@@ -226,7 +225,7 @@ for e in range(epochs):
     diff_layers_acc['test3'].append(torch.cat(batch_corr['test3']).mean())
 
     print("{0:02d}    {1:.4f} {2:.4f} {3:.4f} {4:.4f} {5:.4f} {6:.4f} {7:.4f} {8:.4f} {9:.4f}".format(e+1, diff_layers_acc['loss'][-1], diff_layers_acc['train1'][-1], diff_layers_acc['train2'][-1], diff_layers_acc['train3'][-1], diff_layers_acc['test1'][-1], diff_layers_acc['test2'][-1], diff_layers_acc['test3'][-1], train_time - start_time, inf_time - train_time))
-    create_graph(plot_file_name, diff_layers_acc, quant_on)
+    create_graph(plot_file_name, diff_layers_acc)
 
 
 # saving results/weights
