@@ -65,7 +65,7 @@ quantization.global_gb = 4
 quantization.global_eb = 4
 quantization.global_rb = 4
 quantization.global_sb = 4
-quantization.global_lr = int(quantization.global_ab/8)
+quantization.global_lr = max([int(quantization.global_ab/8), 1])
 quantization.global_beta = 1.5#quantization.step_d(quantization.global_wb)-.5 #1.5 #
 
 # set parameters

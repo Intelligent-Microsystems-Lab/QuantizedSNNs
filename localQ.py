@@ -214,6 +214,12 @@ class QLinearFunctional(torch.autograd.Function):
         if ctx.needs_input_grad[0]:
             grad_input = torch.einsum('ab,bc->ac', quant_error, weight_fa)
 
+        # quantizing here for sigmoid input
+        if ctx.quant_on:
+            grad_input = quantization.quant_err(grad_input)
+        else:
+            grad_input = grad_input
+
         return grad_input, None, None, None, None
 
 class QLinearLayerSign(nn.Module):
