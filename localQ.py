@@ -397,11 +397,11 @@ class LIFConv2dLayer(nn.Module):
                 if self.bias is not None:
                     self.bias.data = quantization.quant_w_custom(self.bias.data, quantization.global_wb, self.scale)
 
-        self.L_minw = quantization.global_beta/quantization.step_d(torch.tensor([float(quantization.global_wb)]))
-        self.Lw = np.max([1 / np.sqrt(torch.tensor(self.weights.shape).prod().item()) / 250 *1e-2, self.L_min])
-        #self.L = np.max([np.sqrt( 6/self.fan_in), self.L_min])
-        self.scalew = 2 ** round(math.log(self.L_min / self.L, 2.0))
-        self.scalew = self.scale if self.scale > 1 else 1.0
+        # self.L_minw = quantization.global_beta/quantization.step_d(torch.tensor([float(quantization.global_wb)]))
+        # self.Lw = np.max([1 / np.sqrt(torch.tensor(self.weights.shape).prod().item()) / 250 *1e-2, self.L_min])
+        # #self.L = np.max([np.sqrt( 6/self.fan_in), self.L_min])
+        # self.scalew = 2 ** round(math.log(self.L_min / self.L, 2.0))
+        # self.scalew = self.scale if self.scale > 1 else 1.0
 
     def state_init(self, batch_size):
         self.P = torch.zeros((batch_size,) + self.inp_shape).detach().to(self.device)
@@ -428,7 +428,7 @@ class LIFConv2dLayer(nn.Module):
             #self.P, _ = quantization.quant_generic(self.P, quantization.global_pb)
             #self.Q, _ = quantization.quant_generic(self.Q, quantization.global_qb)
 
-        self.U = QSConv2dFunctional.apply(self.P, self.weights, self.bias, self.scalew, self.padding) + self.R 
+        self.U = QSConv2dFunctional.apply(self.P, self.weights, self.bias, self.scale, self.padding) + self.R 
 
         # quantize U
         if quantization.global_ub is not None:
