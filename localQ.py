@@ -430,13 +430,13 @@ class LIFConv2dLayer(nn.Module):
         self.U = QSConv2dFunctional.apply(self.P, self.weights, self.bias, self.scalew, self.padding) + self.R 
 
         # quantize U
-        if quantization.global_ub is not None::
+        if quantization.global_ub is not None:
             self.U, _ = quantization.quant_generic(self.U, quantization.global_ub)
 
         self.S = (self.U >= self.thr).float()
         self.R -= self.S * 1
 
-        if quantization.global_rb is not None::
+        if quantization.global_rb is not None:
             self.R, _ = quantization.quant_generic(self.R, quantization.global_rb)
 
         if test_flag or train_flag:
