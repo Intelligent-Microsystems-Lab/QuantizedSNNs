@@ -447,7 +447,7 @@ class LIFConv2dLayer(nn.Module):
 
             if train_flag:
                 import pdb; pdb.set_trace()
-                if quantization.global_eb is not None
+                if quantization.global_eb is not None:
                     loss_gen = self.loss_fn(rreadout, y_local) + self.l1 * 200e-1 * F.relu((self.U+.01)).mean() + self.l2 *1e-1* F.relu(.1-self.U_aux.mean())
                 else:
                     loss_gen = self.loss_fn(rreadout, y_local) + self.l1 * 200e-1 * F.relu((self.U+.01)).mean() + self.l2 *1e-1* F.relu(.1-self.U_aux.mean())
