@@ -226,18 +226,18 @@ class QLinearLayerSign(nn.Module):
     # we dont have a bias 
     def __init__(self, input_features, output_features, pass_through = False, bias = True):
         super(QLinearLayerSign, self).__init__()
-        self.input_features = input_features
+        self.input_features  = input_features
         self.output_features = output_features
 
         # weight and bias for forward pass
-        self.weights = nn.Parameter(torch.Tensor(output_features, input_features), requires_grad=False)
+        self.weights   = nn.Parameter(torch.Tensor(output_features, input_features), requires_grad=False)
         self.weight_fa = nn.Parameter(torch.Tensor(output_features, input_features), requires_grad=False)
-        self.bias = nn.Parameter(torch.Tensor(output_features), requires_grad=False)
+        self.bias      = nn.Parameter(torch.Tensor(output_features), requires_grad=False)
 
         if quantization.global_sb is not None:
             self.L_min = quantization.global_beta/quantization.step_d(torch.tensor([float(quantization.global_sb)]))
-            #self.L = np.max([np.sqrt(6/self.input_features), self.L_min])
-            self.L = np.max([lc_ampl/np.sqrt(torch.tensor(self.weights.shape).prod().item()), self.L_min])
+            #self.L    = np.max([np.sqrt(6/self.input_features), self.L_min])
+            self.L     = np.max([lc_ampl/np.sqrt(torch.tensor(self.weights.shape).prod().item()), self.L_min])
             self.scale = 2 ** round(math.log(self.L_min / self.L, 2.0))
             self.scale = self.scale if self.scale > 1 else 1.0
 
@@ -251,10 +251,10 @@ class QLinearLayerSign(nn.Module):
 
             # quantize them
             with torch.no_grad():
-                self.weights.data = quantization.quant_w_custom(self.weights.data, quantization.global_sb)
+                self.weights.data   = quantization.quant_w_custom(self.weights.data, quantization.global_sb)
                 self.weight_fa.data = quantization.quant_w_custom(self.weight_fa.data, quantization.global_sb)
                 if self.bias is not None:
-                    self.bias.data = quantization.quant_w_custom(self.bias.data, quantization.global_sb)
+                    self.bias.data  = quantization.quant_w_custom(self.bias.data, quantization.global_sb)
         else:
             self.scale = 1
             self.stdv = lc_ampl/np.sqrt(torch.tensor(self.weights.shape).prod().item())
@@ -421,7 +421,7 @@ class LIFConv2dLayer(nn.Module):
 
         self.P, self.R, self.Q = self.alpha * self.P + self.tau_mem * self.Q, 0.65 * self.R, self.beta * self.Q + self.tau_syn * input_t
 
-        # quantize P, Q
+        # quantize P, Q -> figure out bounds ...
         if quantization.global_pb is not None:
             self.P = torch.clamp(torch.round(self.P), -quantization.step_d(quantization.global_pb)+1, quantization.step_d(quantization.global_pb))
         if quantization.global_qb is not None:
@@ -433,17 +433,22 @@ class LIFConv2dLayer(nn.Module):
 
         # quantize U
         if quantization.global_ub is not None:
+            # bound between -inf and threshold
             self.U, _ = quantization.quant_generic(self.U, quantization.global_ub)
 
         self.S = (self.U >= self.thr).float()
         self.R -= self.S * 1
 
         if quantization.global_rfb is not None:
+            # figure out bounds
             self.R, _ = quantization.quant_generic(self.R, quantization.global_rfb)
 
         if test_flag or train_flag:
             self.U_aux = torch.sigmoid(self.U) # quantize this function.... at some point
             self.U_aux = self.mpool(self.U_aux)
+            if quantization.global_ub is not None:
+                #sigmoid is bound between 0 and 1, consider that
+                self.U_aux, _ = quantization.quant_generic(self.U_aux, quantization.global_ub)
 
             rreadout = self.dropout_learning(self.sign_random_readout(self.U_aux.reshape([input_t.shape[0], np.prod(self.out_shape2)]) ))
 
