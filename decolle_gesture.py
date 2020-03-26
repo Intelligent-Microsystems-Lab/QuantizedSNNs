@@ -122,7 +122,7 @@ print("WPQUEG Quantization: {0}{1}{2}{3}{4}{5}{6} l1 {7:.3f} l2 {8:.3f} Inp {9} 
 
 plot_file_name = "figures/DVS_WPQUEG{0}{1}{2}{3}{4}{5}{6}_Inp{7}_LR{8}_Drop_{9}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb, quantization.global_sb, input_mode, quantization.global_lr, dropout_p)+datetime.datetime.now().strftime("_%Y%m%d_%H%M%S") + ".png"
 
-print("Epoch Loss   Train1 Train2 Train3 Test1  Test2  Test3  TrainT   TestT")
+print("Epoch Loss      Train1 Train2 Train3 Test1  Test2  Test3  TrainT   TestT")
 
 for e in range(epochs):
     if ((e+1)%lr_div)==0:
@@ -239,4 +239,11 @@ with open('results/'+str(uuid.uuid1())+'.pkl', 'wb') as f:
     pickle.dump(results, f)
 
 
+# # how to load
+# import pickle
+
+# with open('results/9dcc41f0-6f08-11ea-83ed-a0369ffa9370.pkl', 'rb') as f:
+#     # The protocol version used is detected automatically, so we do not
+#     # have to specify it.
+#     data = pickle.load(f)
 
