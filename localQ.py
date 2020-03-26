@@ -237,7 +237,7 @@ class QLinearLayerSign(nn.Module):
 
         if quantization.global_sb is not None:
             import pdb; pdb.set_trace()
-            self.L_min = quantization.global_beta/quantization.step_d(torch.tensor([float(quantization.global_sb)]))
+            self.L_min = quantization.global_beta/quantization.org_sigma(torch.tensor([float(quantization.global_sb)]))
             #self.L    = np.max([np.sqrt(6/self.input_features), self.L_min])
             self.L     = np.max([lc_ampl/np.sqrt(torch.tensor(self.weights.shape).prod().item()), self.L_min])
             self.scale = 2 ** round(math.log(self.L_min / self.L, 2.0))
@@ -346,7 +346,7 @@ class LIFConv2dLayer(nn.Module):
         self.stdv =  1 / np.sqrt(torch.tensor(self.weights.shape).prod().item()) / 250
         if (quantization.global_gb is not None) or (quantization.global_wb is not None): 
             self.fan_in = kernel_size * kernel_size * inp_shape[0]
-            self.L_min = quantization.global_beta/quantization.step_d(torch.tensor([float(quantization.global_wb)]))
+            self.L_min = quantization.global_beta/quantization.org_sigma(torch.tensor([float(quantization.global_wb)]))
             self.L = np.max([1 / np.sqrt(torch.tensor(self.weights.shape).prod().item()) / 250 *1e-2, self.L_min])
             #self.L = np.max([np.sqrt( 6/self.fan_in), self.L_min])
             self.scale = 2 ** round(math.log(self.L_min / self.L, 2.0))

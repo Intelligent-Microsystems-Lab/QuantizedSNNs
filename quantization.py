@@ -29,6 +29,9 @@ count_w_vals = None
 def step_d(bits): 
     return 2.0 ** (bits - 1)
 
+def org_sigma(bits): 
+    return 2.0 ** (1 - bits)
+
 def shift(x):
     if x == 0:
         return 1
