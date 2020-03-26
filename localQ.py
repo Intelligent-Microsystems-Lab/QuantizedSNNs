@@ -185,28 +185,28 @@ def sparse_data_generator_Static(X, y, batch_size, nb_steps, samples, max_hertz,
 class QLinearFunctional(torch.autograd.Function):
     '''from https://github.com/L0SG/feedback-alignment-pytorch/'''
     @staticmethod
-    def forward(ctx, input, weight, weight_fa, bias=None):
+    def forward(ctx, input, weight, weight_fa, bias=None, scale):
         output = torch.einsum('ab,cb->ac', input, weight)
         if bias is not None:
             output += bias.unsqueeze(0).expand_as(output)
 
+        if quantization.global_sb is not None:
+            output = output/scale
         # quant act
         if quantization.global_ab is not None:
-            output, clip_info = quantization.quant_act(output)
-        else:
-            clip_info = None
+            output, _ = quantization.quant_act(output)
 
-        ctx.save_for_backward(input, weight, weight_fa, bias, clip_info)
+        ctx.save_for_backward(input, weight, weight_fa, bias)
 
         return output
 
     @staticmethod
     def backward(ctx, grad_output):
-        input, weight, weight_fa, bias, clip_info = ctx.saved_tensors
+        input, weight, weight_fa, bias = ctx.saved_tensors
         grad_input = None
 
         if quantization.global_eb is not None:
-            quant_error = quantization.quant_err(grad_output) * clip_info.float()
+            quant_error = quantization.quant_err(grad_output) #* clip_info.float()
         else:
             quant_error = grad_output
 
@@ -251,11 +251,12 @@ class QLinearLayerSign(nn.Module):
 
             # quantize them
             with torch.no_grad():
-                self.weights.data = quantization.quant_w_custom(self.weights.data, quantization.global_sb, self.scale)
-                self.weight_fa.data = quantization.quant_w_custom(self.weight_fa.data, quantization.global_sb, self.scale)
+                self.weights.data = quantization.quant_w_custom(self.weights.data, quantization.global_sb)
+                self.weight_fa.data = quantization.quant_w_custom(self.weight_fa.data, quantization.global_sb)
                 if self.bias is not None:
-                    self.bias.data = quantization.quant_w_custom(self.bias.data, quantization.global_sb, self.scale)
+                    self.bias.data = quantization.quant_w_custom(self.bias.data, quantization.global_sb)
         else:
+            self.scale = 1
             self.stdv = lc_ampl/np.sqrt(torch.tensor(self.weights.shape).prod().item())
             torch.nn.init.uniform_(self.weights, a = -self.stdv, b = self.stdv)
             torch.nn.init.uniform_(self.weight_fa, a = -self.stdv, b = self.stdv)
@@ -270,7 +271,7 @@ class QLinearLayerSign(nn.Module):
             
         
     def forward(self, input):
-        return QLinearFunctional.apply(input, self.weights, self.weight_fa, self.bias)
+        return QLinearFunctional.apply(input, self.weights, self.weight_fa, self.bias, self.scale) 
 
 
 
@@ -437,8 +438,8 @@ class LIFConv2dLayer(nn.Module):
         self.S = (self.U >= self.thr).float()
         self.R -= self.S * 1
 
-        if quantization.global_rb is not None:
-            self.R, _ = quantization.quant_generic(self.R, quantization.global_rb)
+        if quantization.global_rfb is not None:
+            self.R, _ = quantization.quant_generic(self.R, quantization.global_rfb)
 
         if test_flag or train_flag:
             self.U_aux = torch.sigmoid(self.U) # quantize this function.... at some point
