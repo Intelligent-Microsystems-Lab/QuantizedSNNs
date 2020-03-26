@@ -268,6 +268,7 @@ class QLinearLayerSign(nn.Module):
 
         # sign concordant weights in fwd and bwd pass
         #self.weight_fa = self.weights
+        import pdb; pdb.set_trace()
         self.weight_fa.data *= torch.sign((torch.sign(self.weights.data) == torch.sign(self.weight_fa.data)).float() -.5)
             
         
