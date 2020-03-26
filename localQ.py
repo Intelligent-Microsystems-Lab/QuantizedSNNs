@@ -185,7 +185,7 @@ def sparse_data_generator_Static(X, y, batch_size, nb_steps, samples, max_hertz,
 class QLinearFunctional(torch.autograd.Function):
     '''from https://github.com/L0SG/feedback-alignment-pytorch/'''
     @staticmethod
-    def forward(ctx, input, weight, weight_fa, bias=None, scale):
+    def forward(ctx, input, weight, weight_fa, bias, scale):
         output = torch.einsum('ab,cb->ac', input, weight)
         if bias is not None:
             output += bias.unsqueeze(0).expand_as(output)
