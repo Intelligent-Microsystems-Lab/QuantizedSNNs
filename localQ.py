@@ -281,14 +281,16 @@ class QSConv2dFunctional(torch.autograd.Function):
     @staticmethod
     def forward(ctx, input, weights, bias, scale, padding = 0):
         if quantization.global_wb is not None:
-            w_quant = quantization.quant_w(weights, scale)
-            bias_quant = quantization.quant_w(bias, scale)
+            w_quant = quantization.quant_w(weights, 1)
+            bias_quant = quantization.quant_w(bias, 1)
         else:
             w_quant = weights
             bias_quant = bias
         ctx.padding = padding
 
         output = F.conv2d(input = input, weight = w_quant, bias = bias_quant, padding = ctx.padding)
+        if quantization.global_wb is not None:
+            output = output / scale
 
         ctx.save_for_backward(input, w_quant, bias_quant) 
         return output
