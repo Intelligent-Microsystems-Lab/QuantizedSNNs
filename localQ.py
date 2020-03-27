@@ -471,4 +471,3 @@ class LIFConv2dLayer(nn.Module):
         return self.mpool(self.S), loss_gen, rreadout.argmax(1)
 
 
-
