@@ -353,6 +353,7 @@ class LIFConv2dLayer(nn.Module):
             self.L_min = quantization.global_beta/quantization.step_d(torch.tensor([float(quantization.global_wb)]))
             #self.L = 1 / np.sqrt(self.fan_in) / 250 
             #self.stdv = np.sqrt(6/self.fan_in)
+            import pdb; pdb.set_trace()
             self.scale = 2 ** round(math.log(self.L_min / self.stdv, 2.0))
             self.scale = self.scale if self.scale > 1 else 1.0
             self.L     = np.max([self.stdv, self.L_min])
