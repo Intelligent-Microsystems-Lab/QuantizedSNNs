@@ -109,6 +109,7 @@ def sparse_data_generator_DVSPoker(X, y, batch_size, nb_steps, shuffle, device, 
 
         y_batch = torch.tensor(y[batch_index], dtype = int)
         try:
+            torch.cuda.empty_cache()
             yield sparse_matrix.to(device=device), y_batch.to(device=device)
             counter += 1
         except StopIteration:
@@ -153,6 +154,7 @@ def sparse_data_generator_DVSGesture(X, y, batch_size, nb_steps, shuffle, device
 
         y_batch = torch.tensor(y[batch_index], dtype = int)
         try:
+            torch.cuda.empty_cache()
             yield sparse_matrix.to(device=device), y_batch.to(device=device)
             counter += 1
         except StopIteration:
@@ -177,6 +179,7 @@ def sparse_data_generator_Static(X, y, batch_size, nb_steps, samples, max_hertz,
         X_batch = torch.from_numpy(X_batch).float()
         y_batch = y[cur_sample]
         try:
+            torch.cuda.empty_cache()
             yield X_batch.to(device), y_batch.to(device)
             counter += 1
         except StopIteration:
