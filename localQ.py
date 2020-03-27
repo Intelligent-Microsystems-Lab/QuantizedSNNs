@@ -252,10 +252,10 @@ class QLinearLayerSign(nn.Module):
 
             # quantize them
             with torch.no_grad():
-                self.weights.data   = quantization.quant_w_custom(self.weights.data, quantization.global_sb)
-                self.weight_fa.data = quantization.quant_w_custom(self.weight_fa.data, quantization.global_sb)
+                self.weights.data   = quantization.quant_s(self.weights.data)
+                self.weight_fa.data = quantization.quant_s(self.weight_fa.data)
                 if self.bias is not None:
-                    self.bias.data  = quantization.quant_w_custom(self.bias.data, quantization.global_sb)
+                    self.bias.data  = quantization.quant_s(self.bias.data)
         else:
             self.scale = 1
             self.stdv = lc_ampl/np.sqrt(self.input_features)
