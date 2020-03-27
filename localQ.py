@@ -360,9 +360,10 @@ class LIFConv2dLayer(nn.Module):
             self.bias = nn.Parameter(torch.empty(self.out_channels, device=device, dtype=dtype, requires_grad=True))
 
             if quantization.global_wb is not None:
-                torch.nn.init.uniform_(self.bias, a = -self.L, b = self.L)
+                bias_L = np.max([self.stdv*1e2, self.L_min])
+                torch.nn.init.uniform_(self.bias, a = -bias_L, b = bias_L)
             else:
-                torch.nn.init.uniform_(self.bias, a = -self.stdv, b = self.stdv)
+                torch.nn.init.uniform_(self.bias, a = -self.stdv*1e2, b = self.stdv*1e2)
         else:
             self.register_parameter('bias', None)
 
