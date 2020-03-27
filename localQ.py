@@ -198,7 +198,6 @@ class QLinearFunctional(torch.autograd.Function):
 
         ctx.save_for_backward(input, weight, weight_fa, bias)
 
-        import pdb; pdb.set_trace()
         return output
 
     @staticmethod
