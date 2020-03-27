@@ -348,7 +348,7 @@ class LIFConv2dLayer(nn.Module):
 
         self.weights = nn.Parameter(torch.empty((self.out_channels, inp_shape[0],  self.kernel_size, self.kernel_size),  device=device, dtype=dtype, requires_grad=True))
 
-        self.stdv =  1 / np.sqrt(self.fan_in)# / 250 * 1e-2
+        self.stdv =  1 / np.sqrt(self.fan_in) / 250 * 1e-2
         if quantization.global_wb is not None:
             self.L_min = quantization.global_beta/quantization.step_d(torch.tensor([float(quantization.global_wb)]))
             #self.L = 1 / np.sqrt(self.fan_in) / 250 
@@ -364,12 +364,11 @@ class LIFConv2dLayer(nn.Module):
 
         if bias:
             self.bias = nn.Parameter(torch.empty(self.out_channels, device=device, dtype=dtype, requires_grad=True))
-            # is there any inherent advantage of doing that 1e2 two thing
             if quantization.global_wb is not None:
-                #bias_L = np.max([self.stdv*1e2, self.L_min])
-                torch.nn.init.uniform_(self.bias, a = -self.L, b = self.L)
+                bias_L = np.max([self.stdv*1e2, self.L_min])
+                torch.nn.init.uniform_(self.bias, a = -bias_L, b = bias_L)
             else:
-                torch.nn.init.uniform_(self.bias, a = -self.stdv, b = self.stdv) #*1e2
+                torch.nn.init.uniform_(self.bias, a = -self.stdv *1e2, b = self.stdv *1e2)
         else:
             self.register_parameter('bias', None)
 
