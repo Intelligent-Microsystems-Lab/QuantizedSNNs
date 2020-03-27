@@ -333,6 +333,7 @@ class LIFConv2dLayer(nn.Module):
         self.padding = padding
         self.pooling = pooling
         self.thr = thr
+        self.fan_in = kernel_size * kernel_size * inp_shape[0]
                 
         self.dropout_learning = nn.Dropout(p=dropout_p)
         self.dropout_p = dropout_p
@@ -342,25 +343,24 @@ class LIFConv2dLayer(nn.Module):
 
         self.weights = nn.Parameter(torch.empty((self.out_channels, inp_shape[0],  self.kernel_size, self.kernel_size),  device=device, dtype=dtype, requires_grad=True))
 
-        self.stdv =  1 / np.sqrt(torch.tensor(self.weights.shape).prod().item()) / 250
+        self.stdv =  1 / np.sqrt(self.fan_in) / 250 #* 1e-2
         if quantization.global_wb is not None:
-            import pdb; pdb.set_trace() 
-            self.fan_in = kernel_size * kernel_size * inp_shape[0]
-            self.L_min = quantization.global_beta/quantization.org_sigma(torch.tensor([float(quantization.global_wb)]))
-            self.L = np.max([1 / np.sqrt(torch.tensor(self.weights.shape).prod().item()) / 250 *1e-2, self.L_min])
-            #self.L = np.max([np.sqrt( 6/self.fan_in), self.L_min])
-            self.scale = 2 ** round(math.log(self.L_min / self.L, 2.0))
+            self.L_min = quantization.global_beta/quantization.step_d(torch.tensor([float(quantization.global_wb)]))
+            #self.L = 1 / np.sqrt(self.fan_in) / 250 
+            #self.stdv = np.sqrt(6/self.fan_in)
+            self.scale = 2 ** round(math.log(self.L_min / self.stdv, 2.0))
             self.scale = self.scale if self.scale > 1 else 1.0
+            self.L     = np.max([self.stdv, self.L_min])
             torch.nn.init.uniform_(self.weights, a = -self.L, b = self.L)
         else:
-            torch.nn.init.uniform_(self.weights, a = -self.stdv*1e-2, b = self.stdv*1e-2)
+            self.scale = 1
+            torch.nn.init.uniform_(self.weights, a = -self.stdv , b = self.stdv) #* 1e-2
 
         if bias:
-            self.scale = 1
             self.bias = nn.Parameter(torch.empty(self.out_channels, device=device, dtype=dtype, requires_grad=True))
-            if (quantization.global_gb is not None) or (quantization.global_wb is not None):
-                self.L_bias = np.max([1 / np.sqrt(torch.tensor(self.weights.shape).prod().item()) / 250, self.L_min]) 
-                torch.nn.init.uniform_(self.bias, a = -self.L_bias, b = self.L_bias)
+
+            if quantization.global_wb is not None:
+                torch.nn.init.uniform_(self.bias, a = -self.L, b = self.L)
             else:
                 torch.nn.init.uniform_(self.bias, a = -self.stdv, b = self.stdv)
         else:
@@ -395,17 +395,12 @@ class LIFConv2dLayer(nn.Module):
             self.gamma = torch.Tensor([torch.exp( - delta_t / tau_ref)]).to(device)
 
 
-        if (quantization.global_gb is not None) or (quantization.global_wb is not None):
+        if quantization.global_wb is not None:
             with torch.no_grad():
-                self.weights.data = quantization.quant_w_custom(self.weights.data, quantization.global_wb, self.scale)
+                self.weights.data = quantization.quant_w(self.weights.data)
                 if self.bias is not None:
-                    self.bias.data = quantization.quant_w_custom(self.bias.data, quantization.global_wb, self.scale)
+                    self.bias.data = quantization.quant_w(self.bias.data)
 
-        # self.L_minw = quantization.global_beta/quantization.step_d(torch.tensor([float(quantization.global_wb)]))
-        # self.Lw = np.max([1 / np.sqrt(torch.tensor(self.weights.shape).prod().item()) / 250 *1e-2, self.L_min])
-        # #self.L = np.max([np.sqrt( 6/self.fan_in), self.L_min])
-        # self.scalew = 2 ** round(math.log(self.L_min / self.L, 2.0))
-        # self.scalew = self.scale if self.scale > 1 else 1.0
 
     def state_init(self, batch_size):
         self.P = torch.zeros((batch_size,) + self.inp_shape).detach().to(self.device)
@@ -416,11 +411,12 @@ class LIFConv2dLayer(nn.Module):
 
     
     def forward(self, input_t, y_local, train_flag = False, test_flag = False):
+        # probably dont need to quantize because gb steps are arleady in the right level... just clipping
         if quantization.global_gb is not None:
             with torch.no_grad():
-                self.weights.data = quantization.quant_w_custom(self.weights.data, quantization.global_gb, 1)
+                self.weights.data = quantization.clip(self.weights.data, quantization.global_gb)
                 if self.bias is not None:
-                    self.bias.data = quantization.quant_w_custom(self.bias.data, quantization.global_gb, 1)
+                    self.bias.data = quantization.clip(self.bias.data, quantization.global_gb)
 
         self.P, self.R, self.Q = self.alpha * self.P + self.tau_mem * self.Q, 0.65 * self.R, self.beta * self.Q + self.tau_syn * input_t
 

@@ -65,16 +65,6 @@ def quant_w(x, scale = 1):
     #    return x + diff
     return (x + diff)/scale
 
-def quant_w_custom(x, xb, scale = 1):
-    if x is None:
-        return 0
-
-    with torch.no_grad():
-        y = quant(clip(x, xb), xb)
-        diff = (y - x)
-
-    return (x + diff)/scale
-
 def quant_act(x):
     save_x = x
     x = clip(x, global_ab)
