@@ -59,7 +59,7 @@ y_test = np.array(data[1], dtype = int) - 1
 quantization.global_ab = 8
 quantization.global_gb = None
 quantization.global_eb = None
-quantization.global_sb = 2
+quantization.global_sb = 1
 
 quantization.global_wb = None
 quantization.global_ub = None
