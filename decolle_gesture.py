@@ -61,11 +61,12 @@ quantization.global_gb = None
 quantization.global_eb = None
 quantization.global_sb = None
 
-quantization.global_wb = 2
+quantization.global_wb = None
 quantization.global_ub = None
 quantization.global_qb = None
 quantization.global_pb = None
 quantization.global_rfb = None
+quantization.global_sig = None
 
 quantization.global_rb = 16
 quantization.global_lr = max([int(quantization.global_ab/8), 1]) if quantization.global_gb is not None else None

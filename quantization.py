@@ -16,6 +16,8 @@ global_qb = 8
 global_pb = 8
 global_rb = 16
 global_sb = 1
+global_rfb = 8
+global_sig = 8
 
 global_beta = 1.5
 global_lr = 1 #8
@@ -73,6 +75,12 @@ def quant_act(x):
         y = quant(x, global_ab)
         diff = y - x
     return x + diff, diff_map
+
+def quant_sig(x):
+    # inputs are outputs of sigmoid, so betwen 0 and 1
+    scale = 2.0 ** global_sig
+    return torch.round(x * scale ) / scale
+
 
 def quant_generic(x, cb):
     save_x = x
