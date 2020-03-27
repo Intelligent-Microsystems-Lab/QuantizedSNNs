@@ -61,7 +61,7 @@ quantization.global_gb = None
 quantization.global_eb = None
 quantization.global_sb = None
 
-quantization.global_wb = 3
+quantization.global_wb = 8
 quantization.global_ub = None
 quantization.global_qb = None
 quantization.global_pb = None
@@ -176,6 +176,8 @@ for e in range(epochs):
                 rread_hist1_train.append(temp_corr1)
                 rread_hist2_train.append(temp_corr2)
                 rread_hist3_train.append(temp_corr3)
+
+        import pdb; pdb.set_trace()
 
         batch_corr['train1'].append(acc_comp(rread_hist1_train, y_local, True))
         batch_corr['train2'].append(acc_comp(rread_hist2_train, y_local, True))
