@@ -343,7 +343,8 @@ class LIFConv2dLayer(nn.Module):
         self.weights = nn.Parameter(torch.empty((self.out_channels, inp_shape[0],  self.kernel_size, self.kernel_size),  device=device, dtype=dtype, requires_grad=True))
 
         self.stdv =  1 / np.sqrt(torch.tensor(self.weights.shape).prod().item()) / 250
-        if (quantization.global_gb is not None) or (quantization.global_wb is not None): 
+        if quantization.global_wb is not None:
+            import pdb; pdb.set_trace() 
             self.fan_in = kernel_size * kernel_size * inp_shape[0]
             self.L_min = quantization.global_beta/quantization.org_sigma(torch.tensor([float(quantization.global_wb)]))
             self.L = np.max([1 / np.sqrt(torch.tensor(self.weights.shape).prod().item()) / 250 *1e-2, self.L_min])
