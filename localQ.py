@@ -358,7 +358,7 @@ class LIFConv2dLayer(nn.Module):
 
         if bias:
             self.bias = nn.Parameter(torch.empty(self.out_channels, device=device, dtype=dtype, requires_grad=True))
-
+            # is there any inherent advantage of doing that 1e2 two thing
             if quantization.global_wb is not None:
                 bias_L = np.max([self.stdv*1e2, self.L_min])
                 torch.nn.init.uniform_(self.bias, a = -bias_L, b = bias_L)
