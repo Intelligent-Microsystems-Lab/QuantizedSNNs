@@ -189,6 +189,9 @@ class QLinearFunctional(torch.autograd.Function):
     '''from https://github.com/L0SG/feedback-alignment-pytorch/'''
     @staticmethod
     def forward(ctx, input, weight, weight_fa, bias, scale):
+        if quantization.global_sig is not None:
+            input = quantization.quant_sig(input)
+
         output = torch.einsum('ab,cb->ac', input, weight)
         if bias is not None:
             output += bias.unsqueeze(0).expand_as(output)
@@ -450,9 +453,6 @@ class LIFConv2dLayer(nn.Module):
         if test_flag or train_flag:
             self.U_aux = torch.sigmoid(self.U) # quantize this function.... at some point
             self.U_aux = self.mpool(self.U_aux)
-            if quantization.global_sig is not None:
-                import pdb; pdb.set_trace()
-                self.U_aux = quantization.quant_sig(self.U_aux)
 
             rreadout = self.dropout_learning(self.sign_random_readout(self.U_aux.reshape([input_t.shape[0], np.prod(self.out_shape2)]) ))
 
