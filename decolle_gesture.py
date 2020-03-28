@@ -71,7 +71,7 @@ quantization.global_rfb = None
 
 quantization.global_rb = 16
 quantization.global_lr = max([int(quantization.global_gb/8), 1]) if quantization.global_gb is not None else None
-quantization.global_lr_sgd = 1.0e-1 if quantization.global_wb is not None else None
+quantization.global_lr_sgd = 1.0e-6 if quantization.global_wb is not None else None
 # quantization.global_lr_old = max([int(quantization.global_gb/8), 1]) if quantization.global_wb is not None else None # under development
 quantization.global_beta = 1.5#quantization.step_d(quantization.global_wb)-.5 #1.5 #
 
@@ -116,7 +116,7 @@ all_parameters = list(layer1.parameters()) + list(layer2.parameters()) + list(la
 if quantization.global_gb is not None:
     opt = torch.optim.SGD(all_parameters, lr=1)
 else:
-    opt = torch.optim.SGD(all_parameters, lr=1.0e-9)
+    opt = torch.optim.SGD(all_parameters, lr= quantization.global_lr_sgd) # 1.0e-9
     #opt = torch.optim.Adamax(all_parameters, lr=1.0e-9, betas=[0., .95])
 
 
