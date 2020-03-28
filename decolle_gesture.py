@@ -56,9 +56,9 @@ x_test = data[0]
 y_test = np.array(data[1], dtype = int) - 1
 
 # set quant level
-quantization.global_ab  = None
-quantization.global_sig = None
-quantization.global_sb  = None
+quantization.global_ab  = 8
+quantization.global_sig = 8
+quantization.global_sb  = 1
 quantization.global_gb  = None
 quantization.global_eb  = None
 
