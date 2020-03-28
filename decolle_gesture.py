@@ -62,7 +62,7 @@ quantization.global_sb  = 1
 quantization.global_gb  = 8
 quantization.global_eb  = 8
 
-quantization.global_wb  = 2
+quantization.global_wb  = 4
 quantization.global_ub  = None
 quantization.global_qb  = None
 quantization.global_pb  = None
