@@ -56,16 +56,16 @@ x_test = data[0]
 y_test = np.array(data[1], dtype = int) - 1
 
 # set quant level
-quantization.global_ab = None
+quantization.global_ab  = None
 quantization.global_sig = None
-quantization.global_sb = None
-quantization.global_gb = None
-quantization.global_eb = None
+quantization.global_sb  = None
+quantization.global_gb  = None
+quantization.global_eb  = None
 
-quantization.global_wb = 2
-quantization.global_ub = None
-quantization.global_qb = None
-quantization.global_pb = None
+quantization.global_wb  = None
+quantization.global_ub  = None
+quantization.global_qb  = None
+quantization.global_pb  = None
 quantization.global_rfb = None
 
 
@@ -179,6 +179,7 @@ for e in range(epochs):
                 rread_hist1_train.append(temp_corr1)
                 rread_hist2_train.append(temp_corr2)
                 rread_hist3_train.append(temp_corr3)
+                print(loss_gen)
 
         batch_corr['train1'].append(acc_comp(rread_hist1_train, y_local, True))
         batch_corr['train2'].append(acc_comp(rread_hist2_train, y_local, True))
