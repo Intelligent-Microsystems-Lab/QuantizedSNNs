@@ -299,6 +299,14 @@ class QSConv2dFunctional(torch.autograd.Function):
             output = output / scale
 
         ctx.save_for_backward(input, w_quant, bias_quant) 
+
+
+        # quantize U
+        if quantization.global_ub is not None:
+            # bound between -inf and threshold 
+            # easy case thr = 0 (maybe adaptive later)
+            self.U, _ = quantization.quant_generic(self.U, quantization.global_ub)
+
         return output
 
     @staticmethod
@@ -424,37 +432,27 @@ class LIFConv2dLayer(nn.Module):
                 self.weights.data = quantization.clip(self.weights.data, quantization.global_gb)
                 if self.bias is not None:
                     self.bias.data = quantization.clip(self.bias.data, quantization.global_gb)
+        if quantization.global_rfb is not None:
+            # figure out bounds
+            self.R, _ = quantization.quant_generic(self.R, quantization.global_rfb)
 
         self.P, self.R, self.Q = self.alpha * self.P + self.tau_mem * self.Q, 0.65 * self.R, self.beta * self.Q + self.tau_syn * input_t
 
-        # quantize P, Q -> figure out bounds ...
+        # quantize P, Q -> integers // bounds?
         if quantization.global_pb is not None:
             self.P = torch.clamp(torch.round(self.P), -quantization.step_d(quantization.global_pb)+1, quantization.step_d(quantization.global_pb))
         if quantization.global_qb is not None:
             self.Q = torch.clamp(torch.round(self.Q), -quantization.step_d(quantization.global_qb)+1, quantization.step_d(quantization.global_qb))
-            #self.P, _ = quantization.quant_generic(self.P, quantization.global_pb)
-            #self.Q, _ = quantization.quant_generic(self.Q, quantization.global_qb)
 
         self.U = QSConv2dFunctional.apply(self.P, self.weights, self.bias, self.scale, self.padding) + self.R 
-
-        # quantize U
-        if quantization.global_ub is not None:
-            # bound between -inf and threshold 
-            # easy case thr = 0 (maybe adaptive later)
-            self.U, _ = quantization.quant_generic(self.U, quantization.global_ub)
-
         self.S = (self.U >= self.thr).float()
         self.R -= self.S * 1
-
-        if quantization.global_rfb is not None:
-            # figure out bounds
-            self.R, _ = quantization.quant_generic(self.R, quantization.global_rfb)
 
         if test_flag or train_flag:
             self.U_aux = torch.sigmoid(self.U) # quantize this function.... at some point
             self.U_aux = self.mpool(self.U_aux)
 
-            rreadout = self.dropout_learning(self.sign_random_readout(self.U_aux.reshape([input_t.shape[0], np.prod(self.out_shape2)]) ))
+            rreadout = self.dropout_learning(self.sign_random_readout(self.U_aux.reshape([input_t.shape[0], np.prod(self.out_shape2)])))
 
             if train_flag:
                 if quantization.global_eb is not None:
