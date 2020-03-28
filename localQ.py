@@ -451,6 +451,7 @@ class LIFConv2dLayer(nn.Module):
             self.U_aux = torch.sigmoid(self.U) # quantize this function.... at some point
             self.U_aux = self.mpool(self.U_aux)
             if quantization.global_sig is not None:
+                import pdb; pdb.set_trace()
                 self.U_aux = quantization.quant_sig(self.U_aux)
 
             rreadout = self.dropout_learning(self.sign_random_readout(self.U_aux.reshape([input_t.shape[0], np.prod(self.out_shape2)]) ))
