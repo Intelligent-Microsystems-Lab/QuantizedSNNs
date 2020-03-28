@@ -218,8 +218,7 @@ class QLinearFunctional(torch.autograd.Function):
 
         # quantizing here for sigmoid input
         if quantization.global_eb is not None:
-            import pdb; pdb.set_trace()
-            grad_input = quantization.quant_err(grad_input).float()
+            grad_input = quantization.quant_err(grad_input)
         else:
             grad_input = grad_input
 
