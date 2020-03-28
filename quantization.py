@@ -145,7 +145,8 @@ def init_layer_weights(weights_layer, shape, factor=1):
 
 # sum of square errors
 def SSE(y_true, y_pred):
-    return 0.5 * torch.sum((y_true.double() - y_pred.double())**2)
+    import pdb; pdb.set_trace()
+    return 0.5 * torch.sum((y_true - y_pred)**2)
 
 def to_cat(inp_tensor, num_class, device):
     out_tensor = torch.zeros([inp_tensor.shape[0], num_class], device=device)
