@@ -27,6 +27,7 @@ def create_graph(plot_file_name, diff_layers_acc):
     ax1.plot(t, diff_layers_acc['test3'], 'r-', label = 'Test 3')
     ax1.plot([], [], 'k-', label = 'Loss')
     ax1.legend(bbox_to_anchor=(1.20,1), loc="upper left")
+    ax1.text(1.20, 0.1, str(diff_layers_acc['test3'].max()))
 
     ax2 = ax1.twinx()
     ax2.set_ylabel('Loss')
@@ -439,13 +440,13 @@ class LIFConv2dLayer(nn.Module):
         self.P, self.R, self.Q = self.alpha * self.P + self.tau_mem * self.Q, 0.65 * self.R, self.beta * self.Q + self.tau_syn * input_t
 
         # quantize P, Q -> integers // bounds?
-        print(str(self.P.max()) + " " + str(self.P.max()))
         if quantization.global_pb is not None:
             self.P = torch.clamp(torch.round(self.P), -quantization.step_d(quantization.global_pb)+1, quantization.step_d(quantization.global_pb))
         if quantization.global_qb is not None:
             self.Q = torch.clamp(torch.round(self.Q), -quantization.step_d(quantization.global_qb)+1, quantization.step_d(quantization.global_qb))
 
         self.U = QSConv2dFunctional.apply(self.P, self.weights, self.bias, self.scale, self.padding) + self.R 
+        print(str(self.U.min()) + " " + str(self.U.max()))
         self.S = (self.U >= self.thr).float()
         self.R -= self.S * 1
 
