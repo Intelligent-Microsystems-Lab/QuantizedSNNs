@@ -35,6 +35,7 @@ ap.add_argument("-th", "--th", type = float, help="threshold")
 args = vars(ap.parse_args())
 
 
+
 quantization.global_wb = args['wb']
 inp_mult = args['m']
 reg1 = args['rg']
@@ -43,6 +44,8 @@ batch_size = args['ba']
 nb_hidden  = args['hi']
 mult_eq = args['me']
 mult_thresh_sat = args['th']
+
+thres_variance = .05
 
 nb_steps  =  80 # 100 previously, some good results with 150
 
@@ -192,9 +195,9 @@ spike_fn  = SuperSpike.apply
 
 def run_snn(inputs, infer):
 
-    with torch.no_grad():
-        spytorch_util.w1.data = clip(spytorch_util.w1.data, quantization.global_wb)
-        spytorch_util.w2.data = clip(spytorch_util.w2.data, quantization.global_wb)
+    #with torch.no_grad():
+    #    spytorch_util.w1.data = clip(spytorch_util.w1.data, quantization.global_wb)
+    #    spytorch_util.w2.data = clip(spytorch_util.w2.data, quantization.global_wb)
 
     
     h1 = einsum_linear.apply(inputs, spytorch_util.w1*inp_mult, scale1)
@@ -223,7 +226,8 @@ def run_snn(inputs, infer):
         #dv_dt = (v_rest_e - v)/(1*tau_v) + (I_syn_E/nS)/(1*tau_v)
         v = v + time_step*dv_dt
 
-        out = spike_fn(v - (v_thresh_e+theta))
+        thres_vary = (v_thresh_e+theta) * torch.ones_like(v_thresh_e).uniform_(1-thres_variance, 1+thres_variance) 
+        out = spike_fn(v - thres_vary)
         c = (out==1.0)
         # threhshold increase, bernarbe trick 1
         theta[c] += del_theta[c] 
@@ -385,7 +389,7 @@ spytorch_util.w1 = torch.empty((nb_inputs, nb_hidden),  device=device, dtype=dty
 scale1 = init_layer_weights(spytorch_util.w1, 28*28).to(device)
 
 spytorch_util.w2 = torch.empty((nb_hidden, nb_outputs), device=device, dtype=dtype, requires_grad=True)
-scale2 = init_layer_weights(spytorch_util.w2, 28*28).to(device)
+scale2 = init_layer_weights(spytorch_util.w2, nb_hidden).to(device)
 
 
 
