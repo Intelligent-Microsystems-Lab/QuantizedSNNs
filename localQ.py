@@ -439,6 +439,7 @@ class LIFConv2dLayer(nn.Module):
         self.P, self.R, self.Q = self.alpha * self.P + self.tau_mem * self.Q, 0.65 * self.R, self.beta * self.Q + self.tau_syn * input_t
 
         # quantize P, Q -> integers // bounds?
+        print(str(self.P.max()) + " " + str(self.P.max()))
         if quantization.global_pb is not None:
             self.P = torch.clamp(torch.round(self.P), -quantization.step_d(quantization.global_pb)+1, quantization.step_d(quantization.global_pb))
         if quantization.global_qb is not None:
