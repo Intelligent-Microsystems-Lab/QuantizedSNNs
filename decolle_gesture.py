@@ -71,7 +71,7 @@ quantization.global_rfb = None
 
 quantization.global_rb = 16
 quantization.global_lr = max([int(quantization.global_gb/8), 1]) if quantization.global_gb is not None else None
-quantization.global_lr_sgd = np.geomspace(1.0e-2, 1.0e-9, 32)[quantization.global_wb-1]  if quantization.global_wb is not None else None
+quantization.global_lr_sgd = np.geomspace(1.0e-2, 1.0e-9, 32)[quantization.global_wb-1]  if quantization.global_wb is not None else 1.0e-9
 # quantization.global_lr_old = max([int(quantization.global_gb/8), 1]) if quantization.global_wb is not None else None # under development
 quantization.global_beta = 1.5#quantization.step_d(quantization.global_wb)-.5 #1.5 #
 
