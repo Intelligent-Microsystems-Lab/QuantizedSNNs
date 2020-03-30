@@ -32,6 +32,7 @@ def create_graph(plot_file_name, diff_layers_acc):
 
     fig, ax1 = plt.subplots()
     fig.set_size_inches(8.4, 4.8)
+    import pdb; pdb.set_trace()
     plt.title("DVS Gesture " + bit_string + " Test3: " + str(np.round( max(diff_layers_acc['test3']).item() )))
     ax1.set_xlabel('Epochs')
     ax1.set_ylabel('Accuracy')
