@@ -26,19 +26,22 @@ def hist_U_fun(cur_U, hist_epoch = False):
     global maxU
     global minU
     if hist_epoch:
+
+
         #plot
         import pdb; pdb.set_trace()
+        hist_U = []
     else:
         #append
-        maxU.append(cur_U.max().item())
-        minU.append(cur_U.min().item())
+        #maxU.append(cur_U.max().item())
+        #minU.append(cur_U.min().item())
 
 
         #if min(cur_U.detach().flatten().tolist()) < minU:
         #    minU = min(cur_U.detach().flatten().tolist()).item()
         #if min(cur_U.detach().flatten().tolist()) < minU:
         #    minU = min(cur_U.detach().flatten().tolist()).item()
-        #hist_U = hist_U + cur_U.detach().flatten().tolist()
+        hist_U = hist_U + cur_U.flatten().detach().tolist()
 
 def create_graph(plot_file_name, diff_layers_acc):
 
