@@ -183,6 +183,8 @@ for e in range(epochs):
                 rread_hist2_train.append(temp_corr2)
                 rread_hist3_train.append(temp_corr3)
             hist_U_fun(layer1.U)
+            hist_U_fun(layer2.U)
+            hist_U_fun(layer3.U)
 
         batch_corr['train1'].append(acc_comp(rread_hist1_train, y_local, True))
         batch_corr['train2'].append(acc_comp(rread_hist2_train, y_local, True))

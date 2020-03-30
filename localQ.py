@@ -30,9 +30,8 @@ def hist_U_fun(cur_U, hist_epoch = False):
         import pdb; pdb.set_trace()
     else:
         #append
-        import pdb; pdb.set_trace()
-        maxU.append(max(cur_U.flatten().tolist()).item())
-        minU.append(min(cur_U.flatten().tolist()).item())
+        maxU.append(cur_U.max().item())
+        minU.append(cur_U.min().item())
 
 
         #if min(cur_U.detach().flatten().tolist()) < minU:
