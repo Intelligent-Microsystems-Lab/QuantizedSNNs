@@ -12,6 +12,18 @@ import quantization
 
 lc_ampl = .5
 
+
+hist_U = []
+
+def hist_U_fun(cur_U, hist_epoch = False):
+    if hist_epoch:
+        #plot
+        pass
+    else:
+        #append
+        import pdb; pdb.set_trace()
+    pass
+
 def create_graph(plot_file_name, diff_layers_acc):
     fig, ax1 = plt.subplots()
     fig.set_size_inches(8.4, 4.8)
