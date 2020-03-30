@@ -25,9 +25,14 @@ def hist_U_fun(cur_U, hist_epoch = False):
         hist_U = hist_U + cur_U.detach().flatten().tolist()
 
 def create_graph(plot_file_name, diff_layers_acc):
+
+    bit_string = str(quantization.global_wb) + str(quantization.global_ub) + str(quantization.global_pb) + str(quantization.global_qb) + str(quantization.global_rfb) + " " + str(quantization.global_sb) + str(quantization.global_ab) + str(quantization.global_sig) + str(quantization.global_eb) + str(quantization.global_gb)
+    bit_string = bit_string.replace("None", "f")
+
+
     fig, ax1 = plt.subplots()
     fig.set_size_inches(8.4, 4.8)
-    plt.title("DVS Gesture" + " B" + str(quantization.global_ab) + " LRB" + str(quantization.global_sb))
+    plt.title("DVS Gesture " + bit_string + " Test3: " + str(np.round( max(diff_layers_acc['test3']).item() )))
     ax1.set_xlabel('Epochs')
     ax1.set_ylabel('Accuracy')
     t = np.arange(len(diff_layers_acc['loss']))
@@ -38,8 +43,8 @@ def create_graph(plot_file_name, diff_layers_acc):
     ax1.plot(t, diff_layers_acc['test2'], 'b-', label = 'Test 2')
     ax1.plot(t, diff_layers_acc['test3'], 'r-', label = 'Test 3')
     ax1.plot([], [], 'k-', label = 'Loss')
-    ax1.legend(bbox_to_anchor=(-.20,1), loc="upper left")
-    ax1.text(-.20, 0.1, str(max(diff_layers_acc['test3'])))
+    ax1.legend(bbox_to_anchor=(1.20,1), loc="upper left")
+    #ax1.text(1.20, 0.1, str(max(diff_layers_acc['test3'])))
 
     ax2 = ax1.twinx()
     ax2.set_ylabel('Loss')
