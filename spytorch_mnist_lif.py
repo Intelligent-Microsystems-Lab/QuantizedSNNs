@@ -45,7 +45,7 @@ nb_hidden  = args['hi']
 mult_eq = args['me']
 mult_thresh_sat = args['th']
 
-thres_variance = .05
+thres_variance = .0
 
 nb_steps  =  80 # 100 previously, some good results with 150
 
@@ -379,99 +379,99 @@ def train(x_data, y_data, lr, nb_epochs):
         
 
 
+for i in range(10)
 
+    bit_string = str(quantization.global_wb)
+    para_dict = {'quantization.global_wb':quantization.global_wb, 'inp_mult':inp_mult, 'nb_hidden':nb_hidden, 'nb_steps':nb_steps, 'batch_size': batch_size, 'quantization.global_lr':quantization.global_lr, 'reg_size':reg1, 'mult_eq':mult_eq, 'class_method':class_method}
+    print(para_dict)
 
-bit_string = str(quantization.global_wb)
-para_dict = {'quantization.global_wb':quantization.global_wb, 'inp_mult':inp_mult, 'nb_hidden':nb_hidden, 'nb_steps':nb_steps, 'batch_size': batch_size, 'quantization.global_lr':quantization.global_lr, 'reg_size':reg1, 'mult_eq':mult_eq, 'class_method':class_method}
-print(para_dict)
+    spytorch_util.w1 = torch.empty((nb_inputs, nb_hidden),  device=device, dtype=dtype, requires_grad=True)
+    scale1 = init_layer_weights(spytorch_util.w1, 28*28).to(device)
 
-spytorch_util.w1 = torch.empty((nb_inputs, nb_hidden),  device=device, dtype=dtype, requires_grad=True)
-scale1 = init_layer_weights(spytorch_util.w1, 28*28).to(device)
-
-spytorch_util.w2 = torch.empty((nb_hidden, nb_outputs), device=device, dtype=dtype, requires_grad=True)
-scale2 = init_layer_weights(spytorch_util.w2, nb_hidden).to(device)
-
-
-
-# with torch.no_grad():
-#     spytorch_util.w1.data = (spytorch_util.w1.data - spytorch_util.w1.data.min()) / (spytorch_util.w1.data - spytorch_util.w1.data.min()).sum() * first_sum
-#     spytorch_util.w2.data = (spytorch_util.w2.data - spytorch_util.w2.data.min()) / (spytorch_util.w2.data - spytorch_util.w2.data.min()).sum() * second_sum
-
-#     #spytorch_util.w1.data = spytorch_util.w1.data / spytorch_util.w1.data.sum() * first_sum
-#     #spytorch_util.w2.data = spytorch_util.w2.data / spytorch_util.w2.data.sum() * second_sum
-#     spytorch_util.w1.data = clip(spytorch_util.w1.data, quantization.global_wb)
-#     spytorch_util.w2.data = clip(spytorch_util.w2.data, quantization.global_wb)
-
-
-loss_hist, test_acc, train_acc, best = train(x_train, y_train, lr = quantization.global_lr, nb_epochs = 50)
-
-
-results = {'bit_string': bit_string, 'test_acc': test_acc, 'test_loss': loss_hist, 'train_acc': train_acc ,'weight': [spytorch_util.w1, spytorch_util.w2], 'best': best, 'para':para_dict, 'args': args}
-date_string = time.strftime("%Y%m%d%H%M%S")
-
-
-with open('results/snn_mnist_lif' + "_".join([re.sub('[^A-Za-z0-9.]+', '', x) for x in str(para_dict).split(" ")])+"_"+date_string + '.pkl', 'wb') as f:
-    pickle.dump(results, f)
+    spytorch_util.w2 = torch.empty((nb_hidden, nb_outputs), device=device, dtype=dtype, requires_grad=True)
+    scale2 = init_layer_weights(spytorch_util.w2, nb_hidden).to(device)
 
 
 
-import numpy as np
-import matplotlib.mlab as mlab
-import matplotlib.pyplot as plt
+    # with torch.no_grad():
+    #     spytorch_util.w1.data = (spytorch_util.w1.data - spytorch_util.w1.data.min()) / (spytorch_util.w1.data - spytorch_util.w1.data.min()).sum() * first_sum
+    #     spytorch_util.w2.data = (spytorch_util.w2.data - spytorch_util.w2.data.min()) / (spytorch_util.w2.data - spytorch_util.w2.data.min()).sum() * second_sum
+
+    #     #spytorch_util.w1.data = spytorch_util.w1.data / spytorch_util.w1.data.sum() * first_sum
+    #     #spytorch_util.w2.data = spytorch_util.w2.data / spytorch_util.w2.data.sum() * second_sum
+    #     spytorch_util.w1.data = clip(spytorch_util.w1.data, quantization.global_wb)
+    #     spytorch_util.w2.data = clip(spytorch_util.w2.data, quantization.global_wb)
 
 
-plt.clf()
-plt.plot(test_acc, label="test")
-plt.plot(train_acc, label= "train")
-plt.legend()
-para_dict = {'quantization.global_wb':quantization.global_wb, 'inp_mult':inp_mult, 'reg_size':reg1 }
-print(para_dict)
-plt.title("_".join([re.sub('[^A-Za-z0-9.]+', '', x) for x in str(para_dict).split(" ")]))
-plt.savefig("./figures/ferro_mnist_lif"+"_".join([re.sub('[^A-Za-z0-9.]+', '', x) for x in str(para_dict).split(" ")])+"_"+date_string+".png")
+    loss_hist, test_acc, train_acc, best = train(x_train, y_train, lr = quantization.global_lr, nb_epochs = 50)
 
 
-plt.clf()
+    results = {'bit_string': bit_string, 'test_acc': test_acc, 'test_loss': loss_hist, 'train_acc': train_acc ,'weight': [spytorch_util.w1, spytorch_util.w2], 'best': best, 'para':para_dict, 'args': args, 'var': thres_variance}
+    date_string = time.strftime("%Y%m%d%H%M%S")
 
 
-
-
-# performance quant test
-
-# test1 = pickle.load( open( "./results/snn_mnist_34_85_20191118071540.pkl", "rb" ) )
+    with open('results/snn_mnist_lif' + "_".join([re.sub('[^A-Za-z0-9.]+', '', x) for x in str(para_dict).split(" ")])+"_"+date_string + '.pkl', 'wb') as f:
+        pickle.dump(results, f)
 
 
 
-# quantization.global_wb = 2
-# inp_mult = 250 # 90 yielded high results for full
-# quantization.global_lr = 4e-4
-# batch_size = 128
-# nb_hidden  = 1050
-# nb_steps  =  150 # 100 previously, some good results with 150
-# reg_size = 0# 5e-5
-# p_drop = 0
+    import numpy as np
+    import matplotlib.mlab as mlab
+    import matplotlib.pyplot as plt
+
+
+    plt.clf()
+    plt.plot(test_acc, label="test")
+    plt.plot(train_acc, label= "train")
+    plt.legend()
+    para_dict = {'quantization.global_wb':quantization.global_wb, 'inp_mult':inp_mult, 'reg_size':reg1 }
+    print(para_dict)
+    plt.title("_".join([re.sub('[^A-Za-z0-9.]+', '', x) for x in str(para_dict).split(" ")]))
+    plt.savefig("./figures/ferro_mnist_lif"+"_".join([re.sub('[^A-Za-z0-9.]+', '', x) for x in str(para_dict).split(" ")])+"_"+date_string+".png")
+
+
+    plt.clf()
 
 
 
-# nb_inputs  = 28*28
-# nb_outputs = 10
-# time_step = 1e-3 
+
+    # performance quant test
+
+    # test1 = pickle.load( open( "./results/snn_mnist_34_85_20191118071540.pkl", "rb" ) )
 
 
 
-# spytorch_util.w1 = test1['best']['weights'][0] 
-# scale1 = 1
+    # quantization.global_wb = 2
+    # inp_mult = 250 # 90 yielded high results for full
+    # quantization.global_lr = 4e-4
+    # batch_size = 128
+    # nb_hidden  = 1050
+    # nb_steps  =  150 # 100 previously, some good results with 150
+    # reg_size = 0# 5e-5
+    # p_drop = 0
 
-# spytorch_util.w2 = test1['best']['weights'][1] 
-# scale2 = 1
 
 
-# acc_test = compute_classification_accuracy(x_test,y_test)
-# print(acc_test)
+    # nb_inputs  = 28*28
+    # nb_outputs = 10
+    # time_step = 1e-3 
 
-#print('test')
-#for i in test1['test_acc']:
-#    print(i)
-#print("train")
-#for i in test1['test_acc']:
-#    print(i)
+
+
+    # spytorch_util.w1 = test1['best']['weights'][0] 
+    # scale1 = 1
+
+    # spytorch_util.w2 = test1['best']['weights'][1] 
+    # scale2 = 1
+
+
+    # acc_test = compute_classification_accuracy(x_test,y_test)
+    # print(acc_test)
+
+    #print('test')
+    #for i in test1['test_acc']:
+    #    print(i)
+    #print("train")
+    #for i in test1['test_acc']:
+    #    print(i)
 
