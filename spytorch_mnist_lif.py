@@ -45,7 +45,7 @@ nb_hidden  = args['hi']
 mult_eq = args['me']
 mult_thresh_sat = args['th']
 
-thres_variance = .06
+thres_variance = .0
 
 nb_steps  =  80 # 100 previously, some good results with 150
 
@@ -379,7 +379,7 @@ def train(x_data, y_data, lr, nb_epochs):
         
 
 
-for i in range(10)
+for i in range(10):
 
     bit_string = str(quantization.global_wb)
     para_dict = {'quantization.global_wb':quantization.global_wb, 'inp_mult':inp_mult, 'nb_hidden':nb_hidden, 'nb_steps':nb_steps, 'batch_size': batch_size, 'quantization.global_lr':quantization.global_lr, 'reg_size':reg1, 'mult_eq':mult_eq, 'class_method':class_method}
