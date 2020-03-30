@@ -18,11 +18,10 @@ hist_U = []
 def hist_U_fun(cur_U, hist_epoch = False):
     if hist_epoch:
         #plot
-        pass
+        import pdb; pdb.set_trace()
     else:
         #append
-        import pdb; pdb.set_trace()
-    pass
+        hist_U = hist_U + cur_U.detach().flatten().tolist()
 
 def create_graph(plot_file_name, diff_layers_acc):
     fig, ax1 = plt.subplots()
