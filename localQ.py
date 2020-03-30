@@ -10,9 +10,9 @@ import matplotlib.pyplot as plt
 
 import quantization
 
+global lc_ampl
 lc_ampl = .5
-
-
+global hist_U
 hist_U = []
 
 def hist_U_fun(cur_U, hist_epoch = False):
