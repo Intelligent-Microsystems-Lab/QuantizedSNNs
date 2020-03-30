@@ -38,8 +38,8 @@ def create_graph(plot_file_name, diff_layers_acc):
     ax1.plot(t, diff_layers_acc['test2'], 'b-', label = 'Test 2')
     ax1.plot(t, diff_layers_acc['test3'], 'r-', label = 'Test 3')
     ax1.plot([], [], 'k-', label = 'Loss')
-    ax1.legend(bbox_to_anchor=(1.20,1), loc="upper left")
-    ax1.text(1.20, 0.1, str(max(diff_layers_acc['test3'])))
+    ax1.legend(bbox_to_anchor=(-.20,1), loc="upper left")
+    ax1.text(-.20, 0.1, str(max(diff_layers_acc['test3'])))
 
     ax2 = ax1.twinx()
     ax2.set_ylabel('Loss')

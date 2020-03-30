@@ -179,7 +179,7 @@ for e in range(epochs):
                 rread_hist1_train.append(temp_corr1)
                 rread_hist2_train.append(temp_corr2)
                 rread_hist3_train.append(temp_corr3)
-            hist_U_fun(layer1.U)
+            #hist_U_fun(layer1.U)
 
         batch_corr['train1'].append(acc_comp(rread_hist1_train, y_local, True))
         batch_corr['train2'].append(acc_comp(rread_hist2_train, y_local, True))
@@ -187,7 +187,7 @@ for e in range(epochs):
         del x_local, y_local, y_onehot
 
     train_time = time.time()
-    hist_U_fun(layer1.U, True)
+    #hist_U_fun(layer1.U, True)
 
     diff_layers_acc['train1'].append(torch.cat(batch_corr['train1']).mean())
     diff_layers_acc['train2'].append(torch.cat(batch_corr['train2']).mean())
