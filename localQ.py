@@ -16,6 +16,7 @@ global hist_U
 hist_U = []
 
 def hist_U_fun(cur_U, hist_epoch = False):
+    global hist_U
     if hist_epoch:
         #plot
         import pdb; pdb.set_trace()
