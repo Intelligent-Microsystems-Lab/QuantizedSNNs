@@ -45,7 +45,7 @@ nb_hidden  = args['hi']
 mult_eq = args['me']
 mult_thresh_sat = args['th']
 
-thres_variance = .02
+thres_variance = .04
 
 nb_steps  =  80 # 100 previously, some good results with 150
 
