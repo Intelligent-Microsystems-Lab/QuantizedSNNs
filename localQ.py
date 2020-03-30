@@ -15,14 +15,31 @@ lc_ampl = .5
 global hist_U
 hist_U = []
 
+global maxU 
+maxU = []
+
+global minU 
+minU = []
+
 def hist_U_fun(cur_U, hist_epoch = False):
     global hist_U
+    global maxU
+    global minU
     if hist_epoch:
         #plot
         import pdb; pdb.set_trace()
     else:
         #append
-        hist_U = hist_U + cur_U.detach().flatten().tolist()
+        import pdb; pdb.set_trace()
+        maxU.append(max(cur_U.flatten().tolist()).item())
+        minU.append(min(cur_U.flatten().tolist()).item())
+
+
+        #if min(cur_U.detach().flatten().tolist()) < minU:
+        #    minU = min(cur_U.detach().flatten().tolist()).item()
+        #if min(cur_U.detach().flatten().tolist()) < minU:
+        #    minU = min(cur_U.detach().flatten().tolist()).item()
+        #hist_U = hist_U + cur_U.detach().flatten().tolist()
 
 def create_graph(plot_file_name, diff_layers_acc):
 
