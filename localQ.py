@@ -15,7 +15,7 @@ import quantization
 global lc_ampl
 lc_ampl = .5
 global hist_U
-hist_U = torch.zeros([100000])
+hist_U = torch.zeros([100000]).to(torch.device("cuda"))
 
 global maxU 
 maxU = []
