@@ -49,8 +49,8 @@ with open('data/train_dvs_gesture.pickle', 'rb') as f:
 x_train = data[0]
 y_train = np.array(data[1], dtype = int) - 1
 
-x_train = x_train[:2]
-y_train = y_train[:2]
+# x_train = x_train[:2]
+# y_train = y_train[:2]
 
 
 with open('data/test_dvs_gesture.pickle', 'rb') as f:
@@ -182,7 +182,7 @@ for e in range(epochs):
                 rread_hist1_train.append(temp_corr1)
                 rread_hist2_train.append(temp_corr2)
                 rread_hist3_train.append(temp_corr3)
-            hist_U_fun(layer1.U, "")
+            hist_U_fun(layer3.U, "")
             #hist_U_fun(layer2.U)
             #hist_U_fun(layer3.U)
 
@@ -192,7 +192,7 @@ for e in range(epochs):
         del x_local, y_local, y_onehot
 
     train_time = time.time()
-    hist_U_fun(layer1.U, "L1E"+str(e), True)
+    hist_U_fun(layer3.U, "L3E"+str(e), True)
 
     diff_layers_acc['train1'].append(torch.cat(batch_corr['train1']).mean())
     diff_layers_acc['train2'].append(torch.cat(batch_corr['train2']).mean())

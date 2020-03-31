@@ -31,7 +31,7 @@ def hist_U_fun(cur_U, title, hist_epoch = False):
 
         plt.clf()
         #sns.set_style('whitegrid')
-        sns.distplot(np.array(hist_U), hist=False, rug=True);
+        sns.distplot(np.array(hist_U), hist=False, rug=False);
         #sns.kdeplot(np.array(hist_U), shade = True)
         plt.ylabel('Density')
         plt.xlabel('U')
