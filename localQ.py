@@ -15,7 +15,7 @@ import quantization
 global lc_ampl
 lc_ampl = .5
 global hist_U
-hist_U = []
+hist_U = torch.zeros([100000])
 
 global maxU 
 maxU = []
@@ -28,6 +28,7 @@ def hist_U_fun(cur_U, title, hist_epoch = False):
     global maxU
     global minU
     if hist_epoch:
+        import pdb; pdb.set_trace()
 
         plt.clf()
         #sns.set_style('whitegrid')
@@ -65,9 +66,10 @@ def hist_U_fun(cur_U, title, hist_epoch = False):
         #         plt.close()
         #         #plot
         #         import pdb; pdb.set_trace()
-        hist_U = []
+        hist_U = torch.zeros([100000])
     else:
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
+        #torch.histc(cur_U, bins = 100000, min=-10, max=10)
         #append
         #maxU.append(cur_U.max().item())
         #minU.append(cur_U.min().item())
@@ -77,7 +79,7 @@ def hist_U_fun(cur_U, title, hist_epoch = False):
         #    minU = min(cur_U.detach().flatten().tolist()).item()
         #if min(cur_U.detach().flatten().tolist()) < minU:
         #    minU = min(cur_U.detach().flatten().tolist()).item()
-        hist_U = hist_U + cur_U.flatten().detach().tolist()
+        hist_U = hist_U + torch.histc(cur_U, bins = 100000, min=-10, max=10)
 
 def create_graph(plot_file_name, diff_layers_acc):
 
