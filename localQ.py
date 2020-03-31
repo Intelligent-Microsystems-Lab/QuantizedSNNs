@@ -7,6 +7,8 @@ import time
 import math
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
+import uuid
 
 import quantization
 
@@ -21,23 +23,48 @@ maxU = []
 global minU 
 minU = []
 
-def hist_U_fun(cur_U, hist_epoch = False):
+def hist_U_fun(cur_U, title, hist_epoch = False):
     global hist_U
     global maxU
     global minU
     if hist_epoch:
+
         plt.clf()
-        plt.hist(hist_U, 5000, density=True, facecolor='b', alpha=0.75)
+        #sns.set_style('whitegrid')
+        sns.distplot(np.array(hist_U), hist=False, rug=True);
+        #sns.kdeplot(np.array(hist_U), shade = True)
+        plt.ylabel('Density')
         plt.xlabel('U')
-        plt.ylabel('Probability')
-        plt.title('Histogram of U')
-        plt.text(60, .025, r'$\mu=,\ \sigma= $')
-
-
-        plt.savefig('figures/clem.png')
+        plt.title(title)
+        plt.savefig('figures/'+title+str(uuid.uuid1())+'.png')
         plt.close()
-        #plot
-        import pdb; pdb.set_trace()
+
+
+        # plt.clf()
+        # fig, ax = plt.subplots()
+        # sns.distplot(x, hist=False, rug=True);
+        # sns.kdeplot(np.array(hist_U), shade=True, ax=ax)
+        # fig.canvas.draw()
+        # locs, labels = plt.xticks()
+        # # u2212 is the matplotlib's medium dash for negative numbers.
+        # #ax.set(xticklabels=[10 ** int(i.get_text().replace(u'\u2212', '-'))
+        # #                    for i in labels])
+        # # Or for scientific notation:
+        # #ax.set(xticklabels=["$10^{" + i.get_text() + "}$" for i in labels])
+        # plt.savefig('figures/clem3.png')
+        # plt.close()
+
+        #         plt.hist(hist_U, 5000, density=True, facecolor='b', alpha=0.75)
+        #         plt.xlabel('U')
+        #         plt.ylabel('Probability')
+        #         plt.title('Histogram of U')
+        #         #plt.text(60, .025, r'$\mu=,\ \sigma= $')
+
+
+        #         plt.savefig('figures/clem.png')
+        #         plt.close()
+        #         #plot
+        #         import pdb; pdb.set_trace()
         hist_U = []
     else:
         #append
