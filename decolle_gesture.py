@@ -185,9 +185,9 @@ for e in range(epochs):
             hist_U_fun(layer1.P, "")
             #hist_U_fun(layer2.U)
             #hist_U_fun(layer3.U)
-            #print(str(layer1.P.max()) + " " + str(layer1.P.min()))
-            #print(str(layer2.P.max()) + " " + str(layer2.P.min()))
-            #print(str(layer3.P.max()) + " " + str(layer3.P.min()))
+            #print(str(layer1.P.max()) + " " + str(layer1.P.min()) + " " + str(layer1.P.mean()) + " "  + str(layer1.P.median()))
+            #print(str(layer2.P.max()) + " " + str(layer2.P.min()) + " " + str(layer2.P.mean()) + " "  + str(layer2.P.median()))
+            #print(str(layer3.P.max()) + " " + str(layer3.P.min()) + " " + str(layer3.P.mean()) + " "  + str(layer3.P.median()))
 
         batch_corr['train1'].append(acc_comp(rread_hist1_train, y_local, True))
         batch_corr['train2'].append(acc_comp(rread_hist2_train, y_local, True))
