@@ -15,71 +15,26 @@ import quantization
 global lc_ampl
 lc_ampl = .5
 global hist_U
-hist_U = torch.zeros([100000]).to(torch.device("cuda"))
+hist_U = torch.zeros([10000]).to(torch.device("cuda"))
 
-global maxU 
-maxU = []
 
-global minU 
-minU = []
 
 def hist_U_fun(cur_U, title, hist_epoch = False):
     global hist_U
-    global maxU
-    global minU
-    if hist_epoch:
-        import pdb; pdb.set_trace()
 
+    if hist_epoch:
         plt.clf()
-        #sns.set_style('whitegrid')
-        sns.distplot(np.array(hist_U), hist=False, rug=False);
-        #sns.kdeplot(np.array(hist_U), shade = True)
+        fig, ax1 = plt.subplots()
+        fig.set_size_inches(8.4, 4.8)
+        ax1.plot(np.arange(-5, 5, 1/10000) ,(hist_U/hist_U.sum()).cpu().detach().numpy())
         plt.ylabel('Density')
-        plt.xlabel('U')
         plt.title(title)
         plt.savefig('figures/'+title+str(uuid.uuid1())+'.png')
         plt.close()
 
-
-        # plt.clf()
-        # fig, ax = plt.subplots()
-        # sns.distplot(x, hist=False, rug=True);
-        # sns.kdeplot(np.array(hist_U), shade=True, ax=ax)
-        # fig.canvas.draw()
-        # locs, labels = plt.xticks()
-        # # u2212 is the matplotlib's medium dash for negative numbers.
-        # #ax.set(xticklabels=[10 ** int(i.get_text().replace(u'\u2212', '-'))
-        # #                    for i in labels])
-        # # Or for scientific notation:
-        # #ax.set(xticklabels=["$10^{" + i.get_text() + "}$" for i in labels])
-        # plt.savefig('figures/clem3.png')
-        # plt.close()
-
-        #         plt.hist(hist_U, 5000, density=True, facecolor='b', alpha=0.75)
-        #         plt.xlabel('U')
-        #         plt.ylabel('Probability')
-        #         plt.title('Histogram of U')
-        #         #plt.text(60, .025, r'$\mu=,\ \sigma= $')
-
-
-        #         plt.savefig('figures/clem.png')
-        #         plt.close()
-        #         #plot
-        #         import pdb; pdb.set_trace()
-        hist_U = torch.zeros([100000])
+        hist_U = torch.zeros([10000])
     else:
-        #import pdb; pdb.set_trace()
-        #torch.histc(cur_U, bins = 100000, min=-10, max=10)
-        #append
-        #maxU.append(cur_U.max().item())
-        #minU.append(cur_U.min().item())
-
-
-        #if min(cur_U.detach().flatten().tolist()) < minU:
-        #    minU = min(cur_U.detach().flatten().tolist()).item()
-        #if min(cur_U.detach().flatten().tolist()) < minU:
-        #    minU = min(cur_U.detach().flatten().tolist()).item()
-        hist_U = hist_U + torch.histc(cur_U, bins = 100000, min=-10, max=10)
+        hist_U = hist_U + torch.histc(cur_U, bins = 10000, min=-5, max=5)
 
 def create_graph(plot_file_name, diff_layers_acc):
 
