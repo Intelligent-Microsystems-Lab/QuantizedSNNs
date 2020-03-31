@@ -14,11 +14,12 @@ import quantization
 
 global lc_ampl
 lc_ampl = .5
+
+
+
+
 global hist_U
 hist_U = torch.zeros([10000]).to(torch.device("cuda"))
-
-
-
 def hist_U_fun(cur_U, title, hist_epoch = False):
     global hist_U
 
@@ -29,7 +30,7 @@ def hist_U_fun(cur_U, title, hist_epoch = False):
         ax1.plot(np.arange(-5, 5, 1/10000) ,(hist_U/hist_U.sum()).cpu().detach().numpy())
         plt.ylabel('Density')
         plt.title(title)
-        plt.savefig('figures/'+title+str(uuid.uuid1())+'.png')
+        plt.savefig('figures/'+title+"_"+str(uuid.uuid1())+'.png')
         plt.close()
 
         hist_U = torch.zeros([10000])
