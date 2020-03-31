@@ -182,9 +182,12 @@ for e in range(epochs):
                 rread_hist1_train.append(temp_corr1)
                 rread_hist2_train.append(temp_corr2)
                 rread_hist3_train.append(temp_corr3)
-            hist_U_fun(layer1.U, "")
+            #hist_U_fun(layer3.U, "")
             #hist_U_fun(layer2.U)
             #hist_U_fun(layer3.U)
+            print(str(layer1.P.max()) + " " + str(layer1.P.min()))
+            print(str(layer2.P.max()) + " " + str(layer2.P.min()))
+            print(str(layer3.P.max()) + " " + str(layer3.P.min()))
 
         batch_corr['train1'].append(acc_comp(rread_hist1_train, y_local, True))
         batch_corr['train2'].append(acc_comp(rread_hist2_train, y_local, True))
@@ -192,7 +195,7 @@ for e in range(epochs):
         del x_local, y_local, y_onehot
 
     train_time = time.time()
-    hist_U_fun(layer1.U, "Histogram of U L1E"+str(e), True)
+    #hist_U_fun(layer3.U, "Histogram of U L3E"+str(e), True)
 
     diff_layers_acc['train1'].append(torch.cat(batch_corr['train1']).mean())
     diff_layers_acc['train2'].append(torch.cat(batch_corr['train2']).mean())

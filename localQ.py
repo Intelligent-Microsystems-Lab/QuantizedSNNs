@@ -24,6 +24,7 @@ def hist_U_fun(cur_U, title, hist_epoch = False):
     global hist_U
 
     if hist_epoch:
+        import pdb; pdb.set_trace()
         plt.clf()
         fig, ax1 = plt.subplots()
         fig.set_size_inches(8.4, 4.8)
@@ -36,6 +37,7 @@ def hist_U_fun(cur_U, title, hist_epoch = False):
         hist_U = torch.zeros([10000])
     else:
         hist_U = hist_U + torch.histc(cur_U, bins = 10000, min=-5, max=5)
+        #hist_U = hist_U + torch.histc(cur_U, bins = 10000, min=0, max=)
 
 def create_graph(plot_file_name, diff_layers_acc):
 
