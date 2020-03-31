@@ -27,7 +27,8 @@ def hist_U_fun(cur_U, title, hist_epoch = False):
         plt.clf()
         fig, ax1 = plt.subplots()
         fig.set_size_inches(8.4, 4.8)
-        ax1.plot(np.linspace(-4, 2, 10000) ,(hist_U/hist_U.sum()).cpu().detach().numpy())
+        #ax1.plot(np.linspace(-4, 2, 10000) ,(hist_U/hist_U.sum()).cpu().detach().numpy())
+        ax1.plot(np.linspace(0, 120000, 10000) ,(hist_U/hist_U.sum()).cpu().detach().numpy())
         plt.ylabel('Density')
         plt.title(title)
         plt.savefig('figures/'+title.split(' ')[-1]+"_"+str(uuid.uuid1())+'.png')
@@ -35,8 +36,8 @@ def hist_U_fun(cur_U, title, hist_epoch = False):
 
         hist_U = torch.zeros([10000])
     else:
-        hist_U = hist_U + torch.histc(cur_U, bins = 10000, min=-4, max=2)
-        #hist_U = hist_U + torch.histc(cur_U, bins = 10000, min=0, max=)
+        #hist_U = hist_U + torch.histc(cur_U, bins = 10000, min=-4, max=2)
+        hist_U = hist_U + torch.histc(cur_U, bins = 10000, min=0, max=120000)
 
 def create_graph(plot_file_name, diff_layers_acc):
 
