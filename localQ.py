@@ -67,6 +67,7 @@ def hist_U_fun(cur_U, title, hist_epoch = False):
         #         import pdb; pdb.set_trace()
         hist_U = []
     else:
+        import pdb; pdb.set_trace()
         #append
         #maxU.append(cur_U.max().item())
         #minU.append(cur_U.min().item())
