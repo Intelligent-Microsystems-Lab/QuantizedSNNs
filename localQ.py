@@ -26,8 +26,16 @@ def hist_U_fun(cur_U, hist_epoch = False):
     global maxU
     global minU
     if hist_epoch:
+        plt.clf()
+        plt.hist(hist_U, 5000, density=True, facecolor='b', alpha=0.75)
+        plt.xlabel('U')
+        plt.ylabel('Probability')
+        plt.title('Histogram of U')
+        plt.text(60, .025, r'$\mu=,\ \sigma= $')
 
 
+        plt.savefig('figures/clem.png')
+        plt.close()
         #plot
         import pdb; pdb.set_trace()
         hist_U = []
