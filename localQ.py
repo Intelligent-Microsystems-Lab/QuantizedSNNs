@@ -34,7 +34,7 @@ def hist_U_fun(cur_U, title, hist_epoch = False):
         plt.savefig('figures/'+title.split(' ')[-1]+"_"+str(uuid.uuid1())+'.png')
         plt.close()
 
-        hist_U = torch.zeros([10000])
+        hist_U = torch.zeros([10000]).to(torch.device("cuda"))
     else:
         #hist_U = hist_U + torch.histc(cur_U, bins = 10000, min=-4, max=2)
         hist_U = hist_U + torch.histc(cur_U, bins = 10000, min=0, max=120000)
