@@ -17,7 +17,7 @@ lc_ampl = .5
 
 
 global hist_U
-hist_U = torch.zeros([10000]).to(torch.device("cuda"))
+hist_U = torch.zeros([1000]).to(torch.device("cuda"))
 
 def hist_U_fun(cur_U, title, tau = None, alpha = None, hist_epoch = False):
     global hist_U
@@ -27,7 +27,7 @@ def hist_U_fun(cur_U, title, tau = None, alpha = None, hist_epoch = False):
         fig, ax1 = plt.subplots()
         fig.set_size_inches(8.4, 4.8)
         #ax1.plot(np.linspace(-4, 2, 10000) ,(hist_U/hist_U.sum()).cpu().detach().numpy())
-        ax1.plot(np.linspace(0, 10000, 10000) ,(hist_U/hist_U.sum()).cpu().detach().numpy())
+        ax1.plot(np.linspace(0, 1000, 1000) ,(hist_U/hist_U.sum()).cpu().detach().numpy())
         plt.ylabel('Density')
         plt.title(title)
         plt.savefig('figures/'+title.split(' ')[-1]+"_"+str(uuid.uuid1())+'.png')
@@ -35,12 +35,12 @@ def hist_U_fun(cur_U, title, tau = None, alpha = None, hist_epoch = False):
 
         hist_U = torch.zeros([10000]).to(torch.device("cuda"))
     else:
-        import pdb; pdb.set_trace()
-        upper_bounds = tau(1-alpha)
-        quantization.quant_nosign(cur_u, 8)
+        #import pdb; pdb.set_trace()
+        upper_bounds = tau/(1-alpha)
+        #cur_U = quantization.quant_nosign(cur_U/upper_bounds, 8)
         #hist_U = hist_U + torch.histc(cur_U, bins = 10000, min=-4, max=2)
         #hist_U = hist_U + torch.histc(cur_U, bins = 10000, min=0, max=10000)
-        hist_U = hist_U + torch.histc(cur_U, bins = 10000, min=0, max=10000)
+        hist_U = hist_U + torch.histc(cur_U/upper_bounds, bins = 1000, min=0, max=1)
 
 
 
