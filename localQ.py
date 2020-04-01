@@ -19,6 +19,9 @@ lc_ampl = .5
 global hist_U
 hist_U = torch.zeros([1000]).to(torch.device("cuda"))
 
+global hist_Ulog
+hist_Ulog = torch.zeros([1000]).to(torch.device("cuda"))
+
 def hist_U_fun(cur_U, title, tau = None, alpha = None, hist_epoch = False):
     global hist_U
 
@@ -41,7 +44,9 @@ def hist_U_fun(cur_U, title, tau = None, alpha = None, hist_epoch = False):
         #cur_U = quantization.quant_nosign(cur_U/upper_bounds, 8)
         #hist_U = hist_U + torch.histc(cur_U, bins = 10000, min=-4, max=2)
         #hist_U = hist_U + torch.histc(cur_U, bins = 10000, min=0, max=10000)
+
         hist_U = hist_U + torch.histc(cur_U/upper_bounds, bins = 1000, min=0, max=1)
+        hist_Ulog = hist_Ulog + torch.histc(np.log(cur_U/upper_bounds), bins = 1000, min=0, max=1)
 
 
 
