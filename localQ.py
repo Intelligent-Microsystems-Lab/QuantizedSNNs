@@ -24,6 +24,7 @@ hist_Ulog = torch.zeros([1000]).to(torch.device("cuda"))
 
 def hist_U_fun(cur_U, title, tau = None, alpha = None, hist_epoch = False):
     global hist_U
+    global hist_Ulog
 
     if hist_epoch:
         plt.clf()
