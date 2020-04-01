@@ -182,12 +182,27 @@ for e in range(epochs):
                 rread_hist1_train.append(temp_corr1)
                 rread_hist2_train.append(temp_corr2)
                 rread_hist3_train.append(temp_corr3)
-            hist_U_fun(layer1.P, "")
+            hist_U_fun(layer3.Q, title = "", tau = layer3.tau_mem)
             #hist_U_fun(layer2.U)
             #hist_U_fun(layer3.U)
-            #print(str(layer1.P.max()) + " " + str(layer1.P.min()) + " " + str(layer1.P.mean()) + " "  + str(layer1.P.median()))
-            #print(str(layer2.P.max()) + " " + str(layer2.P.min()) + " " + str(layer2.P.mean()) + " "  + str(layer2.P.median()))
-            #print(str(layer3.P.max()) + " " + str(layer3.P.min()) + " " + str(layer3.P.mean()) + " "  + str(layer3.P.median()))
+            # print("Ql1" + str(layer1.Q.max()) + " " + str(layer1.Q.min()) + " " + str(layer1.Q.mean()) + " "  + str(layer1.Q.median()))
+            # print("Ql2" + str(layer2.Q.max()) + " " + str(layer2.Q.min()) + " " + str(layer2.Q.mean()) + " "  + str(layer2.Q.median()))
+            # print("Ql3" + str(layer3.Q.max()) + " " + str(layer3.Q.min()) + " " + str(layer3.Q.mean()) + " "  + str(layer3.Q.median()))
+
+
+            # print("Pl1" + str(layer1.P.max()) + " " + str(layer1.P.min()) + " " + str(layer1.P.mean()) + " "  + str(layer1.P.median()))
+            # print("Pl2" + str(layer2.P.max()) + " " + str(layer2.P.min()) + " " + str(layer2.P.mean()) + " "  + str(layer2.P.median()))
+            # print("Pl3" + str(layer3.P.max()) + " " + str(layer3.P.min()) + " " + str(layer3.P.mean()) + " "  + str(layer3.P.median()))
+
+
+            # print("Rl1" + str(layer1.R.max()) + " " + str(layer1.R.min()) + " " + str(layer1.R.mean()) + " "  + str(layer1.R.median()))
+            # print("Rl2" + str(layer2.R.max()) + " " + str(layer2.R.min()) + " " + str(layer2.R.mean()) + " "  + str(layer2.R.median()))
+            # print("Rl3" + str(layer3.R.max()) + " " + str(layer3.R.min()) + " " + str(layer3.R.mean()) + " "  + str(layer3.R.median()))
+
+
+            # print("Pl1" + str(layer1.P.max()) + " " + str(layer1.P.min()) + " " + str(layer1.P.mean()) + " "  + str(layer1.P.median()))
+            # print("Pl2" + str(layer2.P.max()) + " " + str(layer2.P.min()) + " " + str(layer2.P.mean()) + " "  + str(layer2.P.median()))
+            # print("Pl3" + str(layer3.P.max()) + " " + str(layer3.P.min()) + " " + str(layer3.P.mean()) + " "  + str(layer3.P.median()))
 
         batch_corr['train1'].append(acc_comp(rread_hist1_train, y_local, True))
         batch_corr['train2'].append(acc_comp(rread_hist2_train, y_local, True))
@@ -195,7 +210,7 @@ for e in range(epochs):
         del x_local, y_local, y_onehot
 
     train_time = time.time()
-    hist_U_fun(layer1.P, "Histogram of P L1E"+str(e), True)
+    hist_U_fun(layer3.Q, title = "Histogram of P L3E"+str(e), hist_epoch = True)
 
     diff_layers_acc['train1'].append(torch.cat(batch_corr['train1']).mean())
     diff_layers_acc['train2'].append(torch.cat(batch_corr['train2']).mean())

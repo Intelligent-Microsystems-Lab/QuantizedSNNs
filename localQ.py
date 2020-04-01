@@ -16,11 +16,9 @@ global lc_ampl
 lc_ampl = .5
 
 
-
-
 global hist_U
 hist_U = torch.zeros([10000]).to(torch.device("cuda"))
-def hist_U_fun(cur_U, title, hist_epoch = False):
+def hist_U_fun(cur_U, title, tau = None, hist_epoch = False):
     global hist_U
 
     if hist_epoch:
@@ -36,8 +34,11 @@ def hist_U_fun(cur_U, title, hist_epoch = False):
 
         hist_U = torch.zeros([10000]).to(torch.device("cuda"))
     else:
+        import pdb; pdb.set_trace()
         #hist_U = hist_U + torch.histc(cur_U, bins = 10000, min=-4, max=2)
-        hist_U = hist_U + torch.histc(cur_U, bins = 10000, min=0, max=10000)
+        #hist_U = hist_U + torch.histc(cur_U, bins = 10000, min=0, max=10000)
+
+
 
 def create_graph(plot_file_name, diff_layers_acc):
 
