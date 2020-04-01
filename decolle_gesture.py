@@ -182,7 +182,7 @@ for e in range(epochs):
                 rread_hist1_train.append(temp_corr1)
                 rread_hist2_train.append(temp_corr2)
                 rread_hist3_train.append(temp_corr3)
-            hist_U_fun(layer3.Q, title = "", tau = layer3.tau_mem)
+            hist_U_fun(layer3.Q, title = "", tau = layer3.tau_mem, alpha = layer3.alpha)
             #hist_U_fun(layer2.U)
             #hist_U_fun(layer3.U)
             # print("Ql1" + str(layer1.Q.max()) + " " + str(layer1.Q.min()) + " " + str(layer1.Q.mean()) + " "  + str(layer1.Q.median()))

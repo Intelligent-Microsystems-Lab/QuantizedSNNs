@@ -79,6 +79,9 @@ def quant_s(x, scale = 1):
     #    return x + diff
     return (x + diff)/scale
 
+def quant_nosign(x, bits):
+    scale = 2.0 ** (bits)
+    return torch.round(x * scale ) / scale
 
 def quant_act(x):
     save_x = x

@@ -18,7 +18,8 @@ lc_ampl = .5
 
 global hist_U
 hist_U = torch.zeros([10000]).to(torch.device("cuda"))
-def hist_U_fun(cur_U, title, tau = None, hist_epoch = False):
+
+def hist_U_fun(cur_U, title, tau = None, alpha = None, hist_epoch = False):
     global hist_U
 
     if hist_epoch:
@@ -35,8 +36,11 @@ def hist_U_fun(cur_U, title, tau = None, hist_epoch = False):
         hist_U = torch.zeros([10000]).to(torch.device("cuda"))
     else:
         import pdb; pdb.set_trace()
+        upper_bounds = tau(1-alpha)
+        quantization.quant_nosign(cur_u, 8)
         #hist_U = hist_U + torch.histc(cur_U, bins = 10000, min=-4, max=2)
         #hist_U = hist_U + torch.histc(cur_U, bins = 10000, min=0, max=10000)
+        hist_U = hist_U + torch.histc(cur_U, bins = 10000, min=0, max=10000)
 
 
 
