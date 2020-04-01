@@ -46,7 +46,7 @@ def hist_U_fun(cur_U, title, tau = None, alpha = None, hist_epoch = False):
         #hist_U = hist_U + torch.histc(cur_U, bins = 10000, min=0, max=10000)
 
         hist_U = hist_U + torch.histc(cur_U/upper_bounds, bins = 1000, min=0, max=1)
-        hist_Ulog = hist_Ulog + torch.histc(np.log(cur_U/upper_bounds), bins = 1000, min=0, max=1)
+        hist_Ulog = hist_Ulog + torch.histc(np.log((cur_U/upper_bounds)+1), bins = 1000, min=0, max=1)
 
 
 
