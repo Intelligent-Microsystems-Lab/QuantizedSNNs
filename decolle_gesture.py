@@ -182,7 +182,7 @@ for e in range(epochs):
                 rread_hist1_train.append(temp_corr1)
                 rread_hist2_train.append(temp_corr2)
                 rread_hist3_train.append(temp_corr3)
-            hist_U_fun(layer3.Q, title = "", tau = layer3.tau_mem, alpha = layer3.alpha)
+            #hist_U_fun(layer3.Q, title = "", tau = layer3.tau_mem, alpha = layer3.alpha)
             #hist_U_fun(layer2.U)
             #hist_U_fun(layer3.U)
             # print("Ql1" + str(layer1.Q.max()) + " " + str(layer1.Q.min()) + " " + str(layer1.Q.mean()) + " "  + str(layer1.Q.median()))
@@ -210,7 +210,7 @@ for e in range(epochs):
         del x_local, y_local, y_onehot
 
     train_time = time.time()
-    hist_U_fun(layer3.Q, title = "Histogram of P L3E"+str(e), hist_epoch = True)
+    #hist_U_fun(layer3.Q, title = "Histogram of P L3E"+str(e), hist_epoch = True)
 
     diff_layers_acc['train1'].append(torch.cat(batch_corr['train1']).mean())
     diff_layers_acc['train2'].append(torch.cat(batch_corr['train2']).mean())

@@ -27,11 +27,24 @@ def hist_U_fun(cur_U, title, tau = None, alpha = None, hist_epoch = False):
     global hist_Ulog
 
     if hist_epoch:
+
+        upper_bounds = tau/(1-alpha)
+        tempU = torch.log2(cur_U/upper_bounds * 1000)
+        tempU[tempU < 0] = 0
+        tempU /= np.log2(1000)
+
         plt.clf()
         fig, ax1 = plt.subplots()
         fig.set_size_inches(8.4, 4.8)
-        #ax1.plot(np.linspace(-4, 2, 10000) ,(hist_U/hist_U.sum()).cpu().detach().numpy())
-        ax1.plot(np.linspace(0, 1000, 1000)[1:] ,(hist_U/hist_U.sum()).cpu().detach().numpy()[1:])
+        ax1 = sns.distplot(tempU.flatten().cpu().detach().numpy())
+        plt.savefig('figures/'+title.split(' ')[-1]+"_"+str(uuid.uuid1())+'.png')
+        plt.ylabel('Density')
+        plt.close()
+
+        plt.clf()
+        fig, ax1 = plt.subplots()
+        fig.set_size_inches(8.4, 4.8)
+        ax1.plot(np.linspace(0, 1000, 1000), (hist_U/hist_U.sum()).cpu().detach().numpy())
         plt.ylabel('Density')
         plt.title(title)
         plt.savefig('figures/'+title.split(' ')[-1]+"_"+str(uuid.uuid1())+'.png')
@@ -450,6 +463,7 @@ class LIFConv2dLayer(nn.Module):
             self.tau_syn = 1. / (1. - self.beta)
         else:
             self.beta = torch.Tensor([torch.exp( - delta_t / tau_syn)]).to(device)
+        self.upper_bound_Q = self.tau_syn/(1-self.beta)
 
 
         if tau_mem.shape[0] == 2:
@@ -458,6 +472,8 @@ class LIFConv2dLayer(nn.Module):
             self.tau_mem = 1. / (1. - self.alpha)
         else:
             self.alpha = torch.Tensor([torch.exp( - delta_t / tau_mem)]).to(device)
+        import pdb; pdb.set_trace()
+        self.upper_bound_P = self.tau_mem/(1-self.alpha)
 
 
         if tau_ref.shape[0] == 2:
