@@ -472,8 +472,7 @@ class LIFConv2dLayer(nn.Module):
             self.tau_mem = 1. / (1. - self.alpha)
         else:
             self.alpha = torch.Tensor([torch.exp( - delta_t / tau_mem)]).to(device)
-        import pdb; pdb.set_trace()
-        self.upper_bound_P = self.tau_mem/(1-self.alpha)
+        self.upper_bound_P = (self.tau_mem * self.upper_bound_Q)/(1-self.alpha)
 
 
         if tau_ref.shape[0] == 2:
@@ -512,9 +511,9 @@ class LIFConv2dLayer(nn.Module):
 
         # quantize P, Q -> integers // bounds?
         if quantization.global_pb is not None:
-            self.P = torch.clamp(torch.round(self.P), -quantization.step_d(quantization.global_pb)+1, quantization.step_d(quantization.global_pb))
+            self.P = quantization.squant_ns(self.P/self.upper_bound_P)*self.upper_bound_P
         if quantization.global_qb is not None:
-            self.Q = torch.clamp(torch.round(self.Q), -quantization.step_d(quantization.global_qb)+1, quantization.step_d(quantization.global_qb))
+            self.Q = quantization.squant_ns(self.Q/self.upper_bound_Q)*self.upper_bound_Q
 
         self.U = QSConv2dFunctional.apply(self.P, self.weights, self.bias, self.scale, self.padding) + self.R 
         self.S = (self.U >= self.thr).float()
