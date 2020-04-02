@@ -36,7 +36,6 @@ def hist_U_fun(cur_U, title, tau = None, alpha = None, hist_epoch = False):
         plt.title(title)
         plt.savefig('figures/'+title.split(' ')[-1]+"_"+str(uuid.uuid1())+'.png')
         plt.close()
-                import pdb; pdb.set_trace()
 
 
         plt.clf()
@@ -53,8 +52,6 @@ def hist_U_fun(cur_U, title, tau = None, alpha = None, hist_epoch = False):
         hist_U = torch.zeros([1000]).to(torch.device("cuda"))
     else:
         import pdb; pdb.set_trace()
-
-        #import pdb; pdb.set_trace()
         upper_bounds = tau/(1-alpha)
         #cur_U = quantization.quant_nosign(cur_U/upper_bounds, 8)
         #hist_U = hist_U + torch.histc(cur_U, bins = 10000, min=-4, max=2)
