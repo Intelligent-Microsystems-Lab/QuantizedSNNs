@@ -80,10 +80,10 @@ def quant_s(x, scale = 1):
     return (x + diff)/scale
 
 def squant_ns(x, bits):
-    norm_int = torch.floor(norm_abs)
-    norm_float = quant(norm_abs - norm_int, global_rb)
+    norm_int = torch.floor(x)
+    norm_float = quant(x - norm_int, global_rb)
     rand_float = quant(torch.FloatTensor(x.shape).uniform_(0,1).to(x.device), global_rb)
-    #norm = norm_sign.double() * ( norm_int.double() + 0.5 * (torch.sign(norm_float.double() - rand_float.double()) + 1) )
+
     zero_prevention_step = torch.sign(norm_float - rand_float)
     zero_prevention_step[zero_prevention_step == 0] = 1
     norm = ( norm_int + 0.5 * (zero_prevention_step + 1) )
