@@ -31,15 +31,29 @@ def hist_U_fun(cur_U, title, tau = None, alpha = None, hist_epoch = False):
         fig, ax1 = plt.subplots()
         fig.set_size_inches(8.4, 4.8)
         #ax1.plot(np.linspace(-4, 2, 10000) ,(hist_U/hist_U.sum()).cpu().detach().numpy())
-        ax1.plot(np.linspace(0, 1000, 1000) ,(hist_U/hist_U.sum()).cpu().detach().numpy())
+        ax1.plot(np.linspace(0, 1000, 1000)[1:] ,(hist_U/hist_U.sum()).cpu().detach().numpy()[1:])
         plt.ylabel('Density')
         plt.title(title)
         plt.savefig('figures/'+title.split(' ')[-1]+"_"+str(uuid.uuid1())+'.png')
         plt.close()
-        import pdb; pdb.set_trace()
+                import pdb; pdb.set_trace()
+
+
+        plt.clf()
+        fig, ax1 = plt.subplots()
+        fig.set_size_inches(8.4, 4.8)
+        #ax1.plot(np.linspace(-4, 2, 10000) ,(hist_U/hist_U.sum()).cpu().detach().numpy())
+        ax1.plot(np.linspace(0, 1000, 1000)[1:], (hist_Ulog/hist_Ulog.sum()).cpu().detach().numpy()[1:])
+        plt.ylabel('Density')
+        plt.xlabel('log')
+        plt.title(title)
+        plt.savefig('figures/'+title.split(' ')[-1]+"_"+str(uuid.uuid1())+'.png')
+        plt.close()
 
         hist_U = torch.zeros([1000]).to(torch.device("cuda"))
     else:
+        import pdb; pdb.set_trace()
+
         #import pdb; pdb.set_trace()
         upper_bounds = tau/(1-alpha)
         #cur_U = quantization.quant_nosign(cur_U/upper_bounds, 8)
