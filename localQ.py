@@ -511,9 +511,9 @@ class LIFConv2dLayer(nn.Module):
 
         # quantize P, Q -> integers // bounds?
         if quantization.global_pb is not None:
-            self.P = quantization.squant_ns(self.P/self.upper_bound_P)*self.upper_bound_P
+            self.P = quantization.squant_ns(self.P/self.upper_bound_P, quantization.global_pb)*self.upper_bound_P
         if quantization.global_qb is not None:
-            self.Q = quantization.squant_ns(self.Q/self.upper_bound_Q)*self.upper_bound_Q
+            self.Q = quantization.squant_ns(self.Q/self.upper_bound_Q, quantization.global_qb)*self.upper_bound_Q
 
         self.U = QSConv2dFunctional.apply(self.P, self.weights, self.bias, self.scale, self.padding) + self.R 
         self.S = (self.U >= self.thr).float()
