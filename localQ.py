@@ -464,7 +464,7 @@ class LIFConv2dLayer(nn.Module):
             self.beta    = 1. - 1e-3 / self.tau_syn
             self.tau_syn = 1. / (1. - self.beta)
         else:
-            self.beta = torch.Tensor([torch.exp( - delta_t / tau_syn)]).to(device)
+            self.beta = torch.Tensor([torch.exp( - delta_t / tau_syn)]).to(device) #wrong
         self.upper_bound_Q = self.tau_syn/(1-self.beta)
 
 
@@ -473,17 +473,20 @@ class LIFConv2dLayer(nn.Module):
             self.alpha   = 1. - 1e-3 / self.tau_mem
             self.tau_mem = 1. / (1. - self.alpha)
         else:
-            self.alpha = torch.Tensor([torch.exp( - delta_t / tau_mem)]).to(device)
+            self.alpha = torch.Tensor([torch.exp( - delta_t / tau_mem)]).to(device) #wrong
         self.upper_bound_P = (self.tau_mem * self.upper_bound_Q)/(1-self.alpha)
 
 
         if tau_ref.shape[0] == 2:
-            self.gamma = torch.exp( -delta_t / torch.Tensor(torch.Size(self.out_shape)).uniform_(tau_ref[0], tau_ref[1]).to(device))
+            self.gamma = torch.exp( -delta_t / torch.Tensor(torch.Size(self.out_shape)).uniform_(tau_ref[0], tau_ref[1]).to(device)) # wrong
         else:
-            self.gamma = torch.Tensor([torch.exp( - delta_t / tau_ref)]).to(device)
+            self.gamma = torch.Tensor([1 - delta_t / tau_ref]).to(device)
 
-        import pdb; pdb.set_trace()
-        self.pmult = p_scale*perc_cap*weight_scale
+        self.q_scale = self.tau_syn/(1-self.beta)
+        self.p_scale = (self.tau_mem * self.q_scale*self.PQ_cap)/(1-self.alpha)
+        self.inp_mult_q = 1/self.PQ_cap * (1-self.beta)
+        self.inp_mult_p = 1/self.PQ_cap * (1-self.alpha)
+        self.pmult = self.p_scale * self.PQ_cap * self.weight_mult
 
         if quantization.global_wb is not None:
             with torch.no_grad():
@@ -511,13 +514,15 @@ class LIFConv2dLayer(nn.Module):
             # unsure yet... first PQ
             self.R, _ = quantization.quant01(self.R, quantization.global_rfb)
 
-        self.P, self.R, self.Q = self.alpha * self.P + self.tau_mem * self.Q, self.gamma * self.R, self.beta * self.Q + self.tau_syn * input_t
+        #self.P, self.R, self.Q = self.alpha * self.P + self.tau_mem * self.Q, self.gamma * self.R, self.beta * self.Q + self.tau_syn * input_t
 
-        import pdb; pdb.set_trace()
+        self.P, self.R, self.Q = self.alpha * self.P + self.inp_mult_p * self.Q, self.gamma * self.R, self.beta * self.Q + self.inp_mult_q * input_t
 
         if quantization.global_pb is not None:
+            self.P = torch.clamp(self.P, 0, 1)
             self.P = quantization.quant01(self.P, quantization.global_pb)
         if quantization.global_qb is not None:
+            self.Q = torch.clamp(self.Q, 0, 1)
             self.Q = quantization.quant01(self.Q, quantization.global_qb)
 
         self.U = QSConv2dFunctional.apply(self.P, self.weights * self.pmult, self.bias, self.scale, self.padding) - self.R 
