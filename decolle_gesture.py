@@ -188,10 +188,10 @@ for e in range(epochs):
                 rread_hist2_train.append(temp_corr2)
                 rread_hist3_train.append(temp_corr3)
 
-                if max_U < layer1.U.max():
-                    max_U = layer1.U.max().item()
-                if min_U > layer1.U.min():
-                    min_U = layer1.U.min().item()
+                # if max_U < layer1.U.max():
+                #     max_U = layer1.U.max().item()
+                # if min_U > layer1.U.min():
+                #     min_U = layer1.U.min().item()
 
 
         batch_corr['train1'].append(acc_comp(rread_hist1_train, y_local, True))
