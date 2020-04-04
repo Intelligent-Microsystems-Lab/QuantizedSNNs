@@ -525,7 +525,7 @@ class LIFConv2dLayer(nn.Module):
             self.Q = torch.clamp(self.Q, 0, 1)
             self.Q = quantization.quant01(self.Q, quantization.global_qb)
 
-        self.U = QSConv2dFunctional.apply(self.P, self.weights * self.pmult, self.bias, self.scale, self.padding) - self.R 
+        self.U = QSConv2dFunctional.apply(self.P * self.pmult, self.weights, self.bias, self.scale, self.padding) - self.R 
         self.S = (self.U >= self.thr).float()
         self.R += self.S * 1
 
