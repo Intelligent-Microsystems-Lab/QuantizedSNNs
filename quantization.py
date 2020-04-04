@@ -79,6 +79,10 @@ def quant_s(x, scale = 1):
     #    return x + diff
     return (x + diff)/scale
 
+def quant01(x, bits = 8):
+    scale = 2.0 ** (bits)
+    return np.round(x * scale ) / scale
+
 def squant_ns(x, bits):
     x = torch.clamp(x, 0, 1)
     norm_int = torch.floor(x)

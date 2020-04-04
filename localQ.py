@@ -408,7 +408,7 @@ class QSConv2dFunctional(torch.autograd.Function):
 
 
 class LIFConv2dLayer(nn.Module):
-    def __init__(self, inp_shape, kernel_size, out_channels, tau_syn, tau_mem, tau_ref, delta_t, pooling = 1, padding = 0, bias = True, thr = 1, device=torch.device("cpu"), dtype = torch.float, dropout_p = .5, output_neurons = 10, loss_fn = None, l1 = 0, l2 = 0):
+    def __init__(self, inp_shape, kernel_size, out_channels, tau_syn, tau_mem, tau_ref, delta_t, pooling = 1, padding = 0, bias = True, thr = 1, device=torch.device("cpu"), dtype = torch.float, dropout_p = .5, output_neurons = 10, loss_fn = None, l1 = 0, l2 = 0, PQ_cap = 1, weight_mult = 4e-5):
         super(LIFConv2dLayer, self).__init__()   
         self.device = device
         self.inp_shape = inp_shape
@@ -418,6 +418,8 @@ class LIFConv2dLayer(nn.Module):
         self.padding = padding
         self.pooling = pooling
         self.thr = thr
+        self.PQ_cap = PQ_cap
+        self.weight_mult = weight_mult
         self.fan_in = kernel_size * kernel_size * inp_shape[0]
                 
         self.dropout_learning = nn.Dropout(p=dropout_p)
@@ -428,7 +430,7 @@ class LIFConv2dLayer(nn.Module):
 
         self.weights = nn.Parameter(torch.empty((self.out_channels, inp_shape[0],  self.kernel_size, self.kernel_size),  device=device, dtype=dtype, requires_grad=True))
 
-        self.stdv =  1 / np.sqrt(self.fan_in) / 250 * 1e-2
+        self.stdv =  1 / np.sqrt(self.fan_in) #/ 250 * 1e-2
         if quantization.global_wb is not None:
             self.L_min = quantization.global_beta/quantization.step_d(torch.tensor([float(quantization.global_wb)]))
             #self.stdv = np.sqrt(6/self.fan_in) 
@@ -443,10 +445,10 @@ class LIFConv2dLayer(nn.Module):
         if bias:
             self.bias = nn.Parameter(torch.empty(self.out_channels, device=device, dtype=dtype, requires_grad=True))
             if quantization.global_wb is not None:
-                bias_L = np.max([self.stdv*1e2, self.L_min])
+                bias_L = np.max([self.stdv*self.weight_mult*1e2, self.L_min])
                 torch.nn.init.uniform_(self.bias, a = -bias_L, b = bias_L)
             else:
-                torch.nn.init.uniform_(self.bias, a = -self.stdv *1e2, b = self.stdv *1e2)
+                torch.nn.init.uniform_(self.bias, a = -self.stdv *self.weight_mult*1e2, b = self.stdv * self.weight_mult*1e2)
         else:
             self.register_parameter('bias', None)
 
@@ -480,6 +482,8 @@ class LIFConv2dLayer(nn.Module):
         else:
             self.gamma = torch.Tensor([torch.exp( - delta_t / tau_ref)]).to(device)
 
+        import pdb; pdb.set_trace()
+        self.pmult = p_scale*perc_cap*weight_scale
 
         if quantization.global_wb is not None:
             with torch.no_grad():
@@ -504,20 +508,21 @@ class LIFConv2dLayer(nn.Module):
                 if self.bias is not None:
                     self.bias.data = quantization.clip(self.bias.data, quantization.global_gb)
         if quantization.global_rfb is not None:
-            # figure out bounds
-            self.R, _ = quantization.quant_generic(self.R, quantization.global_rfb)
+            # unsure yet... first PQ
+            self.R, _ = quantization.quant01(self.R, quantization.global_rfb)
 
-        self.P, self.R, self.Q = self.alpha * self.P + self.tau_mem * self.Q, 0.65 * self.R, self.beta * self.Q + self.tau_syn * input_t
+        self.P, self.R, self.Q = self.alpha * self.P + self.tau_mem * self.Q, self.gamma * self.R, self.beta * self.Q + self.tau_syn * input_t
 
-        # quantize P, Q -> integers // bounds?
+        import pdb; pdb.set_trace()
+
         if quantization.global_pb is not None:
-            self.P = quantization.squant_ns(self.P/self.upper_bound_P, quantization.global_pb)*self.upper_bound_P
+            self.P = quantization.quant01(self.P, quantization.global_pb)
         if quantization.global_qb is not None:
-            self.Q = quantization.squant_ns(self.Q/self.upper_bound_Q, quantization.global_qb)*self.upper_bound_Q
+            self.Q = quantization.quant01(self.Q, quantization.global_qb)
 
-        self.U = QSConv2dFunctional.apply(self.P, self.weights, self.bias, self.scale, self.padding) + self.R 
+        self.U = QSConv2dFunctional.apply(self.P, self.weights * self.pmult, self.bias, self.scale, self.padding) - self.R 
         self.S = (self.U >= self.thr).float()
-        self.R -= self.S * 1
+        self.R += self.S * 1
 
         if test_flag or train_flag:
             self.U_aux = torch.sigmoid(self.U) # quantize this function.... at some point

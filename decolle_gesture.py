@@ -49,8 +49,8 @@ with open('data/train_dvs_gesture.pickle', 'rb') as f:
 x_train = data[0]
 y_train = np.array(data[1], dtype = int) - 1
 
-x_train = x_train[:2]
-y_train = y_train[:2]
+# x_train = x_train[:2]
+# y_train = y_train[:2]
 
 
 with open('data/test_dvs_gesture.pickle', 'rb') as f:
@@ -67,8 +67,8 @@ quantization.global_eb  = None
 
 quantization.global_wb  = None
 quantization.global_ub  = None
-quantization.global_qb  = 16
-quantization.global_pb  = 16
+quantization.global_qb  = None
+quantization.global_pb  = None
 quantization.global_rfb = None
 
 
@@ -91,6 +91,9 @@ epochs = 320
 lr_div = 60
 batch_size = 72
 
+PQ_cap = 1 #.1, .5, etc.
+weight_mult = 4e-5 # decolle
+
 dropout_p = .5
 localQ.lc_ampl = .5
 l1 = .001
@@ -98,7 +101,7 @@ l2 = .001
 
 thr = torch.Tensor([0.]).to(device) #that probably should be one... one doesnt really work
 tau_mem = torch.Tensor([5*ms, 35*ms]).to(device)
-tau_ref = torch.Tensor([5*ms, 35*ms]).to(device)
+tau_ref = torch.Tensor([1/.35*ms]).to(device)
 tau_syn = torch.Tensor([5*ms, 10*ms]).to(device)
 
 sl1_loss = torch.nn.MSELoss()#torch.nn.SmoothL1Loss()
@@ -106,11 +109,11 @@ sl1_loss = torch.nn.MSELoss()#torch.nn.SmoothL1Loss()
 # construct layers
 downsample_l = nn.AvgPool2d(kernel_size = 4, stride = 4)
 
-layer1 = LIFConv2dLayer(inp_shape = (2, 32, 32), kernel_size = 7, out_channels = 64, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2).to(device)
+layer1 = LIFConv2dLayer(inp_shape = (2, 32, 32), kernel_size = 7, out_channels = 64, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, PQ_cap = PQ_cap, weight_mult = weight_mult).to(device)
 
-layer2 = LIFConv2dLayer(inp_shape = layer1.out_shape2, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 1, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2).to(device)
+layer2 = LIFConv2dLayer(inp_shape = layer1.out_shape2, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 1, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, PQ_cap = PQ_cap, weight_mult = weight_mult).to(device)
 
-layer3 = LIFConv2dLayer(inp_shape = layer2.out_shape2, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2).to(device)
+layer3 = LIFConv2dLayer(inp_shape = layer2.out_shape2, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, PQ_cap = PQ_cap, weight_mult = weight_mult).to(device)
 
 
 all_parameters = list(layer1.parameters()) + list(layer2.parameters()) + list(layer3.parameters())
@@ -144,6 +147,8 @@ for e in range(epochs):
     batch_corr = {'train1': [], 'test1': [],'train2': [], 'test2': [],'train3': [], 'test3': [], 'loss':[]}
     start_time = time.time()
 
+    # max_U = 0
+    # min_U = 0
     # training
     for x_local, y_local in sparse_data_generator_DVSGesture(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = True, device = device):
 
@@ -182,35 +187,24 @@ for e in range(epochs):
                 rread_hist1_train.append(temp_corr1)
                 rread_hist2_train.append(temp_corr2)
                 rread_hist3_train.append(temp_corr3)
-            #hist_U_fun(layer3.Q, title = "", tau = layer3.tau_mem, alpha = layer3.alpha)
-            #hist_U_fun(layer2.U)
-            #hist_U_fun(layer3.U)
-            # print("Ql1" + str(layer1.Q.max()) + " " + str(layer1.Q.min()) + " " + str(layer1.Q.mean()) + " "  + str(layer1.Q.median()))
-            # print("Ql2" + str(layer2.Q.max()) + " " + str(layer2.Q.min()) + " " + str(layer2.Q.mean()) + " "  + str(layer2.Q.median()))
-            # print("Ql3" + str(layer3.Q.max()) + " " + str(layer3.Q.min()) + " " + str(layer3.Q.mean()) + " "  + str(layer3.Q.median()))
 
+                if max_U < layer1.U.max():
+                    max_U = layer1.U.max().item()
+                if min_U > layer1.U.min():
+                    min_U = layer1.U.min().item()
 
-            # print("Pl1" + str(layer1.P.max()) + " " + str(layer1.P.min()) + " " + str(layer1.P.mean()) + " "  + str(layer1.P.median()))
-            # print("Pl2" + str(layer2.P.max()) + " " + str(layer2.P.min()) + " " + str(layer2.P.mean()) + " "  + str(layer2.P.median()))
-            # print("Pl3" + str(layer3.P.max()) + " " + str(layer3.P.min()) + " " + str(layer3.P.mean()) + " "  + str(layer3.P.median()))
-
-
-            # print("Rl1" + str(layer1.R.max()) + " " + str(layer1.R.min()) + " " + str(layer1.R.mean()) + " "  + str(layer1.R.median()))
-            # print("Rl2" + str(layer2.R.max()) + " " + str(layer2.R.min()) + " " + str(layer2.R.mean()) + " "  + str(layer2.R.median()))
-            # print("Rl3" + str(layer3.R.max()) + " " + str(layer3.R.min()) + " " + str(layer3.R.mean()) + " "  + str(layer3.R.median()))
-
-
-            # print("Pl1" + str(layer1.P.max()) + " " + str(layer1.P.min()) + " " + str(layer1.P.mean()) + " "  + str(layer1.P.median()))
-            # print("Pl2" + str(layer2.P.max()) + " " + str(layer2.P.min()) + " " + str(layer2.P.mean()) + " "  + str(layer2.P.median()))
-            # print("Pl3" + str(layer3.P.max()) + " " + str(layer3.P.min()) + " " + str(layer3.P.mean()) + " "  + str(layer3.P.median()))
 
         batch_corr['train1'].append(acc_comp(rread_hist1_train, y_local, True))
         batch_corr['train2'].append(acc_comp(rread_hist2_train, y_local, True))
         batch_corr['train3'].append(acc_comp(rread_hist3_train, y_local, True))
         del x_local, y_local, y_onehot
 
+    # print("max U " + str(max_U))
+    # print("min U " + str(min_U))
+    # print("max W " + str(layer1.weights.max().item()))
+    # print("min W " + str(layer1.weights.min().item()))
+
     train_time = time.time()
-    #hist_U_fun(layer3.Q, title = "Histogram of P L3E"+str(e), hist_epoch = True)
 
     diff_layers_acc['train1'].append(torch.cat(batch_corr['train1']).mean())
     diff_layers_acc['train2'].append(torch.cat(batch_corr['train2']).mean())
