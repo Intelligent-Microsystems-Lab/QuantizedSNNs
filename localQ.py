@@ -430,7 +430,7 @@ class LIFConv2dLayer(nn.Module):
 
         self.weights = nn.Parameter(torch.empty((self.out_channels, inp_shape[0],  self.kernel_size, self.kernel_size),  device=device, dtype=dtype, requires_grad=True))
 
-        self.stdv =  1 / np.sqrt(self.fan_in) #* self.weight_mult#/ 250 * 1e-2
+        self.stdv =  1 / np.sqrt(self.fan_in) * self.weight_mult#/ 250 * 1e-2
         if quantization.global_wb is not None:
             self.L_min = quantization.global_beta/quantization.step_d(torch.tensor([float(quantization.global_wb)]))
             #self.stdv = np.sqrt(6/self.fan_in) 
@@ -445,10 +445,10 @@ class LIFConv2dLayer(nn.Module):
         if bias:
             self.bias = nn.Parameter(torch.empty(self.out_channels, device=device, dtype=dtype, requires_grad=True))
             if quantization.global_wb is not None:
-                bias_L = np.max([self.stdv*1e2, self.L_min])
+                bias_L = np.max([self.stdv* self.weight_mult*1e2, self.L_min])
                 torch.nn.init.uniform_(self.bias, a = -bias_L, b = bias_L)
             else:
-                torch.nn.init.uniform_(self.bias, a = -self.stdv*1e2, b = self.stdv*1e2)
+                torch.nn.init.uniform_(self.bias, a = -self.stdv* self.weight_mult*1e2, b = self.stdv* self.weight_mult*1e2)
         else:
             self.register_parameter('bias', None)
 
@@ -526,7 +526,7 @@ class LIFConv2dLayer(nn.Module):
             self.Q = quantization.quant01(self.Q, quantization.global_qb)
 
         #self.U = QSConv2dFunctional.apply(self.P * self.pmult, self.weights, self.bias, self.scale, self.padding) - self.R 
-        self.U = QSConv2dFunctional.apply(self.P * self.weight_mult, self.weights, self.bias * self.weight_mult, self.scale, self.padding) - self.R 
+        self.U = QSConv2dFunctional.apply(self.P*self.weight_mult, self.weights/self.weight_mult, self.bias, self.scale, self.padding) - self.R 
         self.S = (self.U >= self.thr).float()
         self.R += self.S * 1
 
