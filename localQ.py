@@ -404,7 +404,7 @@ class QSConv2dFunctional(torch.autograd.Function):
             else:
                 grad_bias = quant_error.sum((0,2,3)).squeeze(0)
 
-        return grad_input, grad_weight/4e-5, grad_bias/4e-5, None, None, None, None
+        return grad_input, grad_weight, grad_bias, None, None, None, None
 
 
 class LIFConv2dLayer(nn.Module):
