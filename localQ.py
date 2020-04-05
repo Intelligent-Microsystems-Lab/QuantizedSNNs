@@ -443,7 +443,7 @@ class LIFConv2dLayer(nn.Module):
             torch.nn.init.uniform_(self.weights, a = -self.stdv , b = self.stdv)
 
         #####
-        self.weights.data *= self.weight_mult.data
+        self.weights.data *= self.weight_mult
 
         if bias:
             self.bias = nn.Parameter(torch.empty(self.out_channels, device=device, dtype=dtype, requires_grad=True))
