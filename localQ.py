@@ -448,7 +448,7 @@ class LIFConv2dLayer(nn.Module):
                 bias_L = np.max([self.stdv*self.weight_mult*1e2, self.L_min])
                 torch.nn.init.uniform_(self.bias, a = -bias_L, b = bias_L)
             else:
-                torch.nn.init.uniform_(self.bias, a = -self.stdv *self.weight_mult*1e2, b = self.stdv * self.weight_mult*1e2)
+                torch.nn.init.uniform_(self.bias, a = -self.stdv *self.weight_mult*1e2, b = self.stdv *self.weight_mult*1e2)
         else:
             self.register_parameter('bias', None)
 
@@ -526,7 +526,7 @@ class LIFConv2dLayer(nn.Module):
             self.Q = quantization.quant01(self.Q, quantization.global_qb)
 
         #self.U = QSConv2dFunctional.apply(self.P * self.pmult, self.weights, self.bias, self.scale, self.padding) - self.R 
-        self.U = QSConv2dFunctional.apply(self.P * self.weight_mult, self.weights, self.bias, self.scale, self.padding) - self.R 
+        self.U = QSConv2dFunctional.apply(self.P , self.weights * self.weight_mult, self.bias, self.scale, self.padding) - self.R 
         self.S = (self.U >= self.thr).float()
         self.R += self.S * 1
 
