@@ -529,6 +529,8 @@ class LIFConv2dLayer(nn.Module):
         #self.U = QSConv2dFunctional.apply(self.P * self.pmult, self.weights, self.bias, self.scale, self.padding) - self.R
         self.U = QSConv2dFunctional.apply(self.P*self.pmult, self.weights/self.weight_mult, self.bias, self.scale, self.padding) - self.R * self.r_scale
         self.S = (self.U >= self.thr).float()
+
+        import pdb; pdb.set_trace()
         self.R += self.S * (1-self.gamma)
 
 
