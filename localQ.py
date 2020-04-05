@@ -440,7 +440,7 @@ class LIFConv2dLayer(nn.Module):
             torch.nn.init.uniform_(self.weights, a = -self.L, b = self.L)
         else:
             self.scale = 1
-            torch.nn.init.uniform_(self.weights, a = -self.stdv , b = self.stdv) #* 1e-2
+            torch.nn.init.uniform_(self.weights, a = -self.stdv , b = self.stdv)
 
         if bias:
             self.bias = nn.Parameter(torch.empty(self.out_channels, device=device, dtype=dtype, requires_grad=True))
@@ -526,8 +526,7 @@ class LIFConv2dLayer(nn.Module):
             self.Q = quantization.quant01(self.Q, quantization.global_qb)
 
         #self.U = QSConv2dFunctional.apply(self.P * self.pmult, self.weights, self.bias, self.scale, self.padding) - self.R 
-        import pdb; pdb.set_trace()
-        self.U = QSConv2dFunctional.apply(self.P, self.weights, self.bias, self.scale, self.padding) - self.R 
+        self.U = QSConv2dFunctional.apply(self.P, self.weights * self.weight_mult, self.bias, self.scale, self.padding) - self.R 
         self.S = (self.U >= self.thr).float()
         self.R += self.S * 1
 
