@@ -69,7 +69,7 @@ quantization.global_wb  = None
 quantization.global_ub  = None
 quantization.global_qb  = 8
 quantization.global_pb  = 8
-quantization.global_rfb = None
+quantization.global_rfb = 8
 
 
 quantization.global_rb = 16
