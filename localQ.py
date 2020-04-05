@@ -529,8 +529,9 @@ class LIFConv2dLayer(nn.Module):
         self.S = (self.U >= self.thr).float()
         self.R += self.S * 1
 
-        import pdb; pdb.set_trace()
+
         if test_flag or train_flag:
+            import pdb; pdb.set_trace()
             self.U_aux = torch.sigmoid(self.U) # quantize this function.... at some point
             self.U_aux = self.mpool(self.U_aux)
 
