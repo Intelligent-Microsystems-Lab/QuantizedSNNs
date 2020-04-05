@@ -430,7 +430,7 @@ class LIFConv2dLayer(nn.Module):
 
         self.weights = nn.Parameter(torch.empty((self.out_channels, inp_shape[0],  self.kernel_size, self.kernel_size),  device=device, dtype=dtype, requires_grad=True))
 
-        self.stdv =  1 / np.sqrt(self.fan_in) #* self.weight_mult#/ 250 * 1e-2
+        self.stdv =  1 / np.sqrt(self.fan_in) * self.weight_mult#/ 250 * 1e-2
         if quantization.global_wb is not None:
             self.L_min = quantization.global_beta/quantization.step_d(torch.tensor([float(quantization.global_wb)]))
             #self.stdv = np.sqrt(6/self.fan_in) 
@@ -441,9 +441,6 @@ class LIFConv2dLayer(nn.Module):
         else:
             self.scale = 1
             torch.nn.init.uniform_(self.weights, a = -self.stdv , b = self.stdv)
-
-        #####
-        self.weights.data *= self.weight_mult
 
         if bias:
             self.bias = nn.Parameter(torch.empty(self.out_channels, device=device, dtype=dtype, requires_grad=True))
@@ -461,7 +458,7 @@ class LIFConv2dLayer(nn.Module):
         
         self.sign_random_readout = QLinearLayerSign(input_features = np.prod(self.out_shape2), output_features = output_neurons, pass_through = False, bias = False).to(device)
 
-        # tau quantization.....
+        # tau quantization, static hardware friendly values
         if tau_syn.shape[0] == 2:
             self.tau_syn = torch.Tensor(torch.Size(self.inp_shape)).uniform_(tau_syn[0], tau_syn[1]).to(device)
             self.beta    = 1. - 1e-3 / self.tau_syn
