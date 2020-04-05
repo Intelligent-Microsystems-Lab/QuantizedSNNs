@@ -464,8 +464,7 @@ class LIFConv2dLayer(nn.Module):
             self.beta    = 1. - 1e-3 / self.tau_syn
             self.tau_syn = 1. / (1. - self.beta)
         else:
-            self.beta = torch.Tensor([torch.exp( - delta_t / tau_syn)]).to(device) #wrong
-        self.upper_bound_Q = self.tau_syn/(1-self.beta)
+            self.beta = torch.Tensor([1 - delta_t / tau_syn]).to(device) 
 
 
         if tau_mem.shape[0] == 2:
@@ -473,12 +472,13 @@ class LIFConv2dLayer(nn.Module):
             self.alpha   = 1. - 1e-3 / self.tau_mem
             self.tau_mem = 1. / (1. - self.alpha)
         else:
-            self.alpha = torch.Tensor([torch.exp( - delta_t / tau_mem)]).to(device) #wrong
-        self.upper_bound_P = (self.tau_mem * self.upper_bound_Q)/(1-self.alpha)
+            self.alpha = torch.Tensor([1 - delta_t / tau_mem]).to(device) 
 
 
         if tau_ref.shape[0] == 2:
-            self.gamma = torch.exp( -delta_t / torch.Tensor(torch.Size(self.out_shape)).uniform_(tau_ref[0], tau_ref[1]).to(device)) # wrong
+            self.tau_ref = torch.Tensor(torch.Size(self.inp_shape)).uniform_(tau_ref[0], tau_ref[1]).to(device)
+            self.gamma   = 1. - 1e-3 / self.tau_gamma
+            self.tau_ref = 1. / (1. - self.gamma)
         else:
             self.gamma = torch.Tensor([1 - delta_t / tau_ref]).to(device)
 
@@ -514,9 +514,9 @@ class LIFConv2dLayer(nn.Module):
             # unsure yet... first PQ
             self.R, _ = quantization.quant01(self.R, quantization.global_rfb)
 
-        #self.P, self.R, self.Q = self.alpha * self.P + self.tau_mem * self.Q, self.gamma * self.R, self.beta * self.Q + self.tau_syn * input_t
+        self.P, self.R, self.Q = self.alpha * self.P + self.tau_mem * self.Q, self.gamma * self.R, self.beta * self.Q + self.tau_syn * input_t
 
-        self.P, self.R, self.Q = self.alpha * self.P + self.inp_mult_p * self.Q, self.gamma * self.R, self.beta * self.Q + self.inp_mult_q * input_t
+        #self.P, self.R, self.Q = self.alpha * self.P + self.inp_mult_p * self.Q, self.gamma * self.R, self.beta * self.Q + self.inp_mult_q * input_t
 
         if quantization.global_pb is not None:
             self.P = torch.clamp(self.P, 0, 1)
@@ -525,13 +525,13 @@ class LIFConv2dLayer(nn.Module):
             self.Q = torch.clamp(self.Q, 0, 1)
             self.Q = quantization.quant01(self.Q, quantization.global_qb)
 
-        self.U = QSConv2dFunctional.apply(self.P * self.pmult, self.weights, self.bias, self.scale, self.padding) - self.R 
+        #self.U = QSConv2dFunctional.apply(self.P * self.pmult, self.weights, self.bias, self.scale, self.padding) - self.R 
+        self.U = QSConv2dFunctional.apply(self.P * self.weight_mult, self.weights, self.bias, self.scale, self.padding) - self.R 
         self.S = (self.U >= self.thr).float()
         self.R += self.S * 1
 
 
         if test_flag or train_flag:
-            import pdb; pdb.set_trace()
             self.U_aux = torch.sigmoid(self.U) # quantize this function.... at some point
             self.U_aux = self.mpool(self.U_aux)
 
