@@ -404,7 +404,7 @@ class QSConv2dFunctional(torch.autograd.Function):
             else:
                 grad_bias = quant_error.sum((0,2,3)).squeeze(0)
 
-        return grad_input, grad_weight/4e-5, grad_bias, None, None, None, None
+        return grad_input, grad_weight/4e-5, grad_bias/4e-5, None, None, None, None
 
 
 class LIFConv2dLayer(nn.Module):
@@ -448,7 +448,7 @@ class LIFConv2dLayer(nn.Module):
                 bias_L = np.max([self.stdv*self.weight_mult*1e2, self.L_min])
                 torch.nn.init.uniform_(self.bias, a = -bias_L, b = bias_L)
             else:
-                torch.nn.init.uniform_(self.bias, a = -self.stdv *self.weight_mult*1e2, b = self.stdv *self.weight_mult*1e2)
+                torch.nn.init.uniform_(self.bias, a = -self.stdv *1e2, b = self.stdv *1e2)
         else:
             self.register_parameter('bias', None)
 
