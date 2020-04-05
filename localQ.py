@@ -482,6 +482,7 @@ class LIFConv2dLayer(nn.Module):
         else:
             self.gamma = torch.Tensor([1 - delta_t / tau_ref]).to(device)
 
+        self.r_scale = 1/(1-self.beta) # the one comes from decolle, best value ?
         self.q_scale = self.tau_syn/(1-self.beta)
         self.p_scale = (self.tau_mem * self.q_scale*self.PQ_cap)/(1-self.alpha)
         self.inp_mult_q = 1/self.PQ_cap * (1-self.beta)
@@ -511,8 +512,8 @@ class LIFConv2dLayer(nn.Module):
                 if self.bias is not None:
                     self.bias.data = quantization.clip(self.bias.data, quantization.global_gb)
         if quantization.global_rfb is not None:
-            # unsure yet... first PQ
-            self.R, _ = quantization.quant01(self.R, quantization.global_rfb)
+            # R always using full scale?
+            self.R = quantization.quant01(self.R, quantization.global_rfb)
 
         #self.P, self.R, self.Q = self.alpha * self.P + self.tau_mem * self.Q, self.gamma * self.R, self.beta * self.Q + self.tau_syn * input_t
 
@@ -526,9 +527,9 @@ class LIFConv2dLayer(nn.Module):
             self.Q = quantization.quant01(self.Q, quantization.global_qb)
 
         #self.U = QSConv2dFunctional.apply(self.P * self.pmult, self.weights, self.bias, self.scale, self.padding) - self.R 
-        self.U = QSConv2dFunctional.apply(self.P*self.pmult, self.weights/self.weight_mult, self.bias, self.scale, self.padding) - self.R 
+        self.U = QSConv2dFunctional.apply(self.P*self.pmult, self.weights/self.weight_mult, self.bias, self.scale, self.padding) - self.R * self.r_scale 
         self.S = (self.U >= self.thr).float()
-        self.R += self.S * 1
+        self.R += self.S * (1-self.gamma)
 
 
         if test_flag or train_flag:
