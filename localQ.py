@@ -488,16 +488,16 @@ class LIFConv2dLayer(nn.Module):
             self.gamma = torch.Tensor([1 - delta_t / tau_ref]).to(device)
 
         self.r_scale = 1/(1-self.gamma) # the one comes from decolle, best value ?
-        self.q_scale = self.tau_syn/(1-self.beta)
-        self.q_scale = self.q_scale.max()
+        #self.q_scale = self.tau_syn/(1-self.beta)
+        #self.q_scale = self.q_scale.max()
         # p_scale should be max overall to differentiate input signals
-        self.p_scale = (self.tau_mem * self.q_scale*self.PQ_cap)/(1-self.alpha)
-        self.p_scale = self.p_scale.max()
+        #self.p_scale = (self.tau_mem * self.q_scale*self.PQ_cap)/(1-self.alpha)
+        #self.p_scale = self.p_scale.max()
 
         import pdb; pdb.set_trace()
         self.inp_mult_q = 1/self.PQ_cap * (1-self.beta.max())
-        self.inp_mult_p = 1/self.PQ_cap * (1-self.alpha)
-        self.pmult = self.p_scale * self.PQ_cap * self.weight_mult
+        self.inp_mult_p = 1/self.PQ_cap * (1-self.alpha.max())
+        #self.pmult = self.p_scale * self.PQ_cap * self.weight_mult
 
         if quantization.global_wb is not None:
             with torch.no_grad():
@@ -528,6 +528,11 @@ class LIFConv2dLayer(nn.Module):
         #self.P, self.R, self.Q = self.alpha * self.P + self.tau_mem * self.Q, self.gamma * self.R, self.beta * self.Q + self.tau_syn * input_t
 
         self.P, self.R, self.Q = self.alpha * self.P + self.inp_mult_p * self.Q, self.gamma * self.R, self.beta * self.Q + self.inp_mult_q * input_t
+
+        if self.P > 1:
+            print("hello P")
+        if self.Q > 1:
+            print("hello Q")
 
         if quantization.global_pb is not None:
             self.P = torch.clamp(self.P, 0, 1)
