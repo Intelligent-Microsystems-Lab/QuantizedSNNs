@@ -254,6 +254,17 @@ def sparse_data_generator_Static(X, y, batch_size, nb_steps, samples, max_hertz,
         except StopIteration:
             return
 
+class quantU(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, x):
+        return quantization.quant11(torch.clamp(x/8, -8, 8), quantization.global_ub)*8
+
+    @staticmethod
+    def backward(ctx, grad_output):     
+        return grad_output
+
+
+
 class QLinearFunctional(torch.autograd.Function):
     '''from https://github.com/L0SG/feedback-alignment-pytorch/'''
     @staticmethod
@@ -527,10 +538,10 @@ class LIFConv2dLayer(nn.Module):
             self.Q = quantization.quant01(self.Q, quantization.global_qb)
 
         #self.U = QSConv2dFunctional.apply(self.P * self.pmult, self.weights, self.bias, self.scale, self.padding) - self.R
-        self.U = QSConv2dFunctional.apply(self.P*self.pmult, self.weights/self.weight_mult, self.bias, self.scale, self.padding) #- self.R * self.r_scale
+        self.U = QSConv2dFunctional.apply(self.P*self.pmult, self.weights/self.weight_mult, self.bias, self.scale, self.padding) - self.R * self.r_scale 
+        if quantization.global_ub is not None:
+            self.U = quantU.apply(self.U)
         self.S = (self.U >= self.thr).float()
-
-        self.U[self.S ==1 ] = -.65
         self.R += self.S * (1-self.gamma)
 
 
