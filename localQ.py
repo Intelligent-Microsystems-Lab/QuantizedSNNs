@@ -433,8 +433,9 @@ class LIFConv2dLayer(nn.Module):
 
         self.weights = nn.Parameter(torch.empty((self.out_channels, inp_shape[0],  self.kernel_size, self.kernel_size),  device=device, dtype=dtype, requires_grad=True))
 
-        self.stdv =  1 / np.sqrt(self.fan_in) * self.weight_mult#/ 250 * 1e-2
-        self.stdv =  np.sqrt(6 / self.fan_in) * self.weight_mult
+        # decide which one you like
+        self.stdv =  1 / np.sqrt(self.fan_in) #* self.weight_mult#/ 250 * 1e-2
+        self.stdv =  np.sqrt(6 / self.fan_in) #* self.weight_mult
         import pdb; pdb.set_trace()
         if quantization.global_wb is not None:
             self.L_min = quantization.global_beta/quantization.step_d(torch.tensor([float(quantization.global_wb)]))
@@ -447,13 +448,14 @@ class LIFConv2dLayer(nn.Module):
             self.scale = 1
             torch.nn.init.uniform_(self.weights, a = -self.stdv , b = self.stdv)
 
+        # bias has a different scale... just why?
         if bias:
             self.bias = nn.Parameter(torch.empty(self.out_channels, device=device, dtype=dtype, requires_grad=True))
             if quantization.global_wb is not None:
-                bias_L = np.max([self.stdv* self.weight_mult*1e2, self.L_min])
+                bias_L = np.max([self.stdv* 1e2, self.L_min])
                 torch.nn.init.uniform_(self.bias, a = -bias_L, b = bias_L)
             else:
-                torch.nn.init.uniform_(self.bias, a = -self.stdv* self.weight_mult*1e2, b = self.stdv* self.weight_mult*1e2)
+                torch.nn.init.uniform_(self.bias, a = -self.stdv* 1e2, b = self.stdv* 1e2)
         else:
             self.register_parameter('bias', None)
 
@@ -489,7 +491,12 @@ class LIFConv2dLayer(nn.Module):
 
         self.r_scale = 1/(1-self.gamma) # the one comes from decolle, best value ?
         self.q_scale = self.tau_syn/(1-self.beta)
+        self.q_scale = self.q_scale.max()
+        # p_scale should be max overall to differentiate input signals
         self.p_scale = (self.tau_mem * self.q_scale*self.PQ_cap)/(1-self.alpha)
+        self.p_scale = self.p_scale.max()
+
+        import pdb; pdb.set_trace()
         self.inp_mult_q = 1/self.PQ_cap * (1-self.beta)
         self.inp_mult_p = 1/self.PQ_cap * (1-self.alpha)
         self.pmult = self.p_scale * self.PQ_cap * self.weight_mult
@@ -532,7 +539,7 @@ class LIFConv2dLayer(nn.Module):
             self.Q = quantization.quant01(self.Q, quantization.global_qb)
 
         #self.U = QSConv2dFunctional.apply(self.P * self.pmult, self.weights, self.bias, self.scale, self.padding) - self.R
-        self.U = QSConv2dFunctional.apply(self.P*self.pmult, self.weights/self.weight_mult, self.bias, self.scale, self.padding) - self.R * self.r_scale 
+        self.U = QSConv2dFunctional.apply(self.P, self.weight, self.bias, self.scale, self.padding) - self.R * self.r_scale 
         if quantization.global_ub is not None:
             self.U = quantU.apply(self.U)
         self.S = (self.U >= self.thr).float()
