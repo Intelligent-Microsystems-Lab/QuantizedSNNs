@@ -59,17 +59,17 @@ x_test = data[0]
 y_test = np.array(data[1], dtype = int) - 1
 
 # set quant level
-quantization.global_ab  = None
-quantization.global_sig = None
-quantization.global_sb  = None
-quantization.global_gb  = None
-quantization.global_eb  = None
+quantization.global_ab  = 8
+quantization.global_sig = 8
+quantization.global_sb  = 1
+quantization.global_gb  = 8
+quantization.global_eb  = 8
 
 quantization.global_wb  = None
 quantization.global_ub  = 8
-quantization.global_qb  = None
-quantization.global_pb  = None
-quantization.global_rfb = None 
+quantization.global_qb  = 8
+quantization.global_pb  = 8
+quantization.global_rfb = 8
 
 
 quantization.global_rb = 16
@@ -258,17 +258,17 @@ for e in range(epochs):
 
 
 # saving results/weights
-results = {'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer2':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer3':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer4':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'acc': diff_layers_acc, 'fname':plot_file_name}
+results = {'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer2':[layer2.weights.detach().cpu(), layer2.bias.detach().cpu()], 'layer3':[layer3.weights.detach().cpu(), layer3.bias.detach().cpu()], 'acc': diff_layers_acc, 'fname':plot_file_name}
 
 with open('results/'+str(uuid.uuid1())+'.pkl', 'wb') as f:
     pickle.dump(results, f)
 
 
-# # how to load
-# import pickle
+# how to load
+import pickle
 
-# with open('results/9dcc41f0-6f08-11ea-83ed-a0369ffa9370.pkl', 'rb') as f:
-#     # The protocol version used is detected automatically, so we do not
-#     # have to specify it.
-#     data = pickle.load(f)
+with open('results/40357372-7462-11ea-b0e2-a0369ffaa7c0.pkl', 'rb') as f:
+    # The protocol version used is detected automatically, so we do not
+    # have to specify it.
+    data = pickle.load(f)
 
