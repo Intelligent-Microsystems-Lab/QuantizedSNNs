@@ -147,8 +147,6 @@ for e in range(epochs):
     batch_corr = {'train1': [], 'test1': [],'train2': [], 'test2': [],'train3': [], 'test3': [], 'loss':[]}
     start_time = time.time()
 
-    # max_U = 0
-    # min_U = 0
     # training
     for x_local, y_local in sparse_data_generator_DVSGesture(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = True, device = device):
 
@@ -188,10 +186,6 @@ for e in range(epochs):
                 rread_hist2_train.append(temp_corr2)
                 rread_hist3_train.append(temp_corr3)
 
-                # if max_U < layer1.U.max():
-                #     max_U = layer1.U.max().item()
-                # if min_U > layer1.U.min():
-                #     min_U = layer1.U.min().item()
 
 
         batch_corr['train1'].append(acc_comp(rread_hist1_train, y_local, True))
@@ -199,10 +193,6 @@ for e in range(epochs):
         batch_corr['train3'].append(acc_comp(rread_hist3_train, y_local, True))
         del x_local, y_local, y_onehot
 
-    # print("max U " + str(max_U))
-    # print("min U " + str(min_U))
-    # print("max W " + str(layer1.weights.max().item()))
-    # print("min W " + str(layer1.weights.min().item()))
 
     train_time = time.time()
 

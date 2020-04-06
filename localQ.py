@@ -64,7 +64,6 @@ def hist_U_fun(cur_U, title, tau = None, alpha = None, hist_epoch = False):
 
         hist_U = torch.zeros([1000]).to(torch.device("cuda"))
     else:
-        import pdb; pdb.set_trace()
         upper_bounds = tau/(1-alpha)
         #cur_U = quantization.quant_nosign(cur_U/upper_bounds, 8)
         #hist_U = hist_U + torch.histc(cur_U, bins = 10000, min=-4, max=2)
@@ -436,7 +435,6 @@ class LIFConv2dLayer(nn.Module):
         # decide which one you like
         self.stdv =  1 / np.sqrt(self.fan_in) #* self.weight_mult#/ 250 * 1e-2
         self.stdv =  np.sqrt(6 / self.fan_in) #* self.weight_mult
-        import pdb; pdb.set_trace()
         if quantization.global_wb is not None:
             self.L_min = quantization.global_beta/quantization.step_d(torch.tensor([float(quantization.global_wb)]))
             #self.stdv = np.sqrt(6/self.fan_in) 
@@ -497,7 +495,7 @@ class LIFConv2dLayer(nn.Module):
         self.p_scale = self.p_scale.max()
 
         import pdb; pdb.set_trace()
-        self.inp_mult_q = 1/self.PQ_cap * (1-self.beta)
+        self.inp_mult_q = 1/self.PQ_cap * (1-self.beta.max())
         self.inp_mult_p = 1/self.PQ_cap * (1-self.alpha)
         self.pmult = self.p_scale * self.PQ_cap * self.weight_mult
 
