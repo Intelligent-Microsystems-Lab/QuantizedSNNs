@@ -529,10 +529,9 @@ class LIFConv2dLayer(nn.Module):
 
         self.P, self.R, self.Q = self.alpha * self.P + self.inp_mult_p * self.Q, self.gamma * self.R, self.beta * self.Q + self.inp_mult_q * input_t
 
-        import pdb; pdb.set_trace()
-        if self.P > 1:
+        if (self.P > 1).sum() != 0:
             print("hello P")
-        if self.Q > 1:
+        if (self.Q > 1).sum() != 0:
             print("hello Q")
 
         if quantization.global_pb is not None:
