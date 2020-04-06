@@ -49,8 +49,8 @@ with open('data/train_dvs_gesture.pickle', 'rb') as f:
 x_train = data[0]
 y_train = np.array(data[1], dtype = int) - 1
 
-x_train = x_train[:72]
-y_train = y_train[:72]
+# x_train = x_train[:72]
+# y_train = y_train[:72]
 
 
 with open('data/test_dvs_gesture.pickle', 'rb') as f:
@@ -58,8 +58,8 @@ with open('data/test_dvs_gesture.pickle', 'rb') as f:
 x_test = data[0]
 y_test = np.array(data[1], dtype = int) - 1
 
-x_test = x_test[:72]
-y_test = y_test[:72]
+# x_test = x_test[:72]
+# y_test = y_test[:72]
 
 # set quant level
 quantization.global_ab  = None
@@ -77,7 +77,7 @@ quantization.global_rfb = None
 
 quantization.global_rb = 16
 quantization.global_lr = max([int(quantization.global_gb/8), 1]) if quantization.global_gb is not None else None
-quantization.global_lr_sgd = np.geomspace(1.0e-2, 1.0e-9, 32)[quantization.global_wb-1]  if quantization.global_wb is not None else 1.0e-9
+quantization.global_lr_sgd = np.geomspace(1.0e-2, 1.0e-9, 32)[quantization.global_wb-1]  if quantization.global_wb is not None else 1.0e-3
 # quantization.global_lr_old = max([int(quantization.global_gb/8), 1]) if quantization.global_wb is not None else None # under development
 quantization.global_beta = 1.5#quantization.step_d(quantization.global_wb)-.5 #1.5 #
 
