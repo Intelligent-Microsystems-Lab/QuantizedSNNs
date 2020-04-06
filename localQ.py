@@ -379,14 +379,6 @@ class QSConv2dFunctional(torch.autograd.Function):
             output = output / scale
 
         ctx.save_for_backward(input, w_quant, bias_quant) 
-
-
-        # quantize U
-        if quantization.global_ub is not None:
-            # bound between -inf and threshold 
-            # easy case thr = 0 (maybe adaptive later)
-            self.U, _ = quantization.quant_generic(self.U, quantization.global_ub)
-
         return output
 
     @staticmethod
