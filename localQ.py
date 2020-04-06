@@ -542,7 +542,7 @@ class LIFConv2dLayer(nn.Module):
             self.Q = quantization.quant01(self.Q, quantization.global_qb)
 
         #self.U = QSConv2dFunctional.apply(self.P * self.pmult, self.weights, self.bias, self.scale, self.padding) - self.R
-        self.U = QSConv2dFunctional.apply(self.P, self.weight, self.bias, self.scale, self.padding) - self.R * self.r_scale 
+        self.U = QSConv2dFunctional.apply(self.P, self.weights, self.bias, self.scale, self.padding) - self.R * self.r_scale 
         if quantization.global_ub is not None:
             self.U = quantU.apply(self.U)
         self.S = (self.U >= self.thr).float()
