@@ -59,14 +59,14 @@ x_test = data[0]
 y_test = np.array(data[1], dtype = int) - 1
 
 # set quant level
-quantization.global_ab  = 8
-quantization.global_sig = 8
-quantization.global_sb  = 1
-quantization.global_gb  = 8
-quantization.global_eb  = 8
+quantization.global_ab  = None
+quantization.global_sig = None
+quantization.global_sb  = None
+quantization.global_gb  = None
+quantization.global_eb  = None
 
 quantization.global_wb  = None
-quantization.global_ub  = 8
+quantization.global_ub  = None
 quantization.global_qb  = 8
 quantization.global_pb  = 8
 quantization.global_rfb = 8
@@ -91,7 +91,7 @@ epochs = 320
 lr_div = 60
 batch_size = 72
 
-PQ_cap = .3 #.1, .5, etc. # this value has to be carefully choosen
+PQ_cap = 1 #.1, .5, etc. # this value has to be carefully choosen
 weight_mult = 4e-5 # decolle
 
 dropout_p = .5
