@@ -534,7 +534,7 @@ class LIFConv2dLayer(nn.Module):
 
         #self.P, self.R, self.Q = self.alpha * self.P + self.tau_mem * self.Q, self.gamma * self.R, self.beta * self.Q + self.tau_syn * input_t
         import pdb; pdb.set_trace()
-        self.P, self.R, self.Q = self.alpha * self.P + self.inp_mult_p * self.Q, self.gamma * self.R, self.beta * self.Q + self.inp_mult_q * torch.ones_like(self.Q)[input_t]#.type(self.dtype)
+        self.P, self.R, self.Q = self.alpha * self.P + self.inp_mult_p * self.Q, self.gamma * self.R, self.beta * self.Q + self.inp_mult_q * input_t.type(self.dtype)
 
         if quantization.global_pb is not None:
             self.P = torch.clamp(self.P, 0, 1)
@@ -547,7 +547,7 @@ class LIFConv2dLayer(nn.Module):
         self.U = QSConv2dFunctional.apply(self.P, self.weights, self.bias, self.scale, self.padding) - self.R #* self.r_scale 
         if quantization.global_ub is not None:
             self.U = quantU.apply(self.U)
-        self.S = (self.U >= self.thr)#.type(self.dtype) #float()
+        self.S = (self.U >= self.thr).type(self.dtype) #float()
         self.R += self.S * 1#(1-self.gamma)
 
 

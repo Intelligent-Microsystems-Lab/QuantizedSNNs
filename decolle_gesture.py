@@ -182,7 +182,6 @@ for e in range(epochs):
             
 
             if train_flag:
-                import pdb; pdb.set_trace()
                 loss_gen = temp_loss1 + temp_loss2 + temp_loss3
 
                 loss_gen.backward()
@@ -194,13 +193,11 @@ for e in range(epochs):
                 rread_hist2_train.append(temp_corr2)
                 rread_hist3_train.append(temp_corr3)
 
-                #[ 0,  0,  5, 27] (min)
-                #[ 7,  1, 17, 22] (max)
+            #[ 0,  0,  5, 27] (min)
+            #[ 7,  1, 17, 22] (max)
+            print("max Q {0:.6f} min Q {1:.4f} max P {2:.4f} min P {3:.4f}".format(layer1.Q[7,  1, 17, 22].item(), layer1.Q[0,  0,  5, 27].item(), layer1.P[7,  1, 17, 22].item(), layer1.P[0,  0,  5, 27].item()))
 
-        
-        #         print("max Q {0:.6f} min Q {1:.4f} max P {2:.4f} min P {3:.4f}".format(layer1.Q[63,  0,  7, 10].item(), layer1.Q[58,  0, 22, 10].item(), layer1.P[63,  0,  7, 10].item(), layer1.P[58,  0, 22, 10].item()))
-
-        # print("----end-----")
+        print("----end-----")
 
 
         batch_corr['train1'].append(acc_comp(rread_hist1_train, y_local, True))
