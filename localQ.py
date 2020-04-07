@@ -142,8 +142,7 @@ def prep_input(x_local, input_mode):
         down_spikes[down_spikes != 0] = 1
         return down_spikes
     else:
-        print("No valid input mode")
-        return -1
+        return x_local
 
 def sparse_data_generator_DVSPoker(X, y, batch_size, nb_steps, shuffle, device, test = False):
     number_of_batches = int(np.ceil(len(y)/batch_size))
@@ -211,16 +210,14 @@ def sparse_data_generator_DVSGesture(X, y, batch_size, nb_steps, shuffle, device
             all_events = np.append(all_events, temp, axis = 0)
 
         # to matrix
-        import pdb; pdb.set_trace()
-        all_events[:,4][all_events[:,4] == 0] = -1
-        all_events = all_events[:,[0,2,3,1,4]]
-        sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(all_events[:,[True, True, True, True, False]].T), torch.FloatTensor(all_events[:,4])).to_dense()
+        #all_events[:,4][all_events[:,4] == 0] = -1
+        all_events = all_events[:,[0,4,2,3,1]]
+        sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(all_events[:,[True, True, True, True, True]].T), torch.ones_like(torch.tensor(all_events[:,0]))).to_dense()
 
         # quick trick...
         #sparse_matrix[sparse_matrix < 0] = -1
         #sparse_matrix[sparse_matrix > 0] = 1
-
-        sparse_matrix = sparse_matrix.reshape(torch.Size([sparse_matrix.shape[0], 1, sparse_matrix.shape[1], sparse_matrix.shape[2], sparse_matrix.shape[3]]))
+        #sparse_matrix = sparse_matrix.reshape(torch.Size([sparse_matrix.shape[0], 1, sparse_matrix.shape[1], sparse_matrix.shape[2], sparse_matrix.shape[3]]))
 
         y_batch = torch.tensor(y[batch_index], dtype = int)
         try:

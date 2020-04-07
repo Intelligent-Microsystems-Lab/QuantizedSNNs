@@ -84,7 +84,7 @@ quantization.global_beta = 1.5#quantization.step_d(quantization.global_wb)-.5 #1
 # set parameters
 ms = 1e-3
 delta_t = 1*ms
-input_mode = 3 #two channel trick, down sample etc.
+input_mode = -1
 
 output_neurons = 11
 T = 500*ms
@@ -177,6 +177,7 @@ for e in range(epochs):
         for t in range(int(T/ms)):
             train_flag = (t > int(burnin/ms))
 
+            import pdb; pdb.set_trace()
             spikes_t                            = prep_input(x_local[:,:,:,:,t], input_mode)
             spikes_t                            = downsample_l(spikes_t)
             spikes_t[spikes_t > 0]              = 1
