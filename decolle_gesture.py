@@ -49,8 +49,8 @@ with open('data/train_dvs_gesture.pickle', 'rb') as f:
 x_train = data[0]
 y_train = np.array(data[1], dtype = int) - 1
 
-# x_train = x_train[:72]
-# y_train = y_train[:72]
+x_train = x_train[:72]
+y_train = y_train[:72]
 
 
 with open('data/test_dvs_gesture.pickle', 'rb') as f:
@@ -156,7 +156,7 @@ for e in range(epochs):
     ####
     #### shuffle on again
     ####
-    for x_local, y_local in sparse_data_generator_DVSGesture(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = False, device = device, ds = ds):
+    for x_local, y_local in sparse_data_generator_DVSGesture(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = True, device = device, ds = ds):
 
         y_onehot = torch.Tensor(len(y_local), output_neurons).to(device).type(dtype)
         y_onehot.zero_()
