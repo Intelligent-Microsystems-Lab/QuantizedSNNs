@@ -538,8 +538,7 @@ class LIFConv2dLayer(nn.Module):
         self.U = QSConv2dFunctional.apply(self.P, self.weights, self.bias, self.scale, self.padding) - self.R #* self.r_scale 
         if quantization.global_ub is not None:
             self.U = quantU.apply(self.U)
-        self.S = (self.U >= self.thr).float()
-        import pdb; pdb.set_trace()
+        self.S = (self.U >= self.thr).type(self.dtype) #float()
         self.R += self.S * 1#(1-self.gamma)
 
 
