@@ -49,8 +49,8 @@ with open('data/train_dvs_gesture.pickle', 'rb') as f:
 x_train = data[0]
 y_train = np.array(data[1], dtype = int) - 1
 
-# x_train = x_train[:72]
-# y_train = y_train[:72]
+x_train = x_train[:72]
+y_train = y_train[:72]
 
 
 with open('data/test_dvs_gesture.pickle', 'rb') as f:
@@ -151,7 +151,11 @@ for e in range(epochs):
     start_time = time.time()
 
     # training
-    for x_local, y_local in sparse_data_generator_DVSGesture(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = True, device = device):
+
+    ####
+    #### shuffle on again
+    ####
+    for x_local, y_local in sparse_data_generator_DVSGesture(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = False, device = device):
 
         y_onehot = torch.Tensor(len(y_local), output_neurons).to(device)
         y_onehot.zero_()
@@ -166,6 +170,10 @@ for e in range(epochs):
         layer2.state_init(x_local.shape[0])
         layer3.state_init(x_local.shape[0])
 
+        maxP = 0
+        maxC = (0, None)
+        minP = 0
+        minC = (0, None)
         for t in range(int(T/ms)):
             train_flag = (t > int(burnin/ms))
 
@@ -177,7 +185,16 @@ for e in range(epochs):
             out_spikes1, temp_loss1, temp_corr1 = layer1.forward(spikes_t, y_onehot, train_flag = train_flag)
             out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_onehot, train_flag = train_flag)
             out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_onehot, train_flag = train_flag)
+            
+            import pdb; pdb.set_trace()
+            maxP, maxC = maxP, maxC if maxC[0] > layer1.P.max().item() else (layer1.P.max().item(), (layer1.P ==layer1.P.max()).nonzero()[0])
+            try:
+                minP, minC = minP, minC if minC[0] > layer1.P[layer1.P != 0].min().item() else (layer1.P[layer1.P != 0].min().item(), (layer1.P == layer1.P[layer1.P != 0].min()).nonzero()[0])
+            except:
+                print("bam")
+
             if train_flag:
+                import pdb; pdb.set_trace()
                 loss_gen = temp_loss1 + temp_loss2 + temp_loss3
 
                 loss_gen.backward()
@@ -189,12 +206,13 @@ for e in range(epochs):
                 rread_hist2_train.append(temp_corr2)
                 rread_hist3_train.append(temp_corr3)
 
-
                 #63,  0,  7, 10
                 #58,  0, 22, 10
-                print("max Q {0:.6f} min Q {1:.4f} max P {2:.4f} min P {3:.4f}".format(layer1.Q[63,  0,  7, 10].item(), layer1.Q[58,  0, 22, 10].item(), layer1.P[63,  0,  7, 10].item(), layer1.P[58,  0, 22, 10].item()))
 
-        print("----end-----")
+        
+        #         print("max Q {0:.6f} min Q {1:.4f} max P {2:.4f} min P {3:.4f}".format(layer1.Q[63,  0,  7, 10].item(), layer1.Q[58,  0, 22, 10].item(), layer1.P[63,  0,  7, 10].item(), layer1.P[58,  0, 22, 10].item()))
+
+        # print("----end-----")
 
 
         batch_corr['train1'].append(acc_comp(rread_hist1_train, y_local, True))
