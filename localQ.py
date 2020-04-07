@@ -539,6 +539,7 @@ class LIFConv2dLayer(nn.Module):
         if quantization.global_ub is not None:
             self.U = quantU.apply(self.U)
         self.S = (self.U >= self.thr).float()
+        import pdb; pdb.set_trace()
         self.R += self.S * 1#(1-self.gamma)
 
 
