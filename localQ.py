@@ -199,6 +199,7 @@ def sparse_data_generator_DVSGesture(X, y, batch_size, nb_steps, shuffle, device
         all_events = np.array([[],[],[],[],[]]).T
 
         for bc,idx in enumerate(batch_index):
+            # stochasticity here -> we sample
             if test:
                 start_ts = 0
             else:
@@ -210,6 +211,7 @@ def sparse_data_generator_DVSGesture(X, y, batch_size, nb_steps, shuffle, device
             all_events = np.append(all_events, temp, axis = 0)
 
         # to matrix
+        import pdb; pdb.set_trace()
         all_events[:,4][all_events[:,4] == 0] = -1
         all_events = all_events[:,[0,2,3,1,4]]
         sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(all_events[:,[True, True, True, True, False]].T), torch.FloatTensor(all_events[:,4])).to_dense()
@@ -223,7 +225,6 @@ def sparse_data_generator_DVSGesture(X, y, batch_size, nb_steps, shuffle, device
         y_batch = torch.tensor(y[batch_index], dtype = int)
         try:
             torch.cuda.empty_cache()
-            import pdb; pdb.set_trace()
             yield sparse_matrix.to(device=device), y_batch.to(device=device)
             counter += 1
         except StopIteration:
