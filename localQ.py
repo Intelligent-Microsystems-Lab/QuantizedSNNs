@@ -433,7 +433,7 @@ class LIFConv2dLayer(nn.Module):
         self.weights = nn.Parameter(torch.empty((self.out_channels, inp_shape[0],  self.kernel_size, self.kernel_size),  device=device, dtype=dtype, requires_grad=True))
 
         # decide which one you like
-        self.stdv =  1 / np.sqrt(self.fan_in) #* self.weight_mult#/ 250 * 1e-2
+        self.stdv =  1 / np.sqrt(self.fan_in) * self.weight_mult#/ 250 * 1e-2
         #self.stdv =  np.sqrt(6 / self.fan_in) #* self.weight_mult
         if quantization.global_wb is not None:
             self.L_min = quantization.global_beta/quantization.step_d(torch.tensor([float(quantization.global_wb)]))
