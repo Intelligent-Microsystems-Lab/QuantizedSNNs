@@ -494,8 +494,8 @@ class LIFConv2dLayer(nn.Module):
         #self.p_scale = (self.tau_mem * self.q_scale*self.PQ_cap)/(1-self.alpha)
         #self.p_scale = self.p_scale.max()
 
-        self.inp_mult_q = 1/self.PQ_cap * (1-self.beta.max())
-        self.inp_mult_p = 1/self.PQ_cap * (1-self.alpha.max())
+        self.inp_mult_q = self.tau_syn#1/self.PQ_cap * (1-self.beta.max())
+        self.inp_mult_p = self.tau_mem#1/self.PQ_cap * (1-self.alpha.max())
         #self.pmult = self.p_scale * self.PQ_cap * self.weight_mult
 
         if quantization.global_wb is not None:
@@ -536,11 +536,11 @@ class LIFConv2dLayer(nn.Module):
             self.Q = quantization.quant01(self.Q, quantization.global_qb)
 
         #self.U = QSConv2dFunctional.apply(self.P * self.pmult, self.weights, self.bias, self.scale, self.padding) - self.R
-        self.U = QSConv2dFunctional.apply(self.P, self.weights, self.bias, self.scale, self.padding) - self.R * self.r_scale 
+        self.U = QSConv2dFunctional.apply(self.P, self.weights, self.bias, self.scale, self.padding) - self.R #* self.r_scale 
         if quantization.global_ub is not None:
             self.U = quantU.apply(self.U)
         self.S = (self.U >= self.thr).float()
-        self.R += self.S * (1-self.gamma)
+        self.R += self.S * 1#(1-self.gamma)
 
 
         if test_flag or train_flag:

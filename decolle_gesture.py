@@ -190,8 +190,11 @@ for e in range(epochs):
                 rread_hist3_train.append(temp_corr3)
 
 
-        import pdb; pdb.set_trace()
+                #63,  0,  7, 10
+                #58,  0, 22, 10
+                print("max Q {0:.6f} min Q {1:.4f} max P {2:.4f} min P {3:.4f}".format(layer1.Q[63,  0,  7, 10].item(), layer1.Q[58,  0, 22, 10].item(), layer1.P[63,  0,  7, 10].item(), layer1.P[58,  0, 22, 10].item()))
 
+        print("----end-----")
 
 
         batch_corr['train1'].append(acc_comp(rread_hist1_train, y_local, True))
