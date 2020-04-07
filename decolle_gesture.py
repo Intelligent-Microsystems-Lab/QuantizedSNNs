@@ -177,11 +177,9 @@ for e in range(epochs):
         for t in range(int(T/ms)):
             train_flag = (t > int(burnin/ms))
 
-            import pdb; pdb.set_trace()
-            spikes_t                            = prep_input(x_local[:,:,:,:,t], input_mode)
-            spikes_t                            = downsample_l(spikes_t)
+            #spikes_t                            = prep_input(x_local[:,:,:,:,t], input_mode)
+            spikes_t                            = downsample_l(x_local[:,:,:,:,t])
             spikes_t[spikes_t > 0]              = 1
-            spikes_t[spikes_t < 0]              = -1
 
             out_spikes1, temp_loss1, temp_corr1 = layer1.forward(spikes_t, y_onehot, train_flag = train_flag)
             out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_onehot, train_flag = train_flag)
@@ -245,10 +243,8 @@ for e in range(epochs):
         for t in range(int(T_test/ms)):
             test_flag = (t > int(burnin/ms))
 
-            spikes_t                            = prep_input(x_local[:,:,:,:,t], input_mode)
-            spikes_t                            = downsample_l(spikes_t)
+            spikes_t                            = downsample_l(x_local[:,:,:,:,t])
             spikes_t[spikes_t > 0]              = 1
-            spikes_t[spikes_t < 0]              = -1
             out_spikes1, temp_loss1, temp_corr1 = layer1.forward(spikes_t, y_onehot, test_flag = test_flag)
             out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_onehot, test_flag = test_flag)
             out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_onehot, test_flag = test_flag)
