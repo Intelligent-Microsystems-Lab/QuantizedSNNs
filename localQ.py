@@ -211,7 +211,6 @@ def sparse_data_generator_DVSGesture(X, y, batch_size, nb_steps, shuffle, device
 
         # to matrix
         #all_events[:,4][all_events[:,4] == 0] = -1
-        import pdb; pdb.set_trace()
         all_events = all_events[:,[0,4,2,3,1]]
         all_events[:, 2] = all_events[:, 2]//ds
         all_events[:, 3] = all_events[:, 3]//ds
