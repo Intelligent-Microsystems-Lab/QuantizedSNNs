@@ -465,27 +465,27 @@ class LIFConv2dLayer(nn.Module):
 
         # tau quantization, static hardware friendly values
         if tau_syn.shape[0] == 2:
-            self.tau_syn = torch.Tensor(torch.Size(self.inp_shape), dtype = dtype).uniform_(tau_syn[0], tau_syn[1]).to(device)
+            self.tau_syn = torch.empty(torch.Size(self.inp_shape), dtype = dtype).uniform_(tau_syn[0], tau_syn[1]).to(device)
             self.beta    = 1. - 1e-3 / self.tau_syn
             self.tau_syn = 1. / (1. - self.beta)
         else:
-            self.beta = torch.Tensor([1 - delta_t / tau_syn], dtype = dtype).to(device) 
+            self.beta = torch.tensor([1 - delta_t / tau_syn], dtype = dtype).to(device) 
 
 
         if tau_mem.shape[0] == 2:
-            self.tau_mem = torch.Tensor(torch.Size(self.inp_shape), dtype = dtype).uniform_(tau_mem[0], tau_mem[1]).to(device)
+            self.tau_mem = torch.empty(torch.Size(self.inp_shape), dtype = dtype).uniform_(tau_mem[0], tau_mem[1]).to(device)
             self.alpha   = 1. - 1e-3 / self.tau_mem
             self.tau_mem = 1. / (1. - self.alpha)
         else:
-            self.alpha = torch.Tensor([1 - delta_t / tau_mem], dtype = dtype).to(device) 
+            self.alpha = torch.tensor([1 - delta_t / tau_mem], dtype = dtype).to(device) 
 
 
         if tau_ref.shape[0] == 2:
-            self.tau_ref = torch.Tensor(torch.Size(self.inp_shape), dtype = dtype).uniform_(tau_ref[0], tau_ref[1]).to(device)
+            self.tau_ref = torch.empty(torch.Size(self.inp_shape), dtype = dtype).uniform_(tau_ref[0], tau_ref[1]).to(device)
             self.gamma   = 1. - 1e-3 / self.tau_gamma
             self.tau_ref = 1. / (1. - self.gamma)
         else:
-            self.gamma = torch.Tensor([1 - delta_t / tau_ref], dtype = dtype).to(device)
+            self.gamma = torch.tensor([1 - delta_t / tau_ref], dtype = dtype).to(device)
 
         self.r_scale = 1/(1-self.gamma) # the one comes from decolle, best value ?
         #self.q_scale = self.tau_syn/(1-self.beta)

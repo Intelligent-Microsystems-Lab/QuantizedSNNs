@@ -102,10 +102,10 @@ localQ.lc_ampl = .5
 l1 = .001
 l2 = .001
 
-thr = torch.Tensor([0.], dtype = dtype).to(device) #that probably should be one... one doesnt really work
-tau_mem = torch.Tensor([5*ms, 35*ms], dtype = dtype).to(device)
-tau_ref = torch.Tensor([1/.35*ms], dtype = dtype).to(device)
-tau_syn = torch.Tensor([5*ms, 10*ms], dtype = dtype).to(device)
+thr = torch.tensor([0.], dtype = dtype).to(device) #that probably should be one... one doesnt really work
+tau_mem = torch.tensor([5*ms, 35*ms], dtype = dtype).to(device)
+tau_ref = torch.tensor([1/.35*ms], dtype = dtype).to(device)
+tau_syn = torch.tensor([5*ms, 10*ms], dtype = dtype).to(device)
 
 sl1_loss = torch.nn.MSELoss()#torch.nn.SmoothL1Loss()
 
@@ -157,7 +157,7 @@ for e in range(epochs):
     ####
     for x_local, y_local in sparse_data_generator_DVSGesture(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = False, device = device):
 
-        y_onehot = torch.Tensor(len(y_local), output_neurons, dtype = dtype).to(device)
+        y_onehot = torch.Tensor(len(y_local), output_neurons).to(device)
         y_onehot.zero_()
         y_onehot.scatter_(1, y_local.reshape([y_local.shape[0],1]), 1)
 
@@ -231,7 +231,7 @@ for e in range(epochs):
         rread_hist2_test = []
         rread_hist3_test = []
 
-        y_onehot = torch.Tensor(len(y_local), output_neurons, dtype = dtype).to(device)
+        y_onehot = torch.Tensor(len(y_local), output_neurons).to(device)
         y_onehot.zero_()
         y_onehot.scatter_(1, y_local.reshape([y_local.shape[0],1]), 1)
 
