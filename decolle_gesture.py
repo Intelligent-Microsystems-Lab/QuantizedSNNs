@@ -171,25 +171,15 @@ for e in range(epochs):
         layer2.state_init(x_local.shape[0])
         layer3.state_init(x_local.shape[0])
 
-        maxP = 0
-        maxC = (0, None)
-        minP = 0
-        minC = (0, None)
+
         for t in range(int(T/ms)):
             train_flag = (t > int(burnin/ms))
 
-            #spikes_t                            = prep_input(x_local[:,:,:,:,t], input_mode)
-            #spikes_t                            = #x_local[:,:,:,:,t]#downsample_l(x_local[:,:,:,:,t])
-            #spikes_t[spikes_t > 0]              = 1.
+
             out_spikes1, temp_loss1, temp_corr1 = layer1.forward(x_local[:,:,:,:,t], y_onehot, train_flag = train_flag)
             out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_onehot, train_flag = train_flag)
             out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_onehot, train_flag = train_flag)
             
-            maxP, maxC = maxP, maxC if maxC[0] > layer1.P.max().item() else (layer1.P.max().item(), (layer1.P ==layer1.P.max()).nonzero())
-            try:
-                minP, minC = minP, minC if minC[0] > layer1.P[layer1.P != 0].min().item() else (layer1.P[layer1.P != 0].min().item(), (layer1.P == layer1.P[layer1.P != 0].min()).nonzero())
-            except:
-                print("bam")
 
             if train_flag:
                 import pdb; pdb.set_trace()
@@ -204,8 +194,8 @@ for e in range(epochs):
                 rread_hist2_train.append(temp_corr2)
                 rread_hist3_train.append(temp_corr3)
 
-                #63,  0,  7, 10
-                #58,  0, 22, 10
+                #[ 0,  0,  5, 27] (min)
+                #[ 7,  1, 17, 22] (max)
 
         
         #         print("max Q {0:.6f} min Q {1:.4f} max P {2:.4f} min P {3:.4f}".format(layer1.Q[63,  0,  7, 10].item(), layer1.Q[58,  0, 22, 10].item(), layer1.P[63,  0,  7, 10].item(), layer1.P[58,  0, 22, 10].item()))
