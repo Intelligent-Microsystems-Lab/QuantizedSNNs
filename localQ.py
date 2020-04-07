@@ -464,7 +464,7 @@ class LIFConv2dLayer(nn.Module):
         self.out_shape2 = self.mpool(QSConv2dFunctional.apply(torch.zeros((1,)+self.inp_shape, dtype = dtype).to(device), self.weights, self.bias, self.scale, self.padding)).shape[1:] #self.pooling, 
         self.out_shape = QSConv2dFunctional.apply(torch.zeros((1,)+self.inp_shape, dtype = dtype).to(device), self.weights, self.bias, self.scale, self.padding).shape[1:]
         
-        self.sign_random_readout = QLinearLayerSign(input_features = np.prod(self.out_shape2), output_features = output_neurons, pass_through = False, bias = False, dtype = self.dtype).to(device)
+        self.sign_random_readout = QLinearLayerSign(input_features = np.prod(self.out_shape2), output_features = output_neurons, pass_through = False, bias = False, dtype = self.dtype, device = device).to(device)
 
         # tau quantization, static hardware friendly values
         if tau_syn.shape[0] == 2:
