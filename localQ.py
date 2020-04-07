@@ -496,7 +496,6 @@ class LIFConv2dLayer(nn.Module):
 
         self.inp_mult_q = 1/self.PQ_cap * (1-self.beta.max())
         self.inp_mult_p = 1/self.PQ_cap * (1-self.alpha.max())
-        import pdb; pdb.set_trace()
         #self.pmult = self.p_scale * self.PQ_cap * self.weight_mult
 
         if quantization.global_wb is not None:
