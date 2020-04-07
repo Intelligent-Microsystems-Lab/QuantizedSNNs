@@ -356,7 +356,8 @@ class QLinearLayerSign(nn.Module):
         #self.weight_fa = self.weights
         import pdb; pdb.set_trace()
         nonzero_mask = (self.weights.data != 0)
-        self.weight_fa.data[nonzero_mask] *= torch.sign((torch.sign(self.weights.data) == torch.sign(self.weight_fa.data)).float() -.5)[nonzero_mask]
+        self.weight_fa.data[nonzero_mask] *= torch.sign((torch.sign(self.weights.data) == torch.sign(self.weight_fa.data)).type(dtype) -.5)[nonzero_mask]
+
             
         
     def forward(self, input):
