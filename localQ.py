@@ -472,17 +472,17 @@ class LIFConv2dLayer(nn.Module):
         if tau_syn.shape[0] == 2:
             self.tau_syn = torch.empty(torch.Size(self.inp_shape), dtype = dtype).uniform_(tau_syn[0], tau_syn[1]).to(device)
             self.beta    = 1. - 1e-3 / self.tau_syn
-            self.tau_syn = 1. / (1. - self.beta)
         else:
             self.beta = torch.tensor([1 - delta_t / tau_syn], dtype = dtype).to(device) 
+            self.tau_syn = 1. / (1. - self.beta)
 
 
         if tau_mem.shape[0] == 2:
             self.tau_mem = torch.empty(torch.Size(self.inp_shape), dtype = dtype).uniform_(tau_mem[0], tau_mem[1]).to(device)
             self.alpha   = 1. - 1e-3 / self.tau_mem
-            self.tau_mem = 1. / (1. - self.alpha)
         else:
             self.alpha = torch.tensor([1 - delta_t / tau_mem], dtype = dtype).to(device) 
+            self.tau_mem = 1. / (1. - self.alpha)
 
 
         if tau_ref.shape[0] == 2:
@@ -491,6 +491,7 @@ class LIFConv2dLayer(nn.Module):
             self.tau_ref = 1. / (1. - self.gamma)
         else:
             self.gamma = torch.tensor([1 - delta_t / tau_ref], dtype = dtype).to(device)
+            self.tau_ref = 1. / (1. - self.gamma)
 
         self.r_scale = 1/(1-self.gamma) # the one comes from decolle, best value ?
         #self.q_scale = self.tau_syn/(1-self.beta)
