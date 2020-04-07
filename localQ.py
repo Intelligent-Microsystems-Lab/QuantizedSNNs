@@ -316,9 +316,9 @@ class QLinearLayerSign(nn.Module):
         self.device = device
 
         # weight and bias for forward pass
-        self.weights   = nn.Parameter(torch.Tensor(output_features, input_features), device=device, dtype=dtype, requires_grad=False)
-        self.weight_fa = nn.Parameter(torch.Tensor(output_features, input_features), device=device, dtype=dtype, requires_grad=False)
-        self.bias      = nn.Parameter(torch.Tensor(output_features), device=device, dtype=dtype, requires_grad=False)
+        self.weights   = nn.Parameter(torch.empty((output_features, input_features), device=device, dtype=dtype, requires_grad=False))
+        self.weight_fa = nn.Parameter(torch.empty((output_features, input_features), device=device, dtype=dtype, requires_grad=False))
+        self.bias      = nn.Parameter(torch.empty((output_features), device=device, dtype=dtype, requires_grad=False))
 
         if quantization.global_sb is not None:
             self.L_min = quantization.global_beta/quantization.step_d(torch.tensor([float(quantization.global_sb)]))
