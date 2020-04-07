@@ -458,8 +458,8 @@ class LIFConv2dLayer(nn.Module):
             self.register_parameter('bias', None)
 
         self.mpool = nn.MaxPool2d(kernel_size = self.pooling, stride = self.pooling, padding = (self.pooling-1)//2, return_indices=False)
-        self.out_shape2 = self.mpool(QSConv2dFunctional.apply(torch.zeros((1,)+self.inp_shape).to(device), self.weights, self.bias, self.scale, self.padding)).shape[1:] #self.pooling, 
-        self.out_shape = QSConv2dFunctional.apply(torch.zeros((1,)+self.inp_shape).to(device), self.weights, self.bias, self.scale, self.padding).shape[1:]
+        self.out_shape2 = self.mpool(QSConv2dFunctional.apply(torch.zeros((1,)+self.inp_shape, dtype = dtype).to(device), self.weights, self.bias, self.scale, self.padding)).shape[1:] #self.pooling, 
+        self.out_shape = QSConv2dFunctional.apply(torch.zeros((1,)+self.inp_shape, dtype = dtype).to(device), self.weights, self.bias, self.scale, self.padding).shape[1:]
         
         self.sign_random_readout = QLinearLayerSign(input_features = np.prod(self.out_shape2), output_features = output_neurons, pass_through = False, bias = False).to(device)
 
