@@ -85,6 +85,7 @@ quantization.global_beta = 1.5#quantization.step_d(quantization.global_wb)-.5 #1
 ms = 1e-3
 delta_t = 1*ms
 input_mode = -1
+ds = 4 # downsampling
 
 output_neurons = 11
 T = 500*ms
@@ -155,7 +156,7 @@ for e in range(epochs):
     ####
     #### shuffle on again
     ####
-    for x_local, y_local in sparse_data_generator_DVSGesture(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = False, device = device):
+    for x_local, y_local in sparse_data_generator_DVSGesture(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = False, device = device, ds = ds):
 
         y_onehot = torch.Tensor(len(y_local), output_neurons).to(device).type(dtype)
         y_onehot.zero_()
@@ -178,9 +179,9 @@ for e in range(epochs):
             train_flag = (t > int(burnin/ms))
 
             #spikes_t                            = prep_input(x_local[:,:,:,:,t], input_mode)
-            spikes_t                            = downsample_l(x_local[:,:,:,:,t])
-            spikes_t[spikes_t > 0]              = 1.
-            out_spikes1, temp_loss1, temp_corr1 = layer1.forward(spikes_t, y_onehot, train_flag = train_flag)
+            #spikes_t                            = #x_local[:,:,:,:,t]#downsample_l(x_local[:,:,:,:,t])
+            #spikes_t[spikes_t > 0]              = 1.
+            out_spikes1, temp_loss1, temp_corr1 = layer1.forward(x_local[:,:,:,:,t], y_onehot, train_flag = train_flag)
             out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_onehot, train_flag = train_flag)
             out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_onehot, train_flag = train_flag)
             
@@ -226,7 +227,7 @@ for e in range(epochs):
         
     
     # test accuracy
-    for x_local, y_local in sparse_data_generator_DVSGesture(x_test, y_test, batch_size = batch_size, nb_steps = T_test / ms, shuffle = True, device = device, test = True):
+    for x_local, y_local in sparse_data_generator_DVSGesture(x_test, y_test, batch_size = batch_size, nb_steps = T_test / ms, shuffle = True, device = device, test = True, ds = ds):
         rread_hist1_test = []
         rread_hist2_test = []
         rread_hist3_test = []
@@ -242,9 +243,9 @@ for e in range(epochs):
         for t in range(int(T_test/ms)):
             test_flag = (t > int(burnin/ms))
 
-            spikes_t                            = downsample_l(x_local[:,:,:,:,t])
-            spikes_t[spikes_t > 0]              = 1.
-            out_spikes1, temp_loss1, temp_corr1 = layer1.forward(spikes_t, y_onehot, test_flag = test_flag)
+            #spikes_t                            = downsample_l(x_local[:,:,:,:,t])
+            #spikes_t[spikes_t > 0]              = 1.
+            out_spikes1, temp_loss1, temp_corr1 = layer1.forward(x_local[:,:,:,:,t], y_onehot, test_flag = test_flag)
             out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_onehot, test_flag = test_flag)
             out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_onehot, test_flag = test_flag)
 
