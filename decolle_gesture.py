@@ -157,7 +157,7 @@ for e in range(epochs):
     ####
     for x_local, y_local in sparse_data_generator_DVSGesture(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = False, device = device):
 
-        y_onehot = torch.Tensor(len(y_local), output_neurons).to(device)
+        y_onehot = torch.Tensor(len(y_local), output_neurons).to(device).type(dtype)
         y_onehot.zero_()
         y_onehot.scatter_(1, y_local.reshape([y_local.shape[0],1]), 1)
 
@@ -231,7 +231,7 @@ for e in range(epochs):
         rread_hist2_test = []
         rread_hist3_test = []
 
-        y_onehot = torch.Tensor(len(y_local), output_neurons).to(device)
+        y_onehot = torch.Tensor(len(y_local), output_neurons).to(device).type(dtype)
         y_onehot.zero_()
         y_onehot.scatter_(1, y_local.reshape([y_local.shape[0],1]), 1)
 
