@@ -213,7 +213,9 @@ def sparse_data_generator_DVSGesture(X, y, batch_size, nb_steps, shuffle, device
         #all_events[:,4][all_events[:,4] == 0] = -1
         import pdb; pdb.set_trace()
         all_events = all_events[:,[0,4,2,3,1]]
-        sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(all_events[:,[True, True, True, True, True]].T), torch.ones_like(torch.tensor(all_events[:,0]))).to_dense()
+        all_events[:, 2] = all_events[:, 2]//ds
+        all_events[:, 3] = all_events[:, 3]//ds
+        sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(all_events[:,[True, True, True, True, True]].T), torch.ones_like(torch.tensor(all_events[:,0]))).to_dense().type(torch.bool)
 
         # quick trick...
         #sparse_matrix[sparse_matrix < 0] = -1
@@ -529,7 +531,7 @@ class LIFConv2dLayer(nn.Module):
             self.R = quantization.quant01(self.R, quantization.global_rfb)
 
         #self.P, self.R, self.Q = self.alpha * self.P + self.tau_mem * self.Q, self.gamma * self.R, self.beta * self.Q + self.tau_syn * input_t
-        self.P, self.R, self.Q = self.alpha * self.P + self.inp_mult_p * self.Q, self.gamma * self.R, self.beta * self.Q + self.inp_mult_q * input_t
+        self.P, self.R, self.Q = self.alpha * self.P + self.inp_mult_p * self.Q, self.gamma * self.R, self.beta * self.Q + self.inp_mult_q * input_t.type(dtype)
 
         if quantization.global_pb is not None:
             self.P = torch.clamp(self.P, 0, 1)
