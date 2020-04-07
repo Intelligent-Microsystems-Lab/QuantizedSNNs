@@ -412,6 +412,7 @@ class LIFConv2dLayer(nn.Module):
     def __init__(self, inp_shape, kernel_size, out_channels, tau_syn, tau_mem, tau_ref, delta_t, pooling = 1, padding = 0, bias = True, thr = 1, device=torch.device("cpu"), dtype = torch.float, dropout_p = .5, output_neurons = 10, loss_fn = None, l1 = 0, l2 = 0, PQ_cap = 1, weight_mult = 4e-5):
         super(LIFConv2dLayer, self).__init__()   
         self.device = device
+        self.dtype = dtype
         self.inp_shape = inp_shape
         self.kernel_size = kernel_size
         self.out_channels = out_channels         
@@ -505,11 +506,11 @@ class LIFConv2dLayer(nn.Module):
 
 
     def state_init(self, batch_size):
-        self.P = torch.zeros((batch_size,) + self.inp_shape).detach().to(self.device)
-        self.Q = torch.zeros((batch_size,) + self.inp_shape).detach().to(self.device)
-        self.R = torch.zeros((batch_size,) + self.out_shape).detach().to(self.device)
-        self.S = torch.zeros((batch_size,) + self.out_shape).detach().to(self.device)
-        self.U = torch.zeros((batch_size,) + self.out_shape).detach().to(self.device)
+        self.P = torch.zeros((batch_size,) + self.inp_shape, dtype = self.dtype).detach().to(self.device)
+        self.Q = torch.zeros((batch_size,) + self.inp_shape, dtype = self.dtype).detach().to(self.device)
+        self.R = torch.zeros((batch_size,) + self.out_shape, dtype = self.dtype).detach().to(self.device)
+        self.S = torch.zeros((batch_size,) + self.out_shape, dtype = self.dtype).detach().to(self.device)
+        self.U = torch.zeros((batch_size,) + self.out_shape, dtype = self.dtype).detach().to(self.device)
 
     
     def forward(self, input_t, y_local, train_flag = False, test_flag = False):
