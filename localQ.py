@@ -223,6 +223,7 @@ def sparse_data_generator_DVSGesture(X, y, batch_size, nb_steps, shuffle, device
         y_batch = torch.tensor(y[batch_index], dtype = int)
         try:
             torch.cuda.empty_cache()
+            import pdb; pdb.set_trace()
             yield sparse_matrix.to(device=device), y_batch.to(device=device)
             counter += 1
         except StopIteration:
