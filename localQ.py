@@ -308,15 +308,17 @@ class QLinearFunctional(torch.autograd.Function):
 class QLinearLayerSign(nn.Module):
     '''from https://github.com/L0SG/feedback-alignment-pytorch/'''
     # we dont have a bias 
-    def __init__(self, input_features, output_features, pass_through = False, bias = True):
+    def __init__(self, input_features, output_features, pass_through = False, bias = True, dtype = None, device = None):
         super(QLinearLayerSign, self).__init__()
         self.input_features  = input_features
         self.output_features = output_features
+        self.dtype = dtype
+        self.device = device
 
         # weight and bias for forward pass
-        self.weights   = nn.Parameter(torch.Tensor(output_features, input_features), requires_grad=False)
-        self.weight_fa = nn.Parameter(torch.Tensor(output_features, input_features), requires_grad=False)
-        self.bias      = nn.Parameter(torch.Tensor(output_features), requires_grad=False)
+        self.weights   = nn.Parameter(torch.Tensor(output_features, input_features), device=device, dtype=dtype, requires_grad=False)
+        self.weight_fa = nn.Parameter(torch.Tensor(output_features, input_features), device=device, dtype=dtype, requires_grad=False)
+        self.bias      = nn.Parameter(torch.Tensor(output_features), device=device, dtype=dtype, requires_grad=False)
 
         if quantization.global_sb is not None:
             self.L_min = quantization.global_beta/quantization.step_d(torch.tensor([float(quantization.global_sb)]))
@@ -461,7 +463,7 @@ class LIFConv2dLayer(nn.Module):
         self.out_shape2 = self.mpool(QSConv2dFunctional.apply(torch.zeros((1,)+self.inp_shape, dtype = dtype).to(device), self.weights, self.bias, self.scale, self.padding)).shape[1:] #self.pooling, 
         self.out_shape = QSConv2dFunctional.apply(torch.zeros((1,)+self.inp_shape, dtype = dtype).to(device), self.weights, self.bias, self.scale, self.padding).shape[1:]
         
-        self.sign_random_readout = QLinearLayerSign(input_features = np.prod(self.out_shape2), output_features = output_neurons, pass_through = False, bias = False).to(device)
+        self.sign_random_readout = QLinearLayerSign(input_features = np.prod(self.out_shape2), output_features = output_neurons, pass_through = False, bias = False, dtype = self.dtype).to(device)
 
         # tau quantization, static hardware friendly values
         if tau_syn.shape[0] == 2:
