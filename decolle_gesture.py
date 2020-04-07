@@ -49,8 +49,8 @@ with open('data/train_dvs_gesture.pickle', 'rb') as f:
 x_train = data[0]
 y_train = np.array(data[1], dtype = int) - 1
 
-# x_train = x_train[:72]
-# y_train = y_train[:72]
+x_train = x_train[:72]
+y_train = y_train[:72]
 
 
 with open('data/test_dvs_gesture.pickle', 'rb') as f:
@@ -156,7 +156,7 @@ for e in range(epochs):
     ####
     #### shuffle on again
     ####
-    for x_local, y_local in sparse_data_generator_DVSGesture(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = True, device = device, ds = ds):
+    for x_local, y_local in sparse_data_generator_DVSGesture(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = False, test = True device = device, ds = ds):
 
         y_onehot = torch.Tensor(len(y_local), output_neurons).to(device).type(dtype)
         y_onehot.zero_()
@@ -171,10 +171,10 @@ for e in range(epochs):
         layer2.state_init(x_local.shape[0])
         layer3.state_init(x_local.shape[0])
 
-        #maxP = 0
-        #maxC = (0, None)
-        #minP = 0
-        #minC = (0, None)
+        maxP = 0
+        maxC = (0, None)
+        minP = 0
+        minC = (0, None)
         for t in range(int(T/ms)):
             train_flag = (t > int(burnin/ms))
 
@@ -185,12 +185,9 @@ for e in range(epochs):
             out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_onehot, train_flag = train_flag)
             out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_onehot, train_flag = train_flag)
             
-            #maxP, maxC = maxP, maxC if maxC[0] > layer1.P.max().item() else (layer1.P.max().item(), (layer1.P ==layer1.P.max()).nonzero())
-            #try:
-            #    minP, minC = minP, minC if minC[0] > layer1.P[layer1.P != 0].min().item() else (layer1.P[layer1.P != 0].min().item(), (layer1.P == layer1.P[layer1.P != 0].min()).nonzero())
-            #except:
-            #    print("bam")
-
+            maxP, maxC = maxP, maxC if maxC[0] > layer1.P.max().item() else (layer1.P.max().item(), (layer1.P ==layer1.P.max()).nonzero())
+            minP, minC = minP, minC if minC[0] > layer1.P[layer1.P != 0].min().item() else (layer1.P[layer1.P != 0].min().item(), (layer1.P == layer1.P[layer1.P != 0].min()).nonzero())
+            
             if train_flag:
                 loss_gen = temp_loss1 + temp_loss2 + temp_loss3
 
