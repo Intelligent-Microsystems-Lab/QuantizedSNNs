@@ -502,8 +502,8 @@ class LIFConv2dLayer(nn.Module):
         #self.p_scale = (self.tau_mem * self.q_scale*self.PQ_cap)/(1-self.alpha)
         #self.p_scale = self.p_scale.max()
 
-        self.inp_mult_q = 1/self.PQ_cap * (1-self.beta.max())
-        self.inp_mult_p = 1/self.PQ_cap * (1-self.alpha.max())
+        self.inp_mult_q = self.tau_syn#1/self.PQ_cap * (1-self.beta.max())
+        self.inp_mult_p = self.tau_mem#1/self.PQ_cap * (1-self.alpha.max())
         #self.pmult = self.p_scale * self.PQ_cap * self.weight_mult
 
         if quantization.global_wb is not None:
