@@ -12,6 +12,7 @@ from tqdm import tqdm
 import datetime
 import uuid
 
+
 import quantization
 import localQ
 from localQ import sparse_data_generator_Static, sparse_data_generator_DVSGesture, sparse_data_generator_DVSPoker, LIFConv2dLayer, prep_input, acc_comp, create_graph, hist_U_fun
@@ -269,11 +270,10 @@ def main():
 
 
     # how to load
-    import pickle
 
-    with open('results/40357372-7462-11ea-b0e2-a0369ffaa7c0.pkl', 'rb') as f:
-        # The protocol version used is detected automatically, so we do not
-        # have to specify it.
-        data = pickle.load(f)
+    #with open('results/40357372-7462-11ea-b0e2-a0369ffaa7c0.pkl', 'rb') as f:
+    #    # The protocol version used is detected automatically, so we do not
+    #    # have to specify it.
+    #    data = pickle.load(f)
 
 main()
