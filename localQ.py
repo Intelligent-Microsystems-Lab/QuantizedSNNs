@@ -184,6 +184,7 @@ def sparse_data_generator_DVSPoker(X, y, batch_size, nb_steps, shuffle, device, 
         except StopIteration:
             return
 
+@profile
 def sparse_data_generator_DVSGesture(X, y, batch_size, nb_steps, shuffle, device, ds = 4, test = False):
     number_of_batches = int(np.ceil(len(y)/batch_size))
     sample_index = np.arange(len(y))
