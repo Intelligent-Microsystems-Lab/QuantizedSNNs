@@ -91,7 +91,7 @@ output_neurons = 11
 T = 500*ms
 T_test = 1800*ms
 burnin = 50*ms
-epochs = 320
+epochs = 1#320
 lr_div = 60
 batch_size = 72
 
@@ -195,9 +195,9 @@ for e in range(epochs):
 
             #[ 0,  0,  5, 27] (min)
             #[ 7,  1, 17, 22] (max)
-            print("max Q {0:.6f} min Q {1:.4f} max P {2:.4f} min P {3:.4f}".format(layer1.Q[7,  1, 17, 22].item(), layer1.Q[0,  0,  5, 27].item(), layer1.P[7,  1, 17, 22].item(), layer1.P[0,  0,  5, 27].item()))
+        #     print("max Q {0:.6f} min Q {1:.4f} max P {2:.4f} min P {3:.4f}".format(layer1.Q[7,  1, 17, 22].item(), layer1.Q[0,  0,  5, 27].item(), layer1.P[7,  1, 17, 22].item(), layer1.P[0,  0,  5, 27].item()))
 
-        print("----end-----")
+        # print("----end-----")
 
 
         batch_corr['train1'].append(acc_comp(rread_hist1_train, y_local, True))
