@@ -56,14 +56,12 @@ def read_aedat31(filename, labels_f, test_set = False):
     # dataArray[6]                # eventValid
 
     stim = np.array([allTs, x, y, polarity]).T#.astype(int)
-
     for i in labels:
 
         # chop things right
         single_gesture = stim[stim[:, 0] >= i[1]]
         single_gesture = single_gesture[single_gesture[:, 0] <= i[2]]
 
-        import pdb; pdb.set_trace()
         # bin them 1ms
         single_gesture[:,0] = np.floor(single_gesture[:,0]/1000)
         single_gesture[:,0] = single_gesture[:,0] - np.min(single_gesture[:,0])
@@ -71,49 +69,49 @@ def read_aedat31(filename, labels_f, test_set = False):
         if test_set:
             single_gesture = single_gesture[single_gesture[:,0] <= 1800]
 
-        if i[0] in labels_full:
-            gestures_full[labels_full.index(i[0])] = np.vstack((gestures_full[labels_full.index(i[0])], single_gesture))
-        else:
-            gestures_full.append(single_gesture)
-            # record label
-            labels_full.append(i[0])
+        #if i[0] in labels_full:
+        #    gestures_full[labels_full.index(i[0])] = np.vstack((gestures_full[labels_full.index(i[0])], single_gesture))
+        #else:
+        gestures_full.append(single_gesture)
+        # record label
+        labels_full.append(i[0])
     return gestures_full, labels_full
 
 
 # user02_lab_labels
 # user12_fluorescent_led_labels
 
-# full set
-gestures_full = []
-labels_full = []
-with open('trials_to_train.txt') as fp:
-    for cnt, line in enumerate(fp):
-        try:
-            gestures_temp, labels_temp = read_aedat31(line.split(".")[0] + ".aedat", line.split(".")[0] + "_labels.csv")
-            gestures_full += gestures_temp
-            labels_full += labels_temp
-        except:
-            continue
-
-with open('train_dvs_gesture.pickle', 'wb') as handle:
-    pickle.dump((gestures_full, labels_full), handle)
-
-
-
-
+# # full set
 # gestures_full = []
 # labels_full = []
-# with open('trials_to_test.txt') as fp:
+# with open('trials_to_train.txt') as fp:
 #     for cnt, line in enumerate(fp):
 #         try:
-#             gestures_temp, labels_temp = read_aedat31(line.split(".")[0] + ".aedat", line.split(".")[0] + "_labels.csv", test_set = True)
+#             gestures_temp, labels_temp = read_aedat31(line.split(".")[0] + ".aedat", line.split(".")[0] + "_labels.csv")
 #             gestures_full += gestures_temp
 #             labels_full += labels_temp
 #         except:
 #             continue
 
-# with open('test_dvs_gesture.pickle', 'wb') as handle:
+# with open('train_dvs_gesture.pickle', 'wb') as handle:
 #     pickle.dump((gestures_full, labels_full), handle)
+
+
+
+
+gestures_full = []
+labels_full = []
+with open('trials_to_test.txt') as fp:
+    for cnt, line in enumerate(fp):
+        try:
+            gestures_temp, labels_temp = read_aedat31(line.split(".")[0] + ".aedat", line.split(".")[0] + "_labels.csv", test_set = True)
+            gestures_full += gestures_temp
+            labels_full += labels_temp
+        except:
+            continue
+
+with open('test_dvs_gesture.pickle', 'wb') as handle:
+    pickle.dump((gestures_full, labels_full), handle)
 
 
 

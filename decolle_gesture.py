@@ -47,16 +47,16 @@ dtype = torch.float64
 
 # DVS Gesture
 # load data
-with open('data/train_dvs_gesture.pickle', 'rb') as f:
+with open('data/train_dvs_gesture88.pickle', 'rb') as f:
     data = pickle.load(f)
 x_train = data[0]
 y_train = np.array(data[1], dtype = int) - 1
 
-x_train = x_train[:72]
-y_train = y_train[:72]
+# x_train = x_train[:72]
+# y_train = y_train[:72]
 
 
-with open('data/test_dvs_gesture.pickle', 'rb') as f:
+with open('data/test_dvs_gesture88.pickle', 'rb') as f:
     data = pickle.load(f)
 x_test = data[0]
 y_test = np.array(data[1], dtype = int) - 1
@@ -94,7 +94,7 @@ output_neurons = 11
 T = 500*ms
 T_test = 1800*ms
 burnin = 50*ms
-epochs = 1#320
+epochs = 320
 lr_div = 60
 batch_size = 72
 
@@ -218,7 +218,7 @@ for e in range(epochs):
         
     
     # test accuracy
-    for x_local, y_local in sparse_data_generator_DVSGesture(x_test, y_test, batch_size = batch_size, nb_steps = T_test / ms, shuffle = True, device = device, test = True, ds = ds):
+    for x_local, y_local in sparse_data_generator_DVSGesture(x_test, y_test, batch_size = batch_size, nb_steps = T_test / ms, shuffle = False, device = device, test = True, ds = ds):
         rread_hist1_test = []
         rread_hist2_test = []
         rread_hist3_test = []
@@ -226,6 +226,8 @@ for e in range(epochs):
         y_onehot = torch.Tensor(len(y_local), output_neurons).to(device).type(dtype)
         y_onehot.zero_()
         y_onehot.scatter_(1, y_local.reshape([y_local.shape[0],1]), 1)
+
+        import pdb; pdb.set_trace()
 
         layer1.state_init(x_local.shape[0])
         layer2.state_init(x_local.shape[0])
