@@ -12,6 +12,8 @@ import uuid
 
 import quantization
 
+import line_profiler
+
 global lc_ampl
 lc_ampl = .5
 
@@ -310,6 +312,7 @@ class QLinearFunctional(torch.autograd.Function):
 class QLinearLayerSign(nn.Module):
     '''from https://github.com/L0SG/feedback-alignment-pytorch/'''
     # we dont have a bias 
+    @profile
     def __init__(self, input_features, output_features, pass_through = False, bias = True, dtype = None, device = None):
         super(QLinearLayerSign, self).__init__()
         self.input_features  = input_features
@@ -360,7 +363,7 @@ class QLinearLayerSign(nn.Module):
         self.weight_fa.data[nonzero_mask] *= torch.sign((torch.sign(self.weights.data) == torch.sign(self.weight_fa.data)).type(dtype) -.5)[nonzero_mask]
 
             
-        
+    @profile
     def forward(self, input):
         return QLinearFunctional.apply(input, self.weights, self.weight_fa, self.bias, self.scale) 
 
@@ -414,6 +417,7 @@ class QSConv2dFunctional(torch.autograd.Function):
 
 
 class LIFConv2dLayer(nn.Module):
+    @profile
     def __init__(self, inp_shape, kernel_size, out_channels, tau_syn, tau_mem, tau_ref, delta_t, pooling = 1, padding = 0, bias = True, thr = 1, device=torch.device("cpu"), dtype = torch.float, dropout_p = .5, output_neurons = 10, loss_fn = None, l1 = 0, l2 = 0, PQ_cap = 1, weight_mult = 4e-5):
         super(LIFConv2dLayer, self).__init__()   
         self.device = device
@@ -521,6 +525,7 @@ class LIFConv2dLayer(nn.Module):
         self.U = torch.zeros((batch_size,) + self.out_shape, dtype = self.dtype).detach().to(self.device)
 
     
+    @profile
     def forward(self, input_t, y_local, train_flag = False, test_flag = False):
         # probably dont need to quantize because gb steps are arleady in the right level... just clipping
         if quantization.global_gb is not None:
