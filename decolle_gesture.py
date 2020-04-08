@@ -108,9 +108,9 @@ l2 = .001
 
 
 thr = torch.tensor([0.], dtype = dtype).to(device) #that probably should be one... one doesnt really work
-tau_mem = torch.tensor([20*ms], dtype = dtype).to(device)#tau_mem = torch.tensor([5*ms, 35*ms], dtype = dtype).to(device)
+tau_mem = torch.tensor([5*ms, 35*ms], dtype = dtype).to(device)#tau_mem = torch.tensor([5*ms, 35*ms], dtype = dtype).to(device)
 tau_ref = torch.tensor([1/.35*ms], dtype = dtype).to(device)
-tau_syn = torch.tensor([7.5*ms], dtype = dtype).to(device) #tau_syn = torch.tensor([5*ms, 10*ms], dtype = dtype).to(device)
+tau_syn = torch.tensor([5*ms, 10*ms], dtype = dtype).to(device) #tau_syn = torch.tensor([5*ms, 10*ms], dtype = dtype).to(device)
 
 sl1_loss = torch.nn.MSELoss()#torch.nn.SmoothL1Loss()
 
@@ -160,7 +160,7 @@ for e in range(epochs):
     ####
     #### shuffle on again
     ####
-    for x_local, y_local in sparse_data_generator_DVSGesture(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = False, test = True device = device, ds = ds):
+    for x_local, y_local in sparse_data_generator_DVSGesture(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = True, test = False, device = device, ds = ds):
 
         y_onehot = torch.Tensor(len(y_local), output_neurons).to(device).type(dtype)
         y_onehot.zero_()
@@ -184,7 +184,6 @@ for e in range(epochs):
             out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_onehot, train_flag = train_flag)
             out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_onehot, train_flag = train_flag)
             
-
             if train_flag:
                 loss_gen = temp_loss1 + temp_loss2 + temp_loss3
 
