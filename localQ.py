@@ -183,8 +183,6 @@ def sparse_data_generator_DVSPoker(X, y, batch_size, nb_steps, shuffle, device, 
             counter += 1
         except StopIteration:
             return
-
-@profile
 def sparse_data_generator_DVSGesture(X, y, batch_size, nb_steps, shuffle, device, ds = 4, test = False):
     number_of_batches = int(np.ceil(len(y)/batch_size))
     sample_index = np.arange(len(y))
@@ -313,7 +311,6 @@ class QLinearFunctional(torch.autograd.Function):
 class QLinearLayerSign(nn.Module):
     '''from https://github.com/L0SG/feedback-alignment-pytorch/'''
     # we dont have a bias 
-    @profile
     def __init__(self, input_features, output_features, pass_through = False, bias = True, dtype = None, device = None):
         super(QLinearLayerSign, self).__init__()
         self.input_features  = input_features
@@ -364,7 +361,6 @@ class QLinearLayerSign(nn.Module):
         self.weight_fa.data[nonzero_mask] *= torch.sign((torch.sign(self.weights.data) == torch.sign(self.weight_fa.data)).type(dtype) -.5)[nonzero_mask]
 
             
-    @profile
     def forward(self, input):
         return QLinearFunctional.apply(input, self.weights, self.weight_fa, self.bias, self.scale) 
 
@@ -418,7 +414,6 @@ class QSConv2dFunctional(torch.autograd.Function):
 
 
 class LIFConv2dLayer(nn.Module):
-    @profile
     def __init__(self, inp_shape, kernel_size, out_channels, tau_syn, tau_mem, tau_ref, delta_t, pooling = 1, padding = 0, bias = True, thr = 1, device=torch.device("cpu"), dtype = torch.float, dropout_p = .5, output_neurons = 10, loss_fn = None, l1 = 0, l2 = 0, PQ_cap = 1, weight_mult = 4e-5):
         super(LIFConv2dLayer, self).__init__()   
         self.device = device
@@ -443,7 +438,7 @@ class LIFConv2dLayer(nn.Module):
         self.weights = nn.Parameter(torch.empty((self.out_channels, inp_shape[0],  self.kernel_size, self.kernel_size),  device=device, dtype=dtype, requires_grad=True))
 
         # decide which one you like
-        self.stdv =  1 / np.sqrt(self.fan_in) * self.weight_mult#/ 250 * 1e-2
+        self.stdv =  1 / np.sqrt(self.fan_in) #* self.weight_mult#/ 250 * 1e-2
         #self.stdv =  np.sqrt(6 / self.fan_in) #* self.weight_mult
         if quantization.global_wb is not None:
             self.L_min = quantization.global_beta/quantization.step_d(torch.tensor([float(quantization.global_wb)]))
@@ -507,8 +502,8 @@ class LIFConv2dLayer(nn.Module):
         #self.p_scale = (self.tau_mem * self.q_scale*self.PQ_cap)/(1-self.alpha)
         #self.p_scale = self.p_scale.max()
 
-        self.inp_mult_q = self.tau_syn#1/self.PQ_cap * (1-self.beta.max())
-        self.inp_mult_p = self.tau_mem#1/self.PQ_cap * (1-self.alpha.max())
+        self.inp_mult_q = 1/self.PQ_cap * (1-self.beta.max()) #self.tau_syn#
+        self.inp_mult_p = 1/self.PQ_cap * (1-self.alpha.max()) #self.tau_mem#
         #self.pmult = self.p_scale * self.PQ_cap * self.weight_mult
 
         if quantization.global_wb is not None:
@@ -526,7 +521,6 @@ class LIFConv2dLayer(nn.Module):
         self.U = torch.zeros((batch_size,) + self.out_shape, dtype = self.dtype).detach().to(self.device)
 
     
-    @profile
     def forward(self, input_t, y_local, train_flag = False, test_flag = False):
         # probably dont need to quantize because gb steps are arleady in the right level... just clipping
         if quantization.global_gb is not None:
