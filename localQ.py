@@ -215,10 +215,10 @@ def sparse_data_generator_DVSGesture(X, y, batch_size, nb_steps, shuffle, device
         all_events = all_events[:,[0,4,2,3,1]]
         all_events[:, 2] = all_events[:, 2]//ds
         all_events[:, 3] = all_events[:, 3]//ds
-        sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(all_events[:,[True, True, True, True, True]].T), torch.ones_like(torch.tensor(all_events[:,0]))).to_dense().type(torch.int8)
+        sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(all_events[:,[True, True, True, True, True]].T), torch.ones_like(torch.tensor(all_events[:,0]))).to_dense().type(torch.uint8)
 
         # quick trick...
-        #sparse_matrix[sparse_matrix < 0] = -1
+        sparse_matrix[sparse_matrix != 0] = 1
         #sparse_matrix[sparse_matrix > 0] = 1
         #sparse_matrix = sparse_matrix.reshape(torch.Size([sparse_matrix.shape[0], 1, sparse_matrix.shape[1], sparse_matrix.shape[2], sparse_matrix.shape[3]]))
 
@@ -359,7 +359,6 @@ class QLinearLayerSign(nn.Module):
         #self.weight_fa = self.weights
         nonzero_mask = (self.weights.data != 0)
         # dtype here necessary?
-        import pdb; pdb.set_trace()
         self.weight_fa.data[nonzero_mask] *= torch.sign((torch.sign(self.weights.data) == torch.sign(self.weight_fa.data)).type(dtype) -.5)[nonzero_mask]
 
             

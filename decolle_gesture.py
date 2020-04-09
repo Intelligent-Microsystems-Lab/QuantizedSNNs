@@ -26,7 +26,7 @@ if torch.cuda.is_available():
     device = torch.device("cuda")     
 else:
     device = torch.device("cpu")
-dtype = torch.float64
+dtype = torch.float32 # originally that was 64
 
 
 # # DVS Poker
@@ -115,8 +115,6 @@ tau_syn = torch.tensor([5*ms, 10*ms], dtype = dtype).to(device) #tau_syn = torch
 sl1_loss = torch.nn.MSELoss()#torch.nn.SmoothL1Loss()
 
 # construct layers
-downsample_l = nn.AvgPool2d(kernel_size = 4, stride = 4)
-
 layer1 = LIFConv2dLayer(inp_shape = (2, 32, 32), kernel_size = 7, out_channels = 64, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, PQ_cap = PQ_cap, weight_mult = weight_mult, dtype = dtype).to(device)
 
 layer2 = LIFConv2dLayer(inp_shape = layer1.out_shape2, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 1, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, PQ_cap = PQ_cap, weight_mult = weight_mult, dtype = dtype).to(device)
@@ -156,10 +154,6 @@ for e in range(epochs):
     start_time = time.time()
 
     # training
-
-    ####
-    #### shuffle on again
-    ####
     for x_local, y_local in sparse_data_generator_DVSGesture(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = True, test = False, device = device, ds = ds):
 
         y_onehot = torch.Tensor(len(y_local), output_neurons).to(device).type(dtype)
@@ -179,7 +173,6 @@ for e in range(epochs):
         for t in range(int(T/ms)):
             train_flag = (t > int(burnin/ms))
 
-
             out_spikes1, temp_loss1, temp_corr1 = layer1.forward(x_local[:,:,:,:,t], y_onehot, train_flag = train_flag)
             out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_onehot, train_flag = train_flag)
             out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_onehot, train_flag = train_flag)
@@ -196,11 +189,6 @@ for e in range(epochs):
                 rread_hist2_train.append(temp_corr2)
                 rread_hist3_train.append(temp_corr3)
 
-            #[ 0,  0,  5, 27] (min)
-            #[ 7,  1, 17, 22] (max)
-        #     print("max Q {0:.6f} min Q {1:.4f} max P {2:.4f} min P {3:.4f}".format(layer1.Q[7,  1, 17, 22].item(), layer1.Q[0,  0,  5, 27].item(), layer1.P[7,  1, 17, 22].item(), layer1.P[0,  0,  5, 27].item()))
-
-        # print("----end-----")
 
 
         batch_corr['train1'].append(acc_comp(rread_hist1_train, y_local, True))
@@ -218,7 +206,7 @@ for e in range(epochs):
         
     
     # test accuracy
-    for x_local, y_local in sparse_data_generator_DVSGesture(x_test, y_test, batch_size = batch_size, nb_steps = T_test / ms, shuffle = False, device = device, test = True, ds = ds):
+    for x_local, y_local in sparse_data_generator_DVSGesture(x_test, y_test, batch_size = batch_size, nb_steps = T_test / ms, shuffle = True, device = device, test = True, ds = ds):
         rread_hist1_test = []
         rread_hist2_test = []
         rread_hist3_test = []
@@ -236,8 +224,6 @@ for e in range(epochs):
         for t in range(int(T_test/ms)):
             test_flag = (t > int(burnin/ms))
 
-            #spikes_t                            = downsample_l(x_local[:,:,:,:,t])
-            #spikes_t[spikes_t > 0]              = 1.
             out_spikes1, temp_loss1, temp_corr1 = layer1.forward(x_local[:,:,:,:,t], y_onehot, test_flag = test_flag)
             out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_onehot, test_flag = test_flag)
             out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_onehot, test_flag = test_flag)
