@@ -507,6 +507,10 @@ class LIFConv2dLayer(nn.Module):
         self.inp_mult_p = self.tau_mem##1/self.PQ_cap * (1-self.alpha.max()) #
         #self.pmult = self.p_scale * self.PQ_cap * self.weight_mult
 
+        import pdb; pdb.set_trace()
+        #self.Q_scale
+        #self.P_scale
+
         if quantization.global_wb is not None:
             with torch.no_grad():
                 self.weights.data = quantization.quant_w(self.weights.data)
