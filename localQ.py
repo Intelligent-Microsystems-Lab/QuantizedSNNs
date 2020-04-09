@@ -369,10 +369,10 @@ class QLinearLayerSign(nn.Module):
 
 class QSConv2dFunctional(torch.autograd.Function):
     @staticmethod
-    def forward(ctx, input, weights, bias, scale, padding = 0):
+    def forward(ctx, input, weights, bias, scale, padding = 0, weight_mult = 1):
         if quantization.global_wb is not None:
-            w_quant = quantization.quant_w(weights, 1)
-            bias_quant = quantization.quant_w(bias, 1)
+            w_quant = quantization.quant_w(weights/weight_mult, 1) *weight_mult
+            bias_quant = quantization.quant_w(bias/weight_mult, 1) *weight_mult
         else:
             w_quant = weights
             bias_quant = bias
@@ -507,9 +507,11 @@ class LIFConv2dLayer(nn.Module):
         self.inp_mult_p = self.tau_mem##1/self.PQ_cap * (1-self.alpha.max()) #
         #self.pmult = self.p_scale * self.PQ_cap * self.weight_mult
 
-        import pdb; pdb.set_trace()
-        #self.Q_scale
-        #self.P_scale
+        # those might be clamped as in chop off values.
+        self.Q_scale = (self.tau_syn/(1-self.beta)).max()
+        self.P_scale = ((self.tau_mem * self.Q_scale)/(1-self.alpha)).max()
+        self.Q_scale = (self.tau_syn/(1-self.beta)).max()
+        self.R_scale = 1/(1-self.gamma)
 
         if quantization.global_wb is not None:
             with torch.no_grad():
@@ -530,26 +532,26 @@ class LIFConv2dLayer(nn.Module):
         # probably dont need to quantize because gb steps are arleady in the right level... just clipping
         if quantization.global_gb is not None:
             with torch.no_grad():
-                self.weights.data = quantization.clip(self.weights.data, quantization.global_gb)
+                self.weights.data = quantization.clip(self.weights.data/self.weight_mult, quantization.global_gb)*self.weight_mult
                 if self.bias is not None:
-                    self.bias.data = quantization.clip(self.bias.data, quantization.global_gb)
+                    self.bias.data = quantization.clip(self.bias.data/self.weight_mult, quantization.global_gb)*self.weight_mult
         if quantization.global_rfb is not None:
             # R always using full scale?
-            self.R = quantization.quant01(self.R, quantization.global_rfb)
+            self.R = quantization.quant01(self.R/self.R_scale, quantization.global_rfb)*self.R_scale
 
         #self.P, self.R, self.Q = self.alpha * self.P + self.tau_mem * self.Q, self.gamma * self.R, self.beta * self.Q + self.tau_syn * input_t
         #dtype necessary
         self.P, self.R, self.Q = self.alpha * self.P + self.inp_mult_p * self.Q, self.gamma * self.R, self.beta * self.Q + self.inp_mult_q * input_t.type(self.dtype)
 
         if quantization.global_pb is not None:
-            self.P = torch.clamp(self.P, 0, 1)
-            self.P = quantization.quant01(self.P, quantization.global_pb)
+            self.P = torch.clamp(self.P/self.P_scale, 0, 1)
+            self.P = quantization.quant01(self.P, quantization.global_pb)*self.P_scale
         if quantization.global_qb is not None:
-            self.Q = torch.clamp(self.Q, 0, 1)
-            self.Q = quantization.quant01(self.Q, quantization.global_qb)
+            self.Q = torch.clamp(self.Q/self.Q_scale, 0, 1)
+            self.Q = quantization.quant01(self.Q, quantization.global_qb)*self.Q_scale
 
         #self.U = QSConv2dFunctional.apply(self.P * self.pmult, self.weights, self.bias, self.scale, self.padding) - self.R
-        self.U = QSConv2dFunctional.apply(self.P, self.weights, self.bias, self.scale, self.padding) - self.R #* self.r_scale 
+        self.U = QSConv2dFunctional.apply(self.P, self.weights, self.bias, self.scale, self.padding, self.weight_mult) - self.R #* self.r_scale 
         if quantization.global_ub is not None:
             self.U = quantU.apply(self.U)
         self.S = (self.U >= self.thr).type(self.dtype) #float()

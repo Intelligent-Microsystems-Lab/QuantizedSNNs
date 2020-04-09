@@ -71,7 +71,7 @@ quantization.global_sb  = None
 quantization.global_gb  = None
 quantization.global_eb  = None
 
-quantization.global_wb  = None
+quantization.global_wb  = 2
 quantization.global_ub  = None
 quantization.global_qb  = None
 quantization.global_pb  = None
