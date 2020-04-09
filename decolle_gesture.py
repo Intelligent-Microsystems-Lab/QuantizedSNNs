@@ -26,7 +26,7 @@ if torch.cuda.is_available():
     device = torch.device("cuda")     
 else:
     device = torch.device("cpu")
-dtype = torch.float32 # originally that was 64
+dtype = torch.float64 # originally that was 64
 
 
 # # DVS Poker
@@ -215,7 +215,6 @@ for e in range(epochs):
         y_onehot.zero_()
         y_onehot.scatter_(1, y_local.reshape([y_local.shape[0],1]), 1)
 
-        import pdb; pdb.set_trace()
 
         layer1.state_init(x_local.shape[0])
         layer2.state_init(x_local.shape[0])
