@@ -26,7 +26,7 @@ if torch.cuda.is_available():
     device = torch.device("cuda")     
 else:
     device = torch.device("cpu")
-dtype = torch.float32 # originally that was 64
+dtype = torch.float32 # originally that was 64, but 32 is way faster
 
 
 # # DVS Poker
