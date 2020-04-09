@@ -47,7 +47,7 @@ dtype = torch.float32 # originally that was 64, but 32 is way faster
 
 # DVS Gesture
 # load data
-with open('data/train_dvs_gesture88.pickle', 'rb') as f:
+with open('data/train_dvs_gesture.pickle', 'rb') as f:
     data = pickle.load(f)
 x_train = data[0]
 y_train = np.array(data[1], dtype = int) - 1
