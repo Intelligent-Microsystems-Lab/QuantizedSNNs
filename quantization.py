@@ -22,6 +22,7 @@ global_sig = 8
 global_beta = 1.5
 global_lr = 1 #8
 
+weight_mult = 1
 
 # checks for quant
 valid_w_vals = None

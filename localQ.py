@@ -439,7 +439,7 @@ class LIFConv2dLayer(nn.Module):
         self.weights = nn.Parameter(torch.empty((self.out_channels, inp_shape[0],  self.kernel_size, self.kernel_size),  device=device, dtype=dtype, requires_grad=True))
 
         # decide which one you like
-        self.stdv =  1 / np.sqrt(self.fan_in) * self.weight_mult#/ 250 * 1e-2
+        self.stdv =  1 / np.sqrt(self.fan_in) #/ 250 * 1e-2
         #self.stdv =  np.sqrt(6 / self.fan_in) #* self.weight_mult
         if quantization.global_wb is not None:
             self.L_min = quantization.global_beta/quantization.step_d(torch.tensor([float(quantization.global_wb)]))
@@ -447,19 +447,19 @@ class LIFConv2dLayer(nn.Module):
             self.scale = 2 ** round(math.log(self.L_min / self.stdv, 2.0))
             self.scale = self.scale if self.scale > 1 else 1.0
             self.L     = np.max([self.stdv, self.L_min])
-            torch.nn.init.uniform_(self.weights, a = -self.L, b = self.L)
+            torch.nn.init.uniform_(self.weights, a = -self.L * self.weight_mult, b = self.L* self.weight_mult)
         else:
             self.scale = 1
-            torch.nn.init.uniform_(self.weights, a = -self.stdv , b = self.stdv)
+            torch.nn.init.uniform_(self.weights, a = -self.stdv * self.weight_mult, b = self.stdv* self.weight_mult)
 
         # bias has a different scale... just why?
         if bias:
             self.bias = nn.Parameter(torch.empty(self.out_channels, device=device, dtype=dtype, requires_grad=True))
             if quantization.global_wb is not None:
                 bias_L = np.max([self.stdv* 1e2, self.L_min])
-                torch.nn.init.uniform_(self.bias, a = -bias_L, b = bias_L)
+                torch.nn.init.uniform_(self.bias, a = -bias_L * self.weight_mult, b = bias_L* self.weight_mult)
             else:
-                torch.nn.init.uniform_(self.bias, a = -self.stdv* 1e2, b = self.stdv* 1e2)
+                torch.nn.init.uniform_(self.bias, a = -self.stdv* self.weight_mult* 1e2, b = self.stdv* self.weight_mult * 1e2)
         else:
             self.register_parameter('bias', None)
 

@@ -100,6 +100,7 @@ batch_size = 72
 
 PQ_cap = 1 #.1, .5, etc. # this value has to be carefully choosen
 weight_mult = 4e-5 # decolle -> 1/p_max
+quantization.weight_mult = weight_mult
 
 dropout_p = .5
 localQ.lc_ampl = .5
