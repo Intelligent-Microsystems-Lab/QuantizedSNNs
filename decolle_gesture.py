@@ -65,17 +65,18 @@ y_test = np.array(data[1], dtype = int) - 1
 # y_test = y_test[:72]
 
 # set quant level
-quantization.global_wb  = None
-quantization.global_ub  = None
-quantization.global_qb  = None
-quantization.global_pb  = None
-quantization.global_rfb = None
+# base case 8 bits -> every variable gets its sweep (2,4,6,8)
+quantization.global_wb  = 8 # what 2bits/2bit
+quantization.global_ub  = 8 # 8 bits
+quantization.global_qb  = 8 
+quantization.global_pb  = 8
+quantization.global_rfb = 8
 
-quantization.global_sb  = 1
+quantization.global_sb  = 8 #4 bits
 quantization.global_ab  = 8
 quantization.global_sig = 8
-quantization.global_gb  = None
-quantization.global_eb  = None
+quantization.global_gb  = 8
+quantization.global_eb  = 8
 
 quantization.global_rb = 16
 quantization.global_lr = max([int(quantization.global_gb/8), 1]) if quantization.global_gb is not None else None
@@ -98,7 +99,7 @@ lr_div = 60
 batch_size = 72
 
 PQ_cap = 1 #.1, .5, etc. # this value has to be carefully choosen
-weight_mult = 4e-5 # decolle -> 1/p_max
+weight_mult = np.sqrt(4e-5) # decolle -> 1/p_max -> squrt
 quantization.weight_mult = weight_mult
 
 dropout_p = .5
