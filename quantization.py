@@ -141,7 +141,7 @@ def quant_grad(x):
     zero_prevention_step[zero_prevention_step == 0] = 1
     norm = norm_sign * ( norm_int + 0.5 * (zero_prevention_step + 1) )
 
-    return norm / step_d(global_gb)
+    return norm / step_d(global_gb) * weight_mult
 
 def quant_err(x):
     # if (x.abs() > 1).sum() != 0:

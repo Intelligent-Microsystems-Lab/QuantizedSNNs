@@ -65,22 +65,22 @@ y_test = np.array(data[1], dtype = int) - 1
 # y_test = y_test[:72]
 
 # set quant level
-quantization.global_ab  = None
-quantization.global_sig = None
-quantization.global_sb  = None
-quantization.global_gb  = None
-quantization.global_eb  = None
+quantization.global_ab  = 8
+quantization.global_sig = 8
+quantization.global_sb  = 1
+quantization.global_gb  = 8
+quantization.global_eb  = 8
 
-quantization.global_wb  = 2
-quantization.global_ub  = None
-quantization.global_qb  = None
-quantization.global_pb  = None
-quantization.global_rfb = None
+quantization.global_wb  = 4
+quantization.global_ub  = 4
+quantization.global_qb  = 8
+quantization.global_pb  = 8
+quantization.global_rfb = 8
 
 
 quantization.global_rb = 16
 quantization.global_lr = max([int(quantization.global_gb/8), 1]) if quantization.global_gb is not None else None
-quantization.global_lr_sgd = np.geomspace(1.0e-2, 1.0e-9, 32)[quantization.global_wb-1]  if quantization.global_wb is not None else 1.0e-9
+quantization.global_lr_sgd = 1.0e-9#np.geomspace(1.0e-2, 1.0e-9, 32)[quantization.global_wb-1]  if quantization.global_wb is not None else 1.0e-9
 # quantization.global_lr_old = max([int(quantization.global_gb/8), 1]) if quantization.global_wb is not None else None # under development
 quantization.global_beta = 1.5#quantization.step_d(quantization.global_wb)-.5 #1.5 #
 
