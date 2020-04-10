@@ -65,18 +65,17 @@ y_test = np.array(data[1], dtype = int) - 1
 # y_test = y_test[:72]
 
 # set quant level
-quantization.global_sb  = 1
-quantization.global_ab  = 8
-quantization.global_sig = 8
-quantization.global_gb  = 8
-quantization.global_eb  = 8
-
 quantization.global_wb  = 4
 quantization.global_ub  = 8
 quantization.global_qb  = 8
 quantization.global_pb  = 8
 quantization.global_rfb = 8
 
+quantization.global_sb  = 1
+quantization.global_ab  = 8
+quantization.global_sig = 8
+quantization.global_gb  = None
+quantization.global_eb  = None
 
 quantization.global_rb = 16
 quantization.global_lr = max([int(quantization.global_gb/8), 1]) if quantization.global_gb is not None else None
