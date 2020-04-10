@@ -71,9 +71,9 @@ quantization.global_qb  = 8
 quantization.global_pb  = 8
 quantization.global_rfb = 8
 
-quantization.global_sb  = 1
-quantization.global_ab  = 8
-quantization.global_sig = 8
+quantization.global_sb  = None
+quantization.global_ab  = None
+quantization.global_sig = None
 quantization.global_gb  = None
 quantization.global_eb  = None
 
