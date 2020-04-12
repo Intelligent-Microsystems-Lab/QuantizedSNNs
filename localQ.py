@@ -361,7 +361,6 @@ class QLinearLayerSign(nn.Module):
         # sign concordant weights in fwd and bwd pass
         #self.weight_fa = self.weights
         nonzero_mask = (self.weights.data != 0)
-        import pdb; pdb.set_trace()
         self.weight_fa.data[nonzero_mask] *= torch.sign((torch.sign(self.weights.data) == torch.sign(self.weight_fa.data)).type(dtype) -.5)[nonzero_mask]
 
             
@@ -566,6 +565,7 @@ class LIFConv2dLayer(nn.Module):
             self.U_aux = self.mpool(self.U_aux)
 
             rreadout = self.dropout_learning(self.sign_random_readout(self.U_aux.reshape([input_t.shape[0], np.prod(self.out_shape2)])))
+            import pdb; pdb.set_trace()
 
             if train_flag:
                 if quantization.global_eb is not None:
