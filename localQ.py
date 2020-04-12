@@ -333,7 +333,7 @@ class QLinearLayerSign(nn.Module):
             self.L     = np.max([self.L, self.L_min])
 
             #since those weights are fixed lets just initialize them between -1 and 1 to make use of all given bits 
-            self.L = 1
+            self.L     = lc_ampl/np.sqrt(self.input_features)
             self.scale = 2 ** round(math.log((1-self.L_min)/self.L, 2.0))
             self.scale = self.scale if self.scale > 1 else 1.0
 
