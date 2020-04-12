@@ -333,7 +333,7 @@ class QLinearLayerSign(nn.Module):
 
             #since those weights are fixed lets just initialize them between -1 and 1 
             self.L = 1
-            self.scale = 2 ** round(math.log(1/self.L, 2.0))
+            self.scale = 2 ** round(math.log((1-self.L_min)/self.L, 2.0))
 
             torch.nn.init.uniform_(self.weights, a = -self.L, b = self.L)
             torch.nn.init.uniform_(self.weight_fa, a = -self.L, b = self.L)
@@ -361,7 +361,7 @@ class QLinearLayerSign(nn.Module):
         # sign concordant weights in fwd and bwd pass
         #self.weight_fa = self.weights
         nonzero_mask = (self.weights.data != 0)
-        #import pdb; pdb.set_trace()
+        import pdb; pdb.set_trace()
         self.weight_fa.data[nonzero_mask] *= torch.sign((torch.sign(self.weights.data) == torch.sign(self.weight_fa.data)).type(dtype) -.5)[nonzero_mask]
 
             
