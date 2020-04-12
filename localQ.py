@@ -387,7 +387,9 @@ class QSConv2dFunctional(torch.autograd.Function):
             output = output / scale
 
         ctx.save_for_backward(input, w_quant, bias_quant) 
-        return output
+
+        # ify part here... shall we bring it between 0 and 1 for the targets
+        return (output+1)/2
 
     @staticmethod
     def backward(ctx, grad_output):
@@ -570,7 +572,6 @@ class LIFConv2dLayer(nn.Module):
 
             if train_flag:
                 if quantization.global_eb is not None:
-                    import pdb; pdb.set_trace()
                     loss_gen = quantization.SSE(rreadout, y_local) + self.l1 * 200e-1 * F.relu((self.U+.01)).mean() + self.l2 *1e-1* F.relu(.1-self.U_aux.mean())
                 else:
                     loss_gen = self.loss_fn(rreadout, y_local) + self.l1 * 200e-1 * F.relu((self.U+.01)).mean() + self.l2 *1e-1* F.relu(.1-self.U_aux.mean())
