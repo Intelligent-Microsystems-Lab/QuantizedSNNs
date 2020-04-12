@@ -336,6 +336,7 @@ class QLinearLayerSign(nn.Module):
             self.L     = lc_ampl/np.sqrt(self.input_features)
             self.scale = 2 ** round(math.log((1-self.L_min)/self.L, 2.0))
             self.scale = self.scale if self.scale > 1 else 1.0
+            self.L     = 1
 
             torch.nn.init.uniform_(self.weights, a = -self.L, b = self.L)
             torch.nn.init.uniform_(self.weight_fa, a = -self.L, b = self.L)
