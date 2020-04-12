@@ -278,6 +278,7 @@ class QLinearFunctional(torch.autograd.Function):
             output += bias.unsqueeze(0).expand_as(output)
 
         if quantization.global_sb is not None:
+            import pdb; pdb.set_trace()
             output = output/scale
         # quant act
         if quantization.global_ab is not None:
@@ -331,9 +332,10 @@ class QLinearLayerSign(nn.Module):
             self.scale = self.scale if self.scale > 1 else 1.0
             self.L     = np.max([self.L, self.L_min])
 
-            #since those weights are fixed lets just initialize them between -1 and 1 
+            #since those weights are fixed lets just initialize them between -1 and 1 to make use of all given bits 
             self.L = 1
             self.scale = 2 ** round(math.log((1-self.L_min)/self.L, 2.0))
+            self.scale = self.scale if self.scale > 1 else 1.0
 
             torch.nn.init.uniform_(self.weights, a = -self.L, b = self.L)
             torch.nn.init.uniform_(self.weight_fa, a = -self.L, b = self.L)
@@ -564,8 +566,7 @@ class LIFConv2dLayer(nn.Module):
             self.U_aux = torch.sigmoid(self.U) # quantize this function.... at some point
             self.U_aux = self.mpool(self.U_aux)
 
-            rreadout = self.dropout_learning(self.sign_random_readout(self.U_aux.reshape([input_t.shape[0], np.prod(self.out_shape2)])))
-            import pdb; pdb.set_trace()
+            rreadout = self.dropout_learning(self.sign_random_readout(self.U_aux.reshape([input_t.shape[0], np.prod(self.out_shape2)]))) * self.dropout_p
 
             if train_flag:
                 if quantization.global_eb is not None:
