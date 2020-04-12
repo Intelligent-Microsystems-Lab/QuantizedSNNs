@@ -358,7 +358,7 @@ class QLinearLayerSign(nn.Module):
         # sign concordant weights in fwd and bwd pass
         #self.weight_fa = self.weights
         nonzero_mask = (self.weights.data != 0)
-        # dtype here necessary?
+        import pdb; pdb.set_trace()
         self.weight_fa.data[nonzero_mask] *= torch.sign((torch.sign(self.weights.data) == torch.sign(self.weight_fa.data)).type(dtype) -.5)[nonzero_mask]
 
             
