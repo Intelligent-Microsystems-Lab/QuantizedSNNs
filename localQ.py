@@ -285,7 +285,8 @@ class QLinearFunctional(torch.autograd.Function):
 
         ctx.save_for_backward(input, weight, weight_fa, bias)
 
-        return output
+        # ify part here... shall we bring it between 0 and 1 for the targets
+        return (output+1)/2
 
     @staticmethod
     def backward(ctx, grad_output):
@@ -388,8 +389,8 @@ class QSConv2dFunctional(torch.autograd.Function):
 
         ctx.save_for_backward(input, w_quant, bias_quant) 
 
-        # ify part here... shall we bring it between 0 and 1 for the targets
-        return (output+1)/2
+        
+        return output
 
     @staticmethod
     def backward(ctx, grad_output):
