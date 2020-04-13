@@ -72,10 +72,10 @@ quantization.global_qb  = 8
 quantization.global_pb  = 8
 quantization.global_rfb = 8
 
-quantization.global_sb  = 8 #4 bits
+quantization.global_sb  = 32 #4 bits
 quantization.global_ab  = 8
 quantization.global_sig = 8
-quantization.global_gb  = 4
+quantization.global_gb  = 8
 quantization.global_eb  = 8
 
 quantization.global_rb = 16
