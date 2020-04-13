@@ -4,9 +4,9 @@
 #$ -m abe
 #$ -q gpu@@joshi #qa-rtx6k-040.crc.nd.edu  # Specify queue (use ‘debug’ for development) // gpu@qa-2080ti-001.crc.nd.edu , qa-2080ti-002.crc.nd.edu , ta-titanv-001.crc.nd.edu, qa-titanx-001.crc.nd.edu, qa-1080ti-001.crc.nd.edu, da-1080-001.crc.nd.edu
 #$ -l gpu_card=1 
-#$ -N decolles6   # Specify job name
-#$ -o ./logs/output_decolles6.txt
-#$ -e ./logs/error_decollers6.txt
+#$ -N decolleg6   # Specify job name
+#$ -o ./logs/output_decolleg6.txt
+#$ -e ./logs/error_decollerg6.txt
 
 module load python       # Required modules
 setenv OMP_NUM_THREADS $NSLOTS
