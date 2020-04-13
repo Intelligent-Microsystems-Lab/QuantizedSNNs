@@ -70,7 +70,7 @@ quantization.global_wb  = 8 # what 2bits/2bit
 quantization.global_ub  = 8 # 8 bits
 quantization.global_qb  = 8 
 quantization.global_pb  = 8
-quantization.global_rfb = 4
+quantization.global_rfb = 6
 
 quantization.global_sb  = 8 #4 bits
 quantization.global_ab  = 8
