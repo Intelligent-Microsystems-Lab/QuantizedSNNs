@@ -66,7 +66,7 @@ y_test = np.array(data[1], dtype = int) - 1
 
 # set quant level
 # base case 8 bits -> every variable gets its sweep (2,4,6,8)
-quantization.global_wb  = 4 # what 2bits/2bit
+quantization.global_wb  = 6 # what 2bits/2bit
 quantization.global_ub  = 8 # 8 bits
 quantization.global_qb  = 8 
 quantization.global_pb  = 8
