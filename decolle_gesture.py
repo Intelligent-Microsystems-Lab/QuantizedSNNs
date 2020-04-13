@@ -144,9 +144,9 @@ print("Epoch Loss      Train1 Train2 Train3 Test1  Test2  Test3  | TrainT   Test
 for e in range(epochs):
     if ((e+1)%lr_div)==0:
         if quantization.global_gb is not None:
-            quantization.global_lr /= 4
-            if quantization.global_lr <= 1/16:
-                quantization.global_lr = 1/16
+            quantization.global_lr /= 8
+            #if quantization.global_lr <= 1/16:
+            #    quantization.global_lr = 1/16
         else:
             opt.param_groups[-1]['lr'] /= 5
 
