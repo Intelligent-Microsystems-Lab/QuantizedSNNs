@@ -121,28 +121,31 @@ def clee_spikes(T, rates):
 def prep_input(x_local, input_mode):
     #two channel trick
     if input_mode == 0:
-        down_spikes = torch.cat((x_local, x_local), dim = 1)
-        mask1 = (down_spikes > 0) # this might change
-        mask2 = (down_spikes < 0)
-        mask1[:,0,:,:] = False
-        mask2[:,1,:,:] = False
-        down_spikes = torch.zeros_like(down_spikes)
-        down_spikes[mask1] = 1 
-        down_spikes[mask2] = 1
-        return down_spikes
+        x_local[x_local > 0] = 1
+
+        #down_spikes = torch.cat((x_local, x_local), dim = 1)
+        #mask1 = (down_spikes > 0) # this might change
+        #mask2 = (down_spikes < 0)
+        #mask1[:,0,:,:] = False
+        #mask2[:,1,:,:] = False
+        #down_spikes = torch.zeros_like(down_spikes)
+        #down_spikes[mask1] = 1 
+        #down_spikes[mask2] = 1
+        return x_local
+    #bi directional
+    if input_mode == 2:
+        import pdb; pdb.set_trace()
+        x_local[:,0,:,:] *= -1
+        new_spikes = x_local[:,0,:,:] + x_local[:,1,:,:]
+        new_spikes[new_spikes > 0] = 1
+        new_spikes[new_spikes < 0] = -1
+        return new_spikes
     # same same but different
     if input_mode == 1:
         down_spikes = x_local
         down_spikes[down_spikes != 0] = 1
         return down_spikes
-    #bi directional
-    if input_mode == 2:
-        x_local = x_local.type(torch.int8)
-        x_local[:,0,:,:] *= -1
-
-        import pdb; pdb.set_trace()
-        return x_local
-    #bi directional two channels
+        #bi directional two channels
     if input_mode == 3:
         down_spikes = torch.cat((x_local, x_local), dim = 1)
         down_spikes[down_spikes != 0] = 1
@@ -221,8 +224,6 @@ def sparse_data_generator_DVSGesture(X, y, batch_size, nb_steps, shuffle, device
         all_events[:, 3] = all_events[:, 3]//ds
         sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(all_events[:,[True, True, True, True, True]].T), torch.ones_like(torch.tensor(all_events[:,0]))).to_dense().type(torch.int16)
 
-
-        import pdb; pdb.set_trace()
         # quick trick...
         #sparse_matrix[sparse_matrix != 0] = 1
         #sparse_matrix[sparse_matrix > 0] = 1
