@@ -137,6 +137,9 @@ def prep_input(x_local, input_mode):
         return down_spikes
     #bi directional
     if input_mode == 2:
+        x_local = x_local.type(torch.int8)
+        x_local[:,0,:,:] *= -1
+
         import pdb; pdb.set_trace()
         return x_local
     #bi directional two channels
@@ -216,10 +219,10 @@ def sparse_data_generator_DVSGesture(X, y, batch_size, nb_steps, shuffle, device
         all_events = all_events[:,[0,4,2,3,1]]
         all_events[:, 2] = all_events[:, 2]//ds
         all_events[:, 3] = all_events[:, 3]//ds
-        sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(all_events[:,[True, True, True, True, True]].T), torch.ones_like(torch.tensor(all_events[:,0]))).to_dense().type(torch.bool)
+        sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(all_events[:,[True, True, True, True, True]].T), torch.ones_like(torch.tensor(all_events[:,0]))).to_dense().type(torch.int16)
 
         # quick trick...
-        sparse_matrix[sparse_matrix != 0] = 1
+        #sparse_matrix[sparse_matrix != 0] = 1
         #sparse_matrix[sparse_matrix > 0] = 1
         #sparse_matrix = sparse_matrix.reshape(torch.Size([sparse_matrix.shape[0], 1, sparse_matrix.shape[1], sparse_matrix.shape[2], sparse_matrix.shape[3]]))
 
@@ -738,7 +741,7 @@ class DTNLIFConv2dLayer(nn.Module):
         if quantization.global_ub is not None:
             self.U = quantU.apply(self.U)
         self.S = (self.U >= self.thr).type(self.dtype)
-        self.S = (self.U <= -self.thr).type(self.dtype)*-1
+        self.S += (self.U <= -self.thr).type(self.dtype)*-1
         self.R += self.S * self.thr#(1-self.gamma)
 
 
