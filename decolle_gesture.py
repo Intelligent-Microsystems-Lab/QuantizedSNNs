@@ -66,17 +66,17 @@ y_test = np.array(data[1], dtype = int) - 1
 
 # set quant level
 # base case 8 bits -> every variable gets its sweep (2,4,6,8)
-quantization.global_wb  = 32 # what 2bits/2bit
-quantization.global_ub  = 32 # 8 bits
-quantization.global_qb  = 32 
-quantization.global_pb  = 32
-quantization.global_rfb = 32
+quantization.global_wb  = None # what 2bits/2bit
+quantization.global_ub  = None # 8 bits
+quantization.global_qb  = None 
+quantization.global_pb  = None
+quantization.global_rfb = None
 
-quantization.global_sb  = 4 #4 bits
-quantization.global_ab  = 8
-quantization.global_sig = 8
-quantization.global_gb  = 6
-quantization.global_eb  = 6
+quantization.global_sb  = None #4 bits
+quantization.global_ab  = None
+quantization.global_sig = None
+quantization.global_gb  = None
+quantization.global_eb  = None
 
 quantization.global_rb = 16
 quantization.global_lr = 1#max([int(quantization.global_gb/8), 1]) if quantization.global_gb is not None else None

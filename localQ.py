@@ -550,12 +550,16 @@ class LIFConv2dLayer(nn.Module):
         #dtype necessary
         self.P, self.R, self.Q = self.alpha * self.P + self.inp_mult_p * self.Q, self.gamma * self.R, self.beta * self.Q + self.inp_mult_q * input_t.type(self.dtype)
 
+        if self.PQ_cap != 1:
+            self.P = torch.clamp(self.P, 0, self.P_scale*self.PQ_cap)
+            self.Q = torch.clamp(self.Q, 0, self.Q_scale*self.PQ_cap)
+
         if quantization.global_pb is not None:
-            self.P = torch.clamp(self.P/self.P_scale, 0, 1)
-            self.P = quantization.quant01(self.P, quantization.global_pb)*self.P_scale
+            self.P = torch.clamp(self.P/(self.P_scale*self.PQ_cap), 0, 1)
+            self.P = quantization.quant01(self.P, quantization.global_pb)*(self.P_scale*self.PQ_cap)
         if quantization.global_qb is not None:
-            self.Q = torch.clamp(self.Q/self.Q_scale, 0, 1)
-            self.Q = quantization.quant01(self.Q, quantization.global_qb)*self.Q_scale
+            self.Q = torch.clamp(self.Q/(self.Q_scale*self.PQ_cap), 0, 1)
+            self.Q = quantization.quant01(self.Q, quantization.global_qb)*(self.Q_scale*self.PQ_cap)
 
         #self.U = QSConv2dFunctional.apply(self.P * self.pmult, self.weights, self.bias, self.scale, self.padding) - self.R
         self.U = QSConv2dFunctional.apply(self.P, self.weights, self.bias, self.scale, self.padding, self.weight_mult) - self.R #* self.r_scale 
