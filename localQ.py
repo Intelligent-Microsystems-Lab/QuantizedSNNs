@@ -137,6 +137,7 @@ def prep_input(x_local, input_mode):
         return down_spikes
     #bi directional
     if input_mode == 2:
+        import pdb; pdb.set_trace()
         return x_local
     #bi directional two channels
     if input_mode == 3:
@@ -567,6 +568,178 @@ class LIFConv2dLayer(nn.Module):
             self.U = quantU.apply(self.U)
         self.S = (self.U >= self.thr).type(self.dtype) #float()
         self.R += self.S * 1#(1-self.gamma)
+
+
+        if test_flag or train_flag:
+            self.U_aux = torch.sigmoid(self.U) # quantize this function.... at some point
+            self.U_aux = self.mpool(self.U_aux)
+
+            rreadout = self.dropout_learning(self.sign_random_readout(self.U_aux.reshape([input_t.shape[0], np.prod(self.out_shape2)]))) * self.dropout_p
+
+            if train_flag:
+                if quantization.global_eb is not None:
+                    loss_gen = quantization.SSE(rreadout, y_local) + self.l1 * 200e-1 * F.relu((self.U+.01)).mean() + self.l2 *1e-1* F.relu(.1-self.U_aux.mean())
+                else:
+                    loss_gen = self.loss_fn(rreadout, y_local) + self.l1 * 200e-1 * F.relu((self.U+.01)).mean() + self.l2 *1e-1* F.relu(.1-self.U_aux.mean())
+                #loss_gen = self.loss_fn(rreadout, y_local) + self.l1 * 200e-1 * F.relu((self.U+.01)).mean() + self.l2 *1e-1* F.relu(.1-self.U_aux.mean())
+            else:
+                loss_gen = None
+        else:
+            loss_gen = None
+            rreadout = torch.tensor([[0]])
+
+
+        return self.mpool(self.S), loss_gen, rreadout.argmax(1)
+
+
+
+class DTNLIFConv2dLayer(nn.Module):
+    def __init__(self, inp_shape, kernel_size, out_channels, tau_syn, tau_mem, tau_ref, delta_t, pooling = 1, padding = 0, bias = True, thr = 1, device=torch.device("cpu"), dtype = torch.float, dropout_p = .5, output_neurons = 10, loss_fn = None, l1 = 0, l2 = 0, PQ_cap = 1, weight_mult = 4e-5):
+        super(LIFConv2dLayer, self).__init__()   
+        self.device = device
+        self.dtype = dtype
+        self.inp_shape = inp_shape
+        self.kernel_size = kernel_size
+        self.out_channels = out_channels         
+        self.output_neurons = output_neurons
+        self.padding = padding
+        self.pooling = pooling
+        self.thr = thr
+        self.PQ_cap = PQ_cap
+        self.weight_mult = weight_mult
+        self.fan_in = kernel_size * kernel_size * inp_shape[0]
+                
+        self.dropout_learning = nn.Dropout(p=dropout_p)
+        self.dropout_p = dropout_p
+        self.l1 = l1
+        self.l2 = l2
+        self.loss_fn = loss_fn
+
+        self.weights = nn.Parameter(torch.empty((self.out_channels, inp_shape[0],  self.kernel_size, self.kernel_size),  device=device, dtype=dtype, requires_grad=True))
+
+        # decide which one you like
+        self.stdv =  1 / np.sqrt(self.fan_in) #/ 250 * 1e-2
+        #self.stdv =  np.sqrt(6 / self.fan_in) #* self.weight_mult
+        if quantization.global_wb is not None:
+            self.L_min = quantization.global_beta/quantization.step_d(torch.tensor([float(quantization.global_wb)]))
+            #self.stdv = np.sqrt(6/self.fan_in) 
+            self.scale = 2 ** round(math.log(self.L_min / self.stdv, 2.0))
+            self.scale = self.scale if self.scale > 1 else 1.0
+            self.L     = np.max([self.stdv, self.L_min])
+            torch.nn.init.uniform_(self.weights, a = -self.L * self.weight_mult, b = self.L* self.weight_mult)
+        else:
+            self.scale = 1
+            torch.nn.init.uniform_(self.weights, a = -self.stdv * self.weight_mult, b = self.stdv* self.weight_mult)
+
+        # bias has a different scale... just why?
+        if bias:
+            self.bias = nn.Parameter(torch.empty(self.out_channels, device=device, dtype=dtype, requires_grad=True))
+            if quantization.global_wb is not None:
+                bias_L = np.max([self.stdv* 1e2, self.L_min])
+                torch.nn.init.uniform_(self.bias, a = -bias_L * self.weight_mult, b = bias_L* self.weight_mult)
+            else:
+                torch.nn.init.uniform_(self.bias, a = -self.stdv* self.weight_mult* 1e2, b = self.stdv* self.weight_mult * 1e2)
+        else:
+            self.register_parameter('bias', None)
+
+        self.mpool = nn.MaxPool2d(kernel_size = self.pooling, stride = self.pooling, padding = (self.pooling-1)//2, return_indices=False)
+        self.out_shape2 = self.mpool(QSConv2dFunctional.apply(torch.zeros((1,)+self.inp_shape, dtype = dtype).to(device), self.weights, self.bias, self.scale, self.padding)).shape[1:] #self.pooling, 
+        self.out_shape = QSConv2dFunctional.apply(torch.zeros((1,)+self.inp_shape, dtype = dtype).to(device), self.weights, self.bias, self.scale, self.padding).shape[1:]
+        
+        self.sign_random_readout = QLinearLayerSign(input_features = np.prod(self.out_shape2), output_features = output_neurons, pass_through = False, bias = False, dtype = self.dtype, device = device).to(device)
+
+        # tau quantization, static hardware friendly values
+        if tau_syn.shape[0] == 2:
+            self.tau_syn = torch.empty(torch.Size(self.inp_shape), dtype = dtype).uniform_(tau_syn[0], tau_syn[1]).to(device)
+            self.beta    = 1. - 1e-3 / self.tau_syn
+            self.tau_syn = 1. / (1. - self.beta)
+        else:
+            self.beta = torch.tensor([1 - delta_t / tau_syn], dtype = dtype).to(device) 
+            self.tau_syn = 1. / (1. - self.beta)
+
+
+        if tau_mem.shape[0] == 2:
+            self.tau_mem = torch.empty(torch.Size(self.inp_shape), dtype = dtype).uniform_(tau_mem[0], tau_mem[1]).to(device)
+            self.alpha   = 1. - 1e-3 / self.tau_mem
+            self.tau_mem = 1. / (1. - self.alpha)
+        else:
+            self.alpha = torch.tensor([1 - delta_t / tau_mem], dtype = dtype).to(device) 
+            self.tau_mem = 1. / (1. - self.alpha)
+
+
+        if tau_ref.shape[0] == 2:
+            self.tau_ref = torch.empty(torch.Size(self.inp_shape), dtype = dtype).uniform_(tau_ref[0], tau_ref[1]).to(device)
+            self.gamma   = 1. - 1e-3 / self.tau_gamma
+            self.tau_ref = 1. / (1. - self.gamma)
+        else:
+            self.gamma = torch.tensor([1 - delta_t / tau_ref], dtype = dtype).to(device)
+            self.tau_ref = 1. / (1. - self.gamma)
+
+        self.r_scale = 1/(1-self.gamma) # the one comes from decolle, best value ?
+        #self.q_scale = self.tau_syn/(1-self.beta)
+        #self.q_scale = self.q_scale.max()
+        # p_scale should be max overall to differentiate input signals
+        #self.p_scale = (self.tau_mem * self.q_scale*self.PQ_cap)/(1-self.alpha)
+        #self.p_scale = self.p_scale.max()
+
+        self.inp_mult_q = self.tau_syn##1/self.PQ_cap * (1-self.beta.max()) #
+        self.inp_mult_p = self.tau_mem##1/self.PQ_cap * (1-self.alpha.max()) #
+        #self.pmult = self.p_scale * self.PQ_cap * self.weight_mult
+
+        # those might be clamped as in chop off values.
+        self.Q_scale = (self.tau_syn/(1-self.beta)).max()
+        self.P_scale = ((self.tau_mem * self.Q_scale)/(1-self.alpha)).max()
+        self.Q_scale = (self.tau_syn/(1-self.beta)).max()
+        self.R_scale = 1/(1-self.gamma)
+
+        if quantization.global_wb is not None:
+            with torch.no_grad():
+                self.weights.data = quantization.quant_w(self.weights.data)
+                if self.bias is not None:
+                    self.bias.data = quantization.quant_w(self.bias.data)
+
+
+    def state_init(self, batch_size):
+        self.P = torch.zeros((batch_size,) + self.inp_shape, dtype = self.dtype).detach().to(self.device)
+        self.Q = torch.zeros((batch_size,) + self.inp_shape, dtype = self.dtype).detach().to(self.device)
+        self.R = torch.zeros((batch_size,) + self.out_shape, dtype = self.dtype).detach().to(self.device)
+        self.S = torch.zeros((batch_size,) + self.out_shape, dtype = self.dtype).detach().to(self.device)
+        self.U = torch.zeros((batch_size,) + self.out_shape, dtype = self.dtype).detach().to(self.device)
+
+    
+    def forward(self, input_t, y_local, train_flag = False, test_flag = False):
+        # probably dont need to quantize because gb steps are arleady in the right level... just clipping
+        if quantization.global_gb is not None:
+            with torch.no_grad():
+                self.weights.data = quantization.clip(self.weights.data/self.weight_mult, quantization.global_gb)*self.weight_mult
+                if self.bias is not None:
+                    self.bias.data = quantization.clip(self.bias.data/self.weight_mult, quantization.global_gb)*self.weight_mult
+        if quantization.global_rfb is not None:
+            # R always using full scale?
+            self.R = quantization.quant01(self.R/self.R_scale, quantization.global_rfb)*self.R_scale
+
+        #self.P, self.R, self.Q = self.alpha * self.P + self.tau_mem * self.Q, self.gamma * self.R, self.beta * self.Q + self.tau_syn * input_t
+        #dtype necessary
+        self.P, self.R, self.Q = self.alpha * self.P + self.inp_mult_p * self.Q, self.gamma * self.R, self.beta * self.Q + self.inp_mult_q * input_t.type(self.dtype)
+
+        if self.PQ_cap != 1:
+            self.P = torch.clamp(self.P, 0, self.P_scale*self.PQ_cap)
+            self.Q = torch.clamp(self.Q, 0, self.Q_scale*self.PQ_cap)
+
+        if quantization.global_pb is not None:
+            self.P = torch.clamp(self.P/(self.P_scale*self.PQ_cap), 0, 1)
+            self.P = quantization.quant01(self.P, quantization.global_pb)*(self.P_scale*self.PQ_cap)
+        if quantization.global_qb is not None:
+            self.Q = torch.clamp(self.Q/(self.Q_scale*self.PQ_cap), 0, 1)
+            self.Q = quantization.quant01(self.Q, quantization.global_qb)*(self.Q_scale*self.PQ_cap)
+
+        #self.U = QSConv2dFunctional.apply(self.P * self.pmult, self.weights, self.bias, self.scale, self.padding) - self.R
+        self.U = QSConv2dFunctional.apply(self.P, self.weights, self.bias, self.scale, self.padding, self.weight_mult) - self.R #* self.r_scale 
+        if quantization.global_ub is not None:
+            self.U = quantU.apply(self.U)
+        self.S = (self.U >= self.thr).type(self.dtype)
+        self.S = (self.U <= -self.thr).type(self.dtype)*-1
+        self.R += self.S * self.thr#(1-self.gamma)
 
 
         if test_flag or train_flag:
