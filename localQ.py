@@ -134,9 +134,9 @@ def prep_input(x_local, input_mode):
         return x_local
     #bi directional
     if input_mode == 2:
-        import pdb; pdb.set_trace()
         x_local[:,0,:,:] *= -1
         new_spikes = x_local[:,0,:,:] + x_local[:,1,:,:]
+        new_spikes = new_spikes.reshape([x_local.shape[0], 1, x_local.shape[2], x_local.shape[3]])
         new_spikes[new_spikes > 0] = 1
         new_spikes[new_spikes < 0] = -1
         return new_spikes
