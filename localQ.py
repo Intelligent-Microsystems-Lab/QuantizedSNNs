@@ -595,7 +595,7 @@ class LIFConv2dLayer(nn.Module):
 
 class DTNLIFConv2dLayer(nn.Module):
     def __init__(self, inp_shape, kernel_size, out_channels, tau_syn, tau_mem, tau_ref, delta_t, pooling = 1, padding = 0, bias = True, thr = 1, device=torch.device("cpu"), dtype = torch.float, dropout_p = .5, output_neurons = 10, loss_fn = None, l1 = 0, l2 = 0, PQ_cap = 1, weight_mult = 4e-5):
-        super(LIFConv2dLayer, self).__init__()   
+        super(DTNLIFConv2dLayer, self).__init__()   
         self.device = device
         self.dtype = dtype
         self.inp_shape = inp_shape
