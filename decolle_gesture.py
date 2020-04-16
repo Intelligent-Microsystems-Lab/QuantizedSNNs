@@ -29,27 +29,27 @@ else:
 dtype = torch.float32 # originally that was 64, but 32 is way faster
 ms = 1e-3
 
-# # DVS ASL
-# ds_name = "DVS ASL"
-# with open('data/dvs_asl.pickle', 'rb') as f:
-#     data = pickle.load(f)
+# DVS ASL
+ds_name = "DVS ASL"
+with open('data/dvs_asl.pickle', 'rb') as f:
+    data = pickle.load(f)
 
-# data = np.array(data).T
-# np.random.shuffle(data)
-# split_point = int(data.shape[0]*.8)
+data = np.array(data).T
+np.random.shuffle(data)
+split_point = int(data.shape[0]*.8)
 
-# x_train = data[:split_point,0].tolist()
-# y_train = data[:split_point,1].astype(np.int8)   - 1
-# x_test = data[split_point:,0].tolist()
-# y_test = data[split_point:,1].astype(np.int8)   - 1
-# del data
+x_train = data[:split_point,0].tolist()
+y_train = data[:split_point,1].astype(np.int8)   - 1
+x_test = data[split_point:,0].tolist()
+y_test = data[split_point:,1].astype(np.int8)   - 1
+del data
 
-# output_neurons = 24
-# T = 100*ms
-# T_test = 100*ms
-# burnin = 10*ms
-# x_size = 60
-# y_size = 45
+output_neurons = 24
+T = 100*ms
+T_test = 100*ms
+burnin = 10*ms
+x_size = 60
+y_size = 45
 
 
 # # DVS Poker
@@ -73,25 +73,25 @@ ms = 1e-3
 # y_size = 
 
 
-# DVS Gesture
-# load data
-ds_name = "DVS Gesture"
-with open('data/train_dvs_gesture88.pickle', 'rb') as f:
-    data = pickle.load(f)
-x_train = data[0]
-y_train = np.array(data[1], dtype = int) - 1
+# # DVS Gesture
+# # load data
+# ds_name = "DVS Gesture"
+# with open('data/train_dvs_gesture88.pickle', 'rb') as f:
+#     data = pickle.load(f)
+# x_train = data[0]
+# y_train = np.array(data[1], dtype = int) - 1
 
-with open('data/test_dvs_gesture88.pickle', 'rb') as f:
-    data = pickle.load(f)
-x_test = data[0]
-y_test = np.array(data[1], dtype = int) - 1
+# with open('data/test_dvs_gesture88.pickle', 'rb') as f:
+#     data = pickle.load(f)
+# x_test = data[0]
+# y_test = np.array(data[1], dtype = int) - 1
 
-output_neurons = 11
-T = 500*ms
-T_test = 1800*ms
-burnin = 50*ms
-x_size = 32
-y_size = 32
+# output_neurons = 11
+# T = 500*ms
+# T_test = 1800*ms
+# burnin = 50*ms
+# x_size = 32
+# y_size = 32
 
 
 
@@ -123,7 +123,7 @@ epochs = 320
 lr_div = 60
 batch_size = 72
 
-PQ_cap = .75 #.1, .5, etc. # this value has to be carefully choosen
+PQ_cap = 1 #.1, .5, etc. # this value has to be carefully choosen
 weight_mult = 4e-5#np.sqrt(4e-5) # decolle -> 1/p_max 
 quantization.weight_mult = weight_mult
 
