@@ -153,6 +153,8 @@ def sparse_data_generator_DVSGesture(X, y, batch_size, nb_steps, shuffle, device
         batch_index = sample_index[batch_size*counter:batch_size*(counter+1)]
         all_events = np.array([[],[],[],[],[]]).T
 
+        y_batch = torch.tensor(y[batch_index], dtype = int)
+
         for bc,idx in enumerate(batch_index):
             # stochasticity here -> we sample
             if test:
@@ -170,14 +172,14 @@ def sparse_data_generator_DVSGesture(X, y, batch_size, nb_steps, shuffle, device
         all_events = all_events[:,[0,4,2,3,1]]
         all_events[:, 2] = all_events[:, 2]//ds
         all_events[:, 3] = all_events[:, 3]//ds
-        sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(all_events[:,[True, True, True, True, True]].T), torch.ones_like(torch.tensor(all_events[:,0])), torch.Size([batch_size,2,x_size,y_size,int(nb_steps+1)])).to_dense().type(torch.int16)
+        sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(all_events[:,[True, True, True, True, True]].T), torch.ones_like(torch.tensor(all_events[:,0])), torch.Size([len(y_batch),2,x_size,y_size,int(nb_steps+1)])).to_dense().type(torch.int16)
 
         # quick trick...
         #sparse_matrix[sparse_matrix != 0] = 1
         #sparse_matrix[sparse_matrix > 0] = 1
         #sparse_matrix = sparse_matrix.reshape(torch.Size([sparse_matrix.shape[0], 1, sparse_matrix.shape[1], sparse_matrix.shape[2], sparse_matrix.shape[3]]))
 
-        y_batch = torch.tensor(y[batch_index], dtype = int)
+        
         try:
             torch.cuda.empty_cache()
             yield sparse_matrix.to(device=device), y_batch.to(device=device)
