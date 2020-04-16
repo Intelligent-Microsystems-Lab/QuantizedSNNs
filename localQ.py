@@ -19,7 +19,7 @@ lc_ampl = .5
 
 
 
-def create_graph(plot_file_name, diff_layers_acc):
+def create_graph(plot_file_name, diff_layers_acc, ds_name):
 
     bit_string = str(quantization.global_wb) + str(quantization.global_ub) + str(quantization.global_pb) + str(quantization.global_qb) + str(quantization.global_rfb) + " " + str(quantization.global_sb) + str(quantization.global_ab) + str(quantization.global_sig) + str(quantization.global_eb) + str(quantization.global_gb)
     bit_string = bit_string.replace("None", "f")
@@ -27,7 +27,7 @@ def create_graph(plot_file_name, diff_layers_acc):
 
     fig, ax1 = plt.subplots()
     fig.set_size_inches(8.4, 4.8)
-    plt.title("DVS Gesture " + bit_string + " Test3: " + str(np.round( max(diff_layers_acc['test3']).item(), 4)))
+    plt.title(ds_name + " "+ bit_string + " Test3: " + str(np.round( max(diff_layers_acc['test3']).item(), 4)))
     ax1.set_xlabel('Epochs')
     ax1.set_ylabel('Accuracy')
     t = np.arange(len(diff_layers_acc['loss']))
