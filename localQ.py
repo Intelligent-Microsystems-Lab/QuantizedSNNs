@@ -170,8 +170,7 @@ def sparse_data_generator_DVSGesture(X, y, batch_size, nb_steps, shuffle, device
         all_events = all_events[:,[0,4,2,3,1]]
         all_events[:, 2] = all_events[:, 2]//ds
         all_events[:, 3] = all_events[:, 3]//ds
-        import pdb; pdb.set_trace()
-        sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(all_events[:,[True, True, True, True, True]].T), torch.ones_like(torch.tensor(all_events[:,0])), torch.Size([batch_size,2,x_size,y_size])).to_dense().type(torch.int16)
+        sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(all_events[:,[True, True, True, True, True]].T), torch.ones_like(torch.tensor(all_events[:,0])), torch.Size([batch_size,2,x_size,y_size,int(nb_steps+1)])).to_dense().type(torch.int16)
 
         # quick trick...
         #sparse_matrix[sparse_matrix != 0] = 1

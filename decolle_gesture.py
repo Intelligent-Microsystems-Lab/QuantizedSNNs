@@ -48,8 +48,8 @@ output_neurons = 24
 T = 100*ms
 T_test = 100*ms
 burnin = 10*ms
-x_size = 59
-y_size = 44
+x_size = 60
+y_size = 45
 
 
 # # DVS Poker
