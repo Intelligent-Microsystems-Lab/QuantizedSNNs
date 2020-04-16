@@ -30,26 +30,26 @@ dtype = torch.float32 # originally that was 64, but 32 is way faster
 ms = 1e-3
 
 # # DVS ASL
-ds_name = "DVS ASL"
-with open('data/dvs_asl.pickle', 'rb') as f:
-    data = pickle.load(f)
+# ds_name = "DVS ASL"
+# with open('data/dvs_asl.pickle', 'rb') as f:
+#     data = pickle.load(f)
 
-data = np.array(data).T
-np.random.shuffle(data)
-split_point = int(data.shape[0]*.8)
+# data = np.array(data).T
+# np.random.shuffle(data)
+# split_point = int(data.shape[0]*.8)
 
-x_train = data[:split_point,0].tolist()
-y_train = data[:split_point,1].astype(np.int8)   - 1
-x_test = data[split_point:,0].tolist()
-y_test = data[split_point:,1].astype(np.int8)   - 1
-del data
+# x_train = data[:split_point,0].tolist()
+# y_train = data[:split_point,1].astype(np.int8)   - 1
+# x_test = data[split_point:,0].tolist()
+# y_test = data[split_point:,1].astype(np.int8)   - 1
+# del data
 
-output_neurons = 24
-T = 100*ms
-T_test = 100*ms
-burnin = 10*ms
-x_size = 60
-y_size = 45
+# output_neurons = 24
+# T = 100*ms
+# T_test = 100*ms
+# burnin = 10*ms
+# x_size = 60
+# y_size = 45
 
 
 # # DVS Poker
@@ -73,25 +73,25 @@ y_size = 45
 # y_size = 
 
 
-# # DVS Gesture
-# # load data
-# ds_name = "DVS Gesture"
-# with open('data/train_dvs_gesture88.pickle', 'rb') as f:
-#     data = pickle.load(f)
-# x_train = data[0]
-# y_train = np.array(data[1], dtype = int) - 1
+# DVS Gesture
+# load data
+ds_name = "DVS Gesture"
+with open('data/train_dvs_gesture88.pickle', 'rb') as f:
+    data = pickle.load(f)
+x_train = data[0]
+y_train = np.array(data[1], dtype = int) - 1
 
-# with open('data/test_dvs_gesture88.pickle', 'rb') as f:
-#     data = pickle.load(f)
-# x_test = data[0]
-# y_test = np.array(data[1], dtype = int) - 1
+with open('data/test_dvs_gesture88.pickle', 'rb') as f:
+    data = pickle.load(f)
+x_test = data[0]
+y_test = np.array(data[1], dtype = int) - 1
 
-# output_neurons = 11
-# T = 500*ms
-# T_test = 1800*ms
-# burnin = 50*ms
-# x_size = 32
-# y_size = 32
+output_neurons = 11
+T = 500*ms
+T_test = 1800*ms
+burnin = 50*ms
+x_size = 32
+y_size = 32
 
 
 
@@ -116,7 +116,7 @@ quantization.global_beta = 1.5#quantization.step_d(quantization.global_wb)-.5 #1
 
 # set parameters
 delta_t = 1*ms
-input_mode = 0
+input_mode = 3
 ds = 4 # downsampling
 
 epochs = 320
@@ -139,21 +139,21 @@ tau_syn = torch.tensor([5*ms, 10*ms], dtype = dtype).to(device) #tau_syn = torch
 
 sl1_loss = torch.nn.MSELoss()#torch.nn.SmoothL1Loss()
 
-# construct layers
-thr = torch.tensor([.0], dtype = dtype).to(device)
-layer1 = LIFConv2dLayer(inp_shape = (2, x_size, y_size), kernel_size = 7, out_channels = 64, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, PQ_cap = PQ_cap, weight_mult = weight_mult, dtype = dtype).to(device)
+# # construct layers
+# thr = torch.tensor([.0], dtype = dtype).to(device)
+# layer1 = LIFConv2dLayer(inp_shape = (2, x_size, y_size), kernel_size = 7, out_channels = 64, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, PQ_cap = PQ_cap, weight_mult = weight_mult, dtype = dtype).to(device)
 
-layer2 = LIFConv2dLayer(inp_shape = layer1.out_shape2, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 1, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, PQ_cap = PQ_cap, weight_mult = weight_mult, dtype = dtype).to(device)
+# layer2 = LIFConv2dLayer(inp_shape = layer1.out_shape2, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 1, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, PQ_cap = PQ_cap, weight_mult = weight_mult, dtype = dtype).to(device)
 
-layer3 = LIFConv2dLayer(inp_shape = layer2.out_shape2, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, PQ_cap = PQ_cap, weight_mult = weight_mult, dtype = dtype).to(device)
+# layer3 = LIFConv2dLayer(inp_shape = layer2.out_shape2, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, PQ_cap = PQ_cap, weight_mult = weight_mult, dtype = dtype).to(device)
 
 
-# thr = torch.tensor([.3], dtype = dtype).to(device) 
-# layer1 = DTNLIFConv2dLayer(inp_shape = (1, 32, 32), kernel_size = 7, out_channels = 64, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, PQ_cap = PQ_cap, weight_mult = weight_mult, dtype = dtype).to(device)
+thr = torch.tensor([.3], dtype = dtype).to(device) 
+layer1 = DTNLIFConv2dLayer(inp_shape = (2, 32, 32), kernel_size = 7, out_channels = 64, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, PQ_cap = PQ_cap, weight_mult = weight_mult, dtype = dtype).to(device)
 
-# layer2 = DTNLIFConv2dLayer(inp_shape = layer1.out_shape2, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 1, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, PQ_cap = PQ_cap, weight_mult = weight_mult, dtype = dtype).to(device)
+layer2 = DTNLIFConv2dLayer(inp_shape = layer1.out_shape2, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 1, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, PQ_cap = PQ_cap, weight_mult = weight_mult, dtype = dtype).to(device)
 
-# layer3 = DTNLIFConv2dLayer(inp_shape = layer2.out_shape2, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, PQ_cap = PQ_cap, weight_mult = weight_mult, dtype = dtype).to(device)
+layer3 = DTNLIFConv2dLayer(inp_shape = layer2.out_shape2, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, PQ_cap = PQ_cap, weight_mult = weight_mult, dtype = dtype).to(device)
 
 all_parameters = list(layer1.parameters()) + list(layer2.parameters()) + list(layer3.parameters())
 
