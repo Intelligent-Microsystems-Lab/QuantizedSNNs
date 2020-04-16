@@ -15,7 +15,7 @@ import uuid
 
 import quantization
 import localQ
-from localQ import sparse_data_generator_Static, sparse_data_generator_DVSGesture, sparse_data_generator_DVSPoker, LIFConv2dLayer, prep_input, acc_comp, create_graph, hist_U_fun, DTNLIFConv2dLayer
+from localQ import sparse_data_generator_Static, sparse_data_generator_DVSGesture, sparse_data_generator_DVSPoker, LIFConv2dLayer, prep_input, acc_comp, create_graph, DTNLIFConv2dLayer
 
 import line_profiler
 
