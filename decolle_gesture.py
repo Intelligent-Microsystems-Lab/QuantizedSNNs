@@ -96,17 +96,17 @@ y_size = 45
 
 
 # set quant level
-quantization.global_wb  = 6
-quantization.global_ub  = 8
-quantization.global_qb  = 8
-quantization.global_pb  = 10
-quantization.global_rfb = 4
+quantization.global_wb  = None
+quantization.global_ub  = None
+quantization.global_qb  = None
+quantization.global_pb  = None
+quantization.global_rfb = None
 
-quantization.global_sb  = 4
-quantization.global_ab  = 6
-quantization.global_sig = 6
-quantization.global_gb  = 12
-quantization.global_eb  = 8
+quantization.global_sb  = None
+quantization.global_ab  = None
+quantization.global_sig = None
+quantization.global_gb  = None
+quantization.global_eb  = None
 
 quantization.global_rb = 16
 quantization.global_lr = 1#max([int(quantization.global_gb/8), 1]) if quantization.global_gb is not None else None
@@ -182,7 +182,7 @@ for e in range(epochs):
     start_time = time.time()
 
     # training
-    for x_local, y_local in sparse_data_generator_DVSGesture(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = True, test = False, device = device, ds = ds, x_size = x_size, y_size = y_size):
+    for x_local, y_local in sparse_data_generator_DVSGesture(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = True, test = True, device = device, ds = ds, x_size = x_size, y_size = y_size):
 
         y_onehot = torch.Tensor(len(y_local), output_neurons).to(device).type(dtype)
         y_onehot.zero_()
