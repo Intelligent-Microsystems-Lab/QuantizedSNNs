@@ -234,7 +234,7 @@ for e in range(epochs):
         
     
     # test accuracy
-    for x_local, y_local in sparse_data_generator_DVSGesture(x_test, y_test, batch_size = batch_size, nb_steps = T_test / ms, shuffle = True, device = device, test = False, ds = ds, x_size = x_size, y_size = y_size):
+    for x_local, y_local in sparse_data_generator_DVSGesture(x_test, y_test, batch_size = batch_size, nb_steps = T_test / ms, shuffle = True, device = device, test = True, ds = ds, x_size = x_size, y_size = y_size):
         rread_hist1_test = []
         rread_hist2_test = []
         rread_hist3_test = []
