@@ -18,63 +18,6 @@ global lc_ampl
 lc_ampl = .5
 
 
-global hist_U
-hist_U = torch.zeros([1000]).to(torch.device("cuda"))
-
-global hist_Ulog
-hist_Ulog = torch.zeros([1000]).to(torch.device("cuda"))
-
-def hist_U_fun(cur_U, title, tau = None, alpha = None, hist_epoch = False):
-    global hist_U
-    global hist_Ulog
-
-    if hist_epoch:
-
-        upper_bounds = tau/(1-alpha)
-        tempU = torch.log2(cur_U/upper_bounds * 1000)
-        tempU[tempU < 0] = 0
-        tempU /= np.log2(1000)
-
-        plt.clf()
-        fig, ax1 = plt.subplots()
-        fig.set_size_inches(8.4, 4.8)
-        ax1 = sns.distplot(tempU.flatten().cpu().detach().numpy())
-        plt.savefig('figures/'+title.split(' ')[-1]+"_"+str(uuid.uuid1())+'.png')
-        plt.ylabel('Density')
-        plt.close()
-
-        plt.clf()
-        fig, ax1 = plt.subplots()
-        fig.set_size_inches(8.4, 4.8)
-        ax1.plot(np.linspace(0, 1000, 1000), (hist_U/hist_U.sum()).cpu().detach().numpy())
-        plt.ylabel('Density')
-        plt.title(title)
-        plt.savefig('figures/'+title.split(' ')[-1]+"_"+str(uuid.uuid1())+'.png')
-        plt.close()
-
-
-        plt.clf()
-        fig, ax1 = plt.subplots()
-        fig.set_size_inches(8.4, 4.8)
-        #ax1.plot(np.linspace(-4, 2, 10000) ,(hist_U/hist_U.sum()).cpu().detach().numpy())
-        ax1.plot(np.linspace(0, 1000, 1000)[1:], (hist_Ulog/hist_Ulog.sum()).cpu().detach().numpy()[1:])
-        plt.ylabel('Density')
-        plt.xlabel('log')
-        plt.title(title)
-        plt.savefig('figures/'+title.split(' ')[-1]+"_"+str(uuid.uuid1())+'.png')
-        plt.close()
-
-        hist_U = torch.zeros([1000]).to(torch.device("cuda"))
-    else:
-        upper_bounds = tau/(1-alpha)
-        #cur_U = quantization.quant_nosign(cur_U/upper_bounds, 8)
-        #hist_U = hist_U + torch.histc(cur_U, bins = 10000, min=-4, max=2)
-        #hist_U = hist_U + torch.histc(cur_U, bins = 10000, min=0, max=10000)
-
-        hist_U = hist_U + torch.histc(cur_U/upper_bounds, bins = 1000, min=0, max=1)
-        hist_Ulog = hist_Ulog + torch.histc(torch.log((cur_U/upper_bounds)+1), bins = 1000, min=0, max=np.log(2))
-
-
 
 def create_graph(plot_file_name, diff_layers_acc):
 
@@ -118,8 +61,8 @@ def clee_spikes(T, rates):
     spikes[np.random.binomial(1, (1000. - rates.flatten())/1000, size=(T, np.prod(rates.shape))).astype('bool')] = 0
     return spikes.T.reshape((rates.shape + (T,)))
 
-def prep_input(x_local, input_mode):
-    #two channel trick
+def prep_input(x_local, input_mode, channels = 2):
+    #two channel trick / decolle
     if input_mode == 0:
         x_local[x_local > 0] = 1
 
@@ -145,11 +88,16 @@ def prep_input(x_local, input_mode):
         down_spikes = x_local
         down_spikes[down_spikes != 0] = 1
         return down_spikes
-        #bi directional two channels
+    #bi directional two channels
     if input_mode == 3:
-        down_spikes = torch.cat((x_local, x_local), dim = 1)
-        down_spikes[down_spikes != 0] = 1
-        return down_spikes
+        x_local[:,0,:,:] *= -1
+        new_spikes = x_local[:,0,:,:] + x_local[:,1,:,:]
+        new_spikes = new_spikes.reshape([x_local.shape[0], 1, x_local.shape[2], x_local.shape[3]])
+        new_spikes[new_spikes > 0] = 1
+        new_spikes[new_spikes < 0] = -1
+
+        new_spikes = torch.cat((new_spikes, new_spikes), dim = 1)
+        return new_spikes
     else:
         return x_local
 
@@ -190,7 +138,7 @@ def sparse_data_generator_DVSPoker(X, y, batch_size, nb_steps, shuffle, device, 
             counter += 1
         except StopIteration:
             return
-def sparse_data_generator_DVSGesture(X, y, batch_size, nb_steps, shuffle, device, ds = 4, test = False):
+def sparse_data_generator_DVSGesture(X, y, batch_size, nb_steps, shuffle, device, ds = 4, test = False, x_size = 32, y_size = 32):
     number_of_batches = int(np.ceil(len(y)/batch_size))
     sample_index = np.arange(len(y))
     nb_steps = nb_steps -1
@@ -222,7 +170,7 @@ def sparse_data_generator_DVSGesture(X, y, batch_size, nb_steps, shuffle, device
         all_events = all_events[:,[0,4,2,3,1]]
         all_events[:, 2] = all_events[:, 2]//ds
         all_events[:, 3] = all_events[:, 3]//ds
-        sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(all_events[:,[True, True, True, True, True]].T), torch.ones_like(torch.tensor(all_events[:,0]))).to_dense().type(torch.int16)
+        sparse_matrix = torch.sparse.FloatTensor(torch.LongTensor(all_events[:,[True, True, True, True, True]].T), torch.ones_like(torch.tensor(all_events[:,0])), torch.Size([x_size,y_size])).to_dense().type(torch.int16)
 
         # quick trick...
         #sparse_matrix[sparse_matrix != 0] = 1
