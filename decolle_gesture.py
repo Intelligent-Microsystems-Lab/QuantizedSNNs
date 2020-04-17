@@ -99,9 +99,9 @@ y_size = 32
 quantization.global_wb  = 6
 quantization.global_qb  = 8
 quantization.global_pb  = 10
-quantization.global_rfb = 6
+quantization.global_rfb = 4
 
-quantization.global_sb  = 4
+quantization.global_sb  = 2
 quantization.global_gb  = 12
 quantization.global_eb  = 8
 
