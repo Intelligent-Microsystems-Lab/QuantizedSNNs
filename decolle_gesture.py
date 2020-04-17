@@ -102,12 +102,12 @@ quantization.global_pb  = 10
 quantization.global_rfb = 4
 
 quantization.global_sb  = 4
-quantization.global_gb  = 12
+quantization.global_gb  = 10
 quantization.global_eb  = 8
 
-quantization.global_ub  = 4
-quantization.global_ab  = 4
-quantization.global_sig = 4
+quantization.global_ub  = 8
+quantization.global_ab  = 8
+quantization.global_sig = 8
 
 quantization.global_rb = 16
 quantization.global_lr = 1#max([int(quantization.global_gb/8), 1]) if quantization.global_gb is not None else None
