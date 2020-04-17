@@ -102,7 +102,7 @@ quantization.global_pb  = 10
 quantization.global_rfb = 4
 
 quantization.global_sb  = 4
-quantization.global_gb  = 10
+quantization.global_gb  = 14
 quantization.global_eb  = 8
 
 quantization.global_ub  = 8
