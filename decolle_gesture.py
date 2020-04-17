@@ -97,9 +97,9 @@ y_size = 32
 
 # set quant level
 quantization.global_wb  = 6
-quantization.global_qb  = 4
-quantization.global_pb  = 6
-quantization.global_rfb = 4
+quantization.global_qb  = 8
+quantization.global_pb  = 10
+quantization.global_rfb = 2
 
 quantization.global_sb  = 4
 quantization.global_gb  = 12
