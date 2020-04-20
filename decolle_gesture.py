@@ -96,18 +96,18 @@ y_size = 32
 
 
 # set quant level
-quantization.global_wb  = 6
-quantization.global_qb  = 8
-quantization.global_pb  = 10
-quantization.global_rfb = 4
+quantization.global_wb  = 8
+quantization.global_qb  = 10
+quantization.global_pb  = 12
+quantization.global_rfb = 2
 
-quantization.global_sb  = 4
-quantization.global_gb  = 12
-quantization.global_eb  = 8
+quantization.global_sb  = 6
+quantization.global_gb  = 10
+quantization.global_eb  = 6
 
-quantization.global_ub  = 8
-quantization.global_ab  = 8
-quantization.global_sig = 8
+quantization.global_ub  = 6
+quantization.global_ab  = 6
+quantization.global_sig = 6
 
 quantization.global_rb = 16
 quantization.global_lr = 1#max([int(quantization.global_gb/8), 1]) if quantization.global_gb is not None else None
