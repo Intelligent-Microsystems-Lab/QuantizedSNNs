@@ -103,7 +103,7 @@ quantization.global_rfb = 2
 
 quantization.global_sb  = 6
 quantization.global_gb  = 10
-quantization.global_eb  = 6
+quantization.global_eb  = 10
 
 quantization.global_ub  = 6
 quantization.global_ab  = 6
