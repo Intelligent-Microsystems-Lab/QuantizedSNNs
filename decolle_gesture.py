@@ -102,7 +102,7 @@ quantization.global_pb  = 12
 quantization.global_rfb = 2
 
 quantization.global_sb  = 6
-quantization.global_gb  = 12
+quantization.global_gb  = 10
 quantization.global_eb  = 6
 
 quantization.global_ub  = 6
@@ -130,7 +130,7 @@ quantization.weight_mult = weight_mult
 
 dropout_p = .5
 localQ.lc_ampl = .5
-l1 = .001
+l1 = .01 
 l2 = .001
 
 
