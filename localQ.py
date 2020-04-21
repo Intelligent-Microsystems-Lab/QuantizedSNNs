@@ -375,8 +375,7 @@ class QSConv2dFunctional(torch.autograd.Function):
             else:
                 grad_bias = quant_error.sum((0,2,3)).squeeze(0)
 
-        import pdb; pdb.set_trace()
-        #quantization.global_wupdate += 
+        quantization.global_wupdate += grad_bias.nonzero().shape[0] + grad_weight.nonzero().shape[0] 
         return grad_input, grad_weight, grad_bias, None, None, None, None
 
 
