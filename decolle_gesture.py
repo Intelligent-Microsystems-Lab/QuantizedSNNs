@@ -138,6 +138,7 @@ tau_mem = torch.tensor([5*ms, 35*ms], dtype = dtype).to(device)#tau_mem = torch.
 tau_ref = torch.tensor([1/.35*ms], dtype = dtype).to(device)
 tau_syn = torch.tensor([5*ms, 10*ms], dtype = dtype).to(device) #tau_syn = torch.tensor([5*ms, 10*ms], dtype = dtype).to(device)
 
+
 sl1_loss = torch.nn.MSELoss()#torch.nn.SmoothL1Loss()
 
 # # # construct layers
@@ -167,8 +168,8 @@ else:
 
 
 
-diff_layers_acc = {'train1': [], 'test1': [],'train2': [], 'test2': [],'train3': [], 'test3': [], 'loss':[]}
-print("WUPQR SASigEG Quantization: {0}{1}{2}{3}{4} {5}{6}{7}{8}{9} l1 {10:.3f} l2 {11:.3f} Inp {12} LR {13} Drop {14} Cap {15} thr {16}".format(quantization.global_wb, quantization.global_ub, quantization.global_pb, quantization.global_qb, quantization.global_rfb, quantization.global_sb, quantization.global_ab, quantization.global_sig, quantization.global_eb, quantization.global_gb, l1, l2, input_mode, quantization.global_lr if quantization.global_lr != None else quantization.global_lr_sgd, dropout_p, PQ_cap, thr))
+diff_layers_acc = {'train1': [], 'test1': [],'train2': [], 'test2': [],'train3': [], 'test3': [], 'loss':[], 'act_train1':[], 'act_train2':[], 'act_train3':[], 'act_test1':[], 'act_test2':[], 'act_test3':[]}
+print("WUPQR SASigEG Quantization: {0}{1}{2}{3}{4} {5}{6}{7}{8}{9} l1 {10:.3f} l2 {11:.3f} Inp {12} LR {13} Drop {14} Cap {15} thr {16}".format(quantization.global_wb, quantization.global_ub, quantization.global_pb, quantization.global_qb, quantization.global_rfb, quantization.global_sb, quantization.global_ab, quantization.global_sig, quantization.global_eb, quantization.global_gb, l1, l2, input_mode, quantization.global_lr if quantization.global_lr != None else quantization.global_lr_sgd, dropout_p, PQ_cap, thr.item()))
 plot_file_name = "figures/DVS_WPQUEG{0}{1}{2}{3}{4}{5}{6}_Inp{7}_LR{8}_Drop{9}_thr{10}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb, quantization.global_sb, input_mode, quantization.global_lr, dropout_p, thr)+datetime.datetime.now().strftime("_%Y%m%d_%H%M%S") + ".png"
 print("Epoch Loss      Train1 Train2 Train3 Test1  Test2  Test3  | TrainT   TestT")
 
@@ -180,7 +181,8 @@ for e in range(epochs):
             opt.param_groups[-1]['lr'] /= 5
 
 
-    batch_corr = {'train1': [], 'test1': [],'train2': [], 'test2': [],'train3': [], 'test3': [], 'loss':[]}
+    batch_corr = {'train1': [], 'test1': [],'train2': [], 'test2': [],'train3': [], 'test3': [], 'loss':[], 'act_train1':0, 'act_train2':0, 'act_train3':0, 'act_test1':0, 'act_test2':0, 'act_test3':0}
+    quantization.global_wupdate = 0 
     start_time = time.time()
 
     # training
@@ -220,18 +222,23 @@ for e in range(epochs):
                 rread_hist3_train.append(temp_corr3)
 
 
+            batch_corr['act_train1'] += int(out_spikes1.sum())
+            batch_corr['act_train2'] += int(out_spikes2.sum())
+            batch_corr['act_train3'] += int(out_spikes3.sum())
 
         batch_corr['train1'].append(acc_comp(rread_hist1_train, y_local, True))
         batch_corr['train2'].append(acc_comp(rread_hist2_train, y_local, True))
         batch_corr['train3'].append(acc_comp(rread_hist3_train, y_local, True))
         del x_local, y_local, y_onehot
 
-
     train_time = time.time()
 
     diff_layers_acc['train1'].append(torch.cat(batch_corr['train1']).mean())
     diff_layers_acc['train2'].append(torch.cat(batch_corr['train2']).mean())
     diff_layers_acc['train3'].append(torch.cat(batch_corr['train3']).mean())
+    diff_layers_acc['act_train1'].append(batch_corr['act_train1'])
+    diff_layers_acc['act_train2'].append(batch_corr['act_train2'])
+    diff_layers_acc['act_train3'].append(batch_corr['act_train3'])
     diff_layers_acc['loss'].append(np.mean(loss_hist)/4)
         
     
@@ -240,6 +247,7 @@ for e in range(epochs):
         rread_hist1_test = []
         rread_hist2_test = []
         rread_hist3_test = []
+        act_spikes = [0,0,0]
 
         y_onehot = torch.Tensor(len(y_local), output_neurons).to(device).type(dtype)
         y_onehot.zero_()
@@ -262,6 +270,10 @@ for e in range(epochs):
                 rread_hist2_test.append(temp_corr2)
                 rread_hist3_test.append(temp_corr3)
 
+            batch_corr['act_test1'] += int(out_spikes1.sum())
+            batch_corr['act_test2'] += int(out_spikes2.sum())
+            batch_corr['act_test3'] += int(out_spikes3.sum())
+
         batch_corr['test1'].append(acc_comp(rread_hist1_test, y_local, True))
         batch_corr['test2'].append(acc_comp(rread_hist2_test, y_local, True))
         batch_corr['test3'].append(acc_comp(rread_hist3_test, y_local, True))
@@ -272,13 +284,17 @@ for e in range(epochs):
     diff_layers_acc['test1'].append(torch.cat(batch_corr['test1']).mean())
     diff_layers_acc['test2'].append(torch.cat(batch_corr['test2']).mean())
     diff_layers_acc['test3'].append(torch.cat(batch_corr['test3']).mean())
+    diff_layers_acc['act_test1'].append(batch_corr['act_test1'])
+    diff_layers_acc['act_test2'].append(batch_corr['act_test2'])
+    diff_layers_acc['act_test3'].append(batch_corr['act_test3'])
 
     print("{0:02d}    {1:.3E} {2:.4f} {3:.4f} {4:.4f} {5:.4f} {6:.4f} {7:.4f} | {8:.4f} {9:.4f}".format(e+1, diff_layers_acc['loss'][-1], diff_layers_acc['train1'][-1], diff_layers_acc['train2'][-1], diff_layers_acc['train3'][-1], diff_layers_acc['test1'][-1], diff_layers_acc['test2'][-1], diff_layers_acc['test3'][-1], train_time - start_time, inf_time - train_time))
     create_graph(plot_file_name, diff_layers_acc, ds_name)
 
 
 # saving results/weights
-results = {'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer2':[layer2.weights.detach().cpu(), layer2.bias.detach().cpu()], 'layer3':[layer3.weights.detach().cpu(), layer3.bias.detach().cpu()], 'acc': diff_layers_acc, 'fname':plot_file_name}
+args_compact = [delta_t, input_mode, ds, epochs, lr_div, batch_size, PQ_cap, weight_mult, dropout_p, localQ.lc_ampl, l1, l2, tau_mem, tau_ref, tau_syn, thr, quantization.global_wb, quantization.global_qb, quantization.global_pb, quantization.global_rfb, quantization.global_sb, quantization.global_gb, quantization.global_eb, quantization.global_ub, quantization.global_ab, quantization.global_sig, quantization.global_rb, quantization.global_lr, quantization.global_lr_sgd, quantization.global_beta]
+results = {'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer2':[layer2.weights.detach().cpu(), layer2.bias.detach().cpu()], 'layer3':[layer3.weights.detach().cpu(), layer3.bias.detach().cpu()], 'acc': diff_layers_acc, 'fname':plot_file_name, 'args': args_compact}
 
 with open('results/'+str(uuid.uuid1())+'.pkl', 'wb') as f:
     pickle.dump(results, f)
