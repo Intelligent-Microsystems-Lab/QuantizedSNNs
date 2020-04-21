@@ -93,12 +93,12 @@ burnin = 50*ms
 x_size = 32
 y_size = 32
 
-
+change_diff = -1
 
 # set quant level
 quantization.global_wb  = 8
-quantization.global_qb  = 10
-quantization.global_pb  = 12
+quantization.global_qb  = 10 + change_diff
+quantization.global_pb  = 12 + change_diff
 quantization.global_rfb = 2
 
 quantization.global_sb  = 6
