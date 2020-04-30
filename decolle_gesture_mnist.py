@@ -149,7 +149,7 @@ ds = 4 # downsampling
 
 epochs = 100
 lr_div = 40
-batch_size = 128
+batch_size = 64
 
 PQ_cap = .75 #.1, .5, etc. # this value has to be carefully choosen
 weight_mult = 4e-5#np.sqrt(4e-5) # decolle -> 1/p_max 
@@ -170,11 +170,11 @@ sl1_loss = torch.nn.MSELoss()#torch.nn.SmoothL1Loss()
 
 # # # construct layers
 thr = torch.tensor([.0], dtype = dtype).to(device)
-layer1 = LIFConv2dLayer(inp_shape = (1, x_size, y_size), kernel_size = 7, out_channels = 64, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, PQ_cap = PQ_cap, weight_mult = weight_mult, dtype = dtype).to(device)
+layer1 = LIFConv2dLayer(inp_shape = (1, x_size, y_size), kernel_size = 7, out_channels = 16, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, PQ_cap = PQ_cap, weight_mult = weight_mult, dtype = dtype).to(device)
 
-layer2 = LIFConv2dLayer(inp_shape = layer1.out_shape2, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 1, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, PQ_cap = PQ_cap, weight_mult = weight_mult, dtype = dtype).to(device)
+layer2 = LIFConv2dLayer(inp_shape = layer1.out_shape2, kernel_size = 7, out_channels = 24, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 1, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, PQ_cap = PQ_cap, weight_mult = weight_mult, dtype = dtype).to(device)
 
-layer3 = LIFConv2dLayer(inp_shape = layer2.out_shape2, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, PQ_cap = PQ_cap, weight_mult = weight_mult, dtype = dtype).to(device)
+layer3 = LIFConv2dLayer(inp_shape = layer2.out_shape2, kernel_size = 7, out_channels = 32, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, PQ_cap = PQ_cap, weight_mult = weight_mult, dtype = dtype).to(device)
 
 
 # thr = torch.tensor([.4], dtype = dtype).to(device) 
@@ -213,7 +213,7 @@ for e in range(epochs):
     start_time = time.time()
 
     # training
-    for x_local, y_local in sparse_data_generator_Static(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, samples = 60000, max_hertz = 50, shuffle = True, device = device):
+    for x_local, y_local in sparse_data_generator_Static(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, samples = 3000, max_hertz = 50, shuffle = True, device = device):
         class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
 
         y_onehot = torch.Tensor(len(y_local), output_neurons).to(device).type(dtype)
@@ -272,7 +272,7 @@ for e in range(epochs):
         
     
     # test accuracy
-    for x_local, y_local in sparse_data_generator_Static(x_test, y_test, batch_size = batch_size, nb_steps = T_test/ms, samples = 10000, max_hertz = 50, shuffle = True, device = device):
+    for x_local, y_local in sparse_data_generator_Static(x_test, y_test, batch_size = batch_size, nb_steps = T_test/ms, samples = 1024, max_hertz = 50, shuffle = True, device = device):
         class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
         rread_hist1_test = []
         rread_hist2_test = []
