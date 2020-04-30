@@ -73,25 +73,51 @@ ms = 1e-3
 # y_size = 
 
 
-# DVS Gesture
+# # DVS Gesture
+# # load data
+# ds_name = "DVS Gesture"
+# with open('data/train_dvs_gesture88.pickle', 'rb') as f:
+#     data = pickle.load(f)
+# x_train = data[0]
+# y_train = np.array(data[1], dtype = int) - 1
+
+# with open('data/test_dvs_gesture88.pickle', 'rb') as f:
+#     data = pickle.load(f)
+# x_test = data[0]
+# y_test = np.array(data[1], dtype = int) - 1
+
+# output_neurons = 11
+# T = 500*ms
+# T_test = 1800*ms
+# burnin = 50*ms
+# x_size = 32
+# y_size = 32
+
 # load data
-ds_name = "DVS Gesture"
-with open('data/train_dvs_gesture88.pickle', 'rb') as f:
-    data = pickle.load(f)
-x_train = data[0]
-y_train = np.array(data[1], dtype = int) - 1
+train_dataset = torchvision.datasets.MNIST('../data', train=True, transform=None, target_transform=None, download=True)
+test_dataset = torchvision.datasets.MNIST('../data', train=False, transform=None, target_transform=None, download=True)
 
-with open('data/test_dvs_gesture88.pickle', 'rb') as f:
-    data = pickle.load(f)
-x_test = data[0]
-y_test = np.array(data[1], dtype = int) - 1
+# standardize data
+x_train = train_dataset.data.type(dtype)/255
+x_train = x_train.reshape((x_train.shape[0],) + (1,) + x_train.shape[1:])
+x_test = test_dataset.data.type(dtype)/255
+x_test = x_test.reshape((x_test.shape[0],) + (1,) + x_test.shape[1:])
+y_train = train_dataset.targets
+y_test  = test_dataset.targets
 
-output_neurons = 11
+shuffle_idx_ta = torch.randperm(len(y_train))
+x_train = x_train[shuffle_idx_ta]
+y_train = y_train[shuffle_idx_ta]
+shuffle_idx_te = torch.randperm(len(y_test))
+x_test = x_test[shuffle_idx_te]
+y_test = y_test[shuffle_idx_te]
+
+output_neurons = 10
 T = 500*ms
-T_test = 1800*ms
+T_test = 1000*ms
 burnin = 50*ms
-x_size = 32
-y_size = 32
+x_size = 28
+y_size = 28
 
 #change_diff = 1
 
@@ -120,9 +146,9 @@ delta_t = 1*ms
 input_mode = 0
 ds = 4 # downsampling
 
-epochs = 320
-lr_div = 60
-batch_size = 72
+epochs = 100
+lr_div = 40
+batch_size = 128
 
 PQ_cap = .75 #.1, .5, etc. # this value has to be carefully choosen
 weight_mult = 4e-5#np.sqrt(4e-5) # decolle -> 1/p_max 
@@ -143,7 +169,7 @@ sl1_loss = torch.nn.MSELoss()#torch.nn.SmoothL1Loss()
 
 # # # construct layers
 thr = torch.tensor([.0], dtype = dtype).to(device)
-layer1 = LIFConv2dLayer(inp_shape = (2, x_size, y_size), kernel_size = 7, out_channels = 64, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, PQ_cap = PQ_cap, weight_mult = weight_mult, dtype = dtype).to(device)
+layer1 = LIFConv2dLayer(inp_shape = (1, x_size, y_size), kernel_size = 7, out_channels = 64, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, PQ_cap = PQ_cap, weight_mult = weight_mult, dtype = dtype).to(device)
 
 layer2 = LIFConv2dLayer(inp_shape = layer1.out_shape2, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 1, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, PQ_cap = PQ_cap, weight_mult = weight_mult, dtype = dtype).to(device)
 
@@ -186,7 +212,8 @@ for e in range(epochs):
     start_time = time.time()
 
     # training
-    for x_local, y_local in sparse_data_generator_DVSGesture(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = True, test = False, device = device, ds = ds, x_size = x_size, y_size = y_size):
+    for x_local, y_local in sparse_data_generator_Static(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, samples = 60000, max_hertz = 50, shuffle = True, device = device):
+        class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
 
         y_onehot = torch.Tensor(len(y_local), output_neurons).to(device).type(dtype)
         y_onehot.zero_()
@@ -244,7 +271,8 @@ for e in range(epochs):
         
     
     # test accuracy
-    for x_local, y_local in sparse_data_generator_DVSGesture(x_test, y_test, batch_size = batch_size, nb_steps = T_test / ms, shuffle = True, device = device, test = True, ds = ds, x_size = x_size, y_size = y_size):
+    for x_local, y_local in sparse_data_generator_Static(x_test, y_test, batch_size = batch_size, nb_steps = T_test/ms, samples = 10000, max_hertz = 50, shuffle = True, device = device):
+        class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
         rread_hist1_test = []
         rread_hist2_test = []
         rread_hist3_test = []

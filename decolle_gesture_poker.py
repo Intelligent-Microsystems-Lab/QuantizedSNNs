@@ -52,46 +52,54 @@ ms = 1e-3
 # y_size = 45
 
 
-# # DVS Poker
-# # load data
-# ds_name = "DVS Poker"
-# with open('../slow_poker_500_train.pickle', 'rb') as f:
-#     data = pickle.load(f)
-# x_train = data[0]
-# y_train = data[1]
-
-# with open('../slow_poker_500_test.pickle', 'rb') as f:
-#     data = pickle.load(f)
-# x_test = data[0]
-# y_test = data[1]
-
-# output_neurons = 4
-# T = 500*ms
-# T_test = 500*ms
-# burnin = 50*ms
-# x_size =
-# y_size = 
-
-
-# DVS Gesture
+# DVS Poker
 # load data
-ds_name = "DVS Gesture"
-with open('data/train_dvs_gesture88.pickle', 'rb') as f:
+ds_name = "DVS Poker"
+with open('../slow_poker_500_train.pickle', 'rb') as f:
     data = pickle.load(f)
-x_train = data[0]
-y_train = np.array(data[1], dtype = int) - 1
+x_train = data[0].tolist()
+for i in range(len(x_train)):
+    x_train[i] = x_train[i][:,[0,3,4,5]] 
+    x_train[i][:,3][x_train[i][:,3] == -1] = 0 
+    x_train[i] = x_train[i].astype('uint32')
+y_train = data[1]
 
-with open('data/test_dvs_gesture88.pickle', 'rb') as f:
+with open('../slow_poker_500_test.pickle', 'rb') as f:
     data = pickle.load(f)
-x_test = data[0]
-y_test = np.array(data[1], dtype = int) - 1
+x_test = data[0].tolist()
+for i in range(len(x_test)):
+    x_test[i] = x_test[i][:,[0,3,4,5]] 
+    x_test[i][:,3][x_test[i][:,3] == -1] = 0 
+    x_test[i] = x_test[i].astype('uint32')
+y_test = data[1]
 
-output_neurons = 11
+output_neurons = 4
 T = 500*ms
-T_test = 1800*ms
+T_test = 500*ms
 burnin = 50*ms
 x_size = 32
 y_size = 32
+
+
+# # DVS Gesture
+# # load data
+# ds_name = "DVS Gesture"
+# with open('data/train_dvs_gesture88.pickle', 'rb') as f:
+#     data = pickle.load(f)
+# x_train = data[0]
+# y_train = np.array(data[1], dtype = int) - 1
+
+# with open('data/test_dvs_gesture88.pickle', 'rb') as f:
+#     data = pickle.load(f)
+# x_test = data[0]
+# y_test = np.array(data[1], dtype = int) - 1
+
+# output_neurons = 11
+# T = 500*ms
+# T_test = 1800*ms
+# burnin = 50*ms
+# x_size = 32
+# y_size = 32
 
 #change_diff = 1
 
@@ -120,8 +128,8 @@ delta_t = 1*ms
 input_mode = 0
 ds = 4 # downsampling
 
-epochs = 320
-lr_div = 60
+epochs = 100
+lr_div = 40
 batch_size = 72
 
 PQ_cap = .75 #.1, .5, etc. # this value has to be carefully choosen
@@ -186,7 +194,7 @@ for e in range(epochs):
     start_time = time.time()
 
     # training
-    for x_local, y_local in sparse_data_generator_DVSGesture(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = True, test = False, device = device, ds = ds, x_size = x_size, y_size = y_size):
+    for x_local, y_local in sparse_data_generator_DVSGesture(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = True, test = True, device = device, ds = ds, x_size = x_size, y_size = y_size):
 
         y_onehot = torch.Tensor(len(y_local), output_neurons).to(device).type(dtype)
         y_onehot.zero_()
