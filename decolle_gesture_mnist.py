@@ -94,6 +94,7 @@ ms = 1e-3
 # y_size = 32
 
 # load data
+ds_name = "MNIST"
 train_dataset = torchvision.datasets.MNIST('../data', train=True, transform=None, target_transform=None, download=True)
 test_dataset = torchvision.datasets.MNIST('../data', train=False, transform=None, target_transform=None, download=True)
 
