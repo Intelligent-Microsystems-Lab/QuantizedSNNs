@@ -212,7 +212,7 @@ for e in range(epochs):
     start_time = time.time()
 
     # training
-    for x_local, y_local in sparse_data_generator_Static(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, samples = 60000, max_hertz = 50, shuffle = True, device = device):
+    for x_local, y_local in sparse_data_generator_Static(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, samples = 3000, max_hertz = 50, shuffle = True, device = device):
         class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
 
         y_onehot = torch.Tensor(len(y_local), output_neurons).to(device).type(dtype)
@@ -271,7 +271,7 @@ for e in range(epochs):
         
     
     # test accuracy
-    for x_local, y_local in sparse_data_generator_Static(x_test, y_test, batch_size = batch_size, nb_steps = T_test/ms, samples = 10000, max_hertz = 50, shuffle = True, device = device):
+    for x_local, y_local in sparse_data_generator_Static(x_test, y_test, batch_size = batch_size, nb_steps = T_test/ms, samples = 1030, max_hertz = 50, shuffle = True, device = device):
         class_rec = torch.zeros([x_local.shape[0], output_neurons]).to(device)
         rread_hist1_test = []
         rread_hist2_test = []
