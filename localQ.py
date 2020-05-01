@@ -575,9 +575,16 @@ class LIFConv2dLayer(nn.Module):
 
             if train_flag:
                 if quantization.global_eb is not None:
-                    loss_gen = quantization.SSE(rreadout, y_local) + self.l1 * 200e-1 * F.relu((self.U+.01)).mean() + self.l2 *1e-1* F.relu(.1-self.U_aux.mean())
+                    part1 = quantization.SSE(rreadout, y_local)
+                    part2 = self.l1 * 200e-1 * F.relu((self.U+.01)).mean()
+                    part3 = self.l2 *1e-1* F.relu(.1-self.U_aux.mean())
+                    loss_gen = part1 + part2 + part3
                 else:
-                    loss_gen = self.loss_fn(rreadout, y_local) + self.l1 * 200e-1 * F.relu((self.U+.01)).mean() + self.l2 *1e-1* F.relu(.1-self.U_aux.mean())
+                    part1 = self.loss_fn(rreadout, y_local)
+                    part2 = self.l1 * 200e-1 * F.relu((self.U+.01)).mean()
+                    part3 = self.l2 *1e-1* F.relu(.1-self.U_aux.mean())
+                    loss_gen = part1 + part2 + part3
+                    #loss_gen = self.loss_fn(rreadout, y_local) + self.l1 * 200e-1 * F.relu((self.U+.01)).mean() + self.l2 *1e-1* F.relu(.1-self.U_aux.mean())
                 #loss_gen = self.loss_fn(rreadout, y_local) + self.l1 * 200e-1 * F.relu((self.U+.01)).mean() + self.l2 *1e-1* F.relu(.1-self.U_aux.mean())
             else:
                 loss_gen = None
@@ -586,7 +593,7 @@ class LIFConv2dLayer(nn.Module):
             rreadout = torch.tensor([[0]])
 
 
-        return self.mpool(self.S), loss_gen, rreadout.argmax(1)
+        return self.mpool(self.S), loss_gen, rreadout.argmax(1), [part1, part2, part3]
 
 
 
