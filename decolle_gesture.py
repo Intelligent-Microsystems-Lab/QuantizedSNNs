@@ -96,18 +96,18 @@ y_size = 32
 #change_diff = 1
 
 # set quant level
-quantization.global_wb  = None #8
-quantization.global_qb  = None #10 
-quantization.global_pb  = None #12 
-quantization.global_rfb = None #2
+quantization.global_wb  = 8
+quantization.global_qb  = 10 
+quantization.global_pb  = 12 
+quantization.global_rfb = 2
 
-quantization.global_sb  = None #6 
-quantization.global_gb  = None #10 
-quantization.global_eb  = None #6 
+quantization.global_sb  = 6 
+quantization.global_gb  = 10 
+quantization.global_eb  = 6 
 
-quantization.global_ub  = None #6
-quantization.global_ab  = None #6
-quantization.global_sig = None #6
+quantization.global_ub  = 6
+quantization.global_ab  = 6
+quantization.global_sig = 6
 
 quantization.global_rb = 16
 quantization.global_lr = 1#max([int(quantization.global_gb/8), 1]) if quantization.global_gb is not None else None
@@ -131,7 +131,7 @@ quantization.weight_mult = weight_mult
 dropout_p = .5
 localQ.lc_ampl = .5
 # 0.0001, 0.001, 0.01, 0.1, .2, .5
-l1 = .0001
+l1 = .5
 l2 = .001
 
 
@@ -208,13 +208,14 @@ for e in range(epochs):
         layer2.state_init(x_local.shape[0])
         layer3.state_init(x_local.shape[0])
 
+        print("-------")
 
         for t in range(int(T/ms)):
             train_flag = (t > int(burnin/ms))
 
-            out_spikes1, temp_loss1, temp_corr1 = layer1.forward(prep_input(x_local[:,:,:,:,t], input_mode), y_onehot, train_flag = train_flag)
-            out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_onehot, train_flag = train_flag)
-            out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_onehot, train_flag = train_flag)
+            out_spikes1, temp_loss1, temp_corr1, lparts1 = layer1.forward(prep_input(x_local[:,:,:,:,t], input_mode), y_onehot, train_flag = train_flag)
+            out_spikes2, temp_loss2, temp_corr2, lparts2 = layer2.forward(out_spikes1, y_onehot, train_flag = train_flag)
+            out_spikes3, temp_loss3, temp_corr3, lparts3 = layer3.forward(out_spikes2, y_onehot, train_flag = train_flag)
             
 
             #P_rec = torch.cat((P_rec, layer1.P.flatten().cpu()))
@@ -227,6 +228,7 @@ for e in range(epochs):
 
 
             if train_flag:
+                print("{0:.4f} {1:.4f} {2:.4f} {3:.4f} {4:.4f} {5:.4f} {6:.4f} {7:.4f} {8:.4f}".format(lparts1[0].item(),lparts1[1].item(),lparts1[2].item(), lparts2[0].item(),lparts2[1].item(),lparts2[2].item(), lparts3[0].item(),lparts3[1].item(),lparts3[2].item()))
                 loss_gen = temp_loss1 + temp_loss2 + temp_loss3
 
                 loss_gen.backward()
@@ -256,7 +258,7 @@ for e in range(epochs):
     diff_layers_acc['act_train1'].append(batch_corr['act_train1'])
     diff_layers_acc['act_train2'].append(batch_corr['act_train2'])
     diff_layers_acc['act_train3'].append(batch_corr['act_train3'])
-    diff_layers_acc['loss'].append(np.mean(loss_hist)/4)
+    diff_layers_acc['loss'].append(np.mean(loss_hist)/3)
     diff_layers_acc['w1update'].append(quantization.global_w1update)
     diff_layers_acc['w2update'].append(quantization.global_w2update)
     diff_layers_acc['w3update'].append(quantization.global_w3update)
@@ -281,9 +283,9 @@ for e in range(epochs):
         for t in range(int(T_test/ms)):
             test_flag = (t > int(burnin/ms))
 
-            out_spikes1, temp_loss1, temp_corr1 = layer1.forward(prep_input(x_local[:,:,:,:,t], input_mode), y_onehot, test_flag = test_flag)
-            out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_onehot, test_flag = test_flag)
-            out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_onehot, test_flag = test_flag)
+            out_spikes1, temp_loss1, temp_corr1, _ = layer1.forward(prep_input(x_local[:,:,:,:,t], input_mode), y_onehot, test_flag = test_flag)
+            out_spikes2, temp_loss2, temp_corr2, _ = layer2.forward(out_spikes1, y_onehot, test_flag = test_flag)
+            out_spikes3, temp_loss3, temp_corr3, _ = layer3.forward(out_spikes2, y_onehot, test_flag = test_flag)
 
             if test_flag:
                 rread_hist1_test.append(temp_corr1)
@@ -325,7 +327,13 @@ with open('results/'+plot_file_name+'.pkl', 'wb') as f:
 
 
 # # how to load
-#with open('results/40357372-7462-11ea-b0e2-a0369ffaa7c0.pkl', 'rb') as f:
-#    # The protocol version used is detected automatically, so we do not
-#    # have to specify it.
-#    data = pickle.load(f)
+with open("results/DVS_WPQUEG8121066106_Inp0_LR1_Drop0.5_20200501_010049.pkl", 'rb') as f:
+   # The protocol version used is detected automatically, so we do not
+   # have to specify it.
+   data = pickle.load(f)
+
+#20200501_005657 - 0.0001
+#20200501_005713 - 0.001
+#20200501_005823 - 0.2
+#20200501_010049 - 0.5
+
