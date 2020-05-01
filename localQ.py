@@ -592,6 +592,9 @@ class LIFConv2dLayer(nn.Module):
                 part3 = None
                 loss_gen = None
         else:
+            part1 = None
+            part2 = None
+            part3 = None
             loss_gen = None
             rreadout = torch.tensor([[0]])
 
