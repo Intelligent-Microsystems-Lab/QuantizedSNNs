@@ -49,6 +49,37 @@ def create_graph(plot_file_name, diff_layers_acc, ds_name):
     plt.savefig(plot_file_name)
     plt.close()
 
+def create_graph2(plot_file_name, diff_layers_acc, ds_name):
+
+    bit_string = str(quantization.global_wb) + str(quantization.global_ub) + str(quantization.global_pb) + str(quantization.global_qb) + str(quantization.global_rfb) + " " + str(quantization.global_sb) + str(quantization.global_ab) + str(quantization.global_sig) + str(quantization.global_eb) + str(quantization.global_gb)
+    bit_string = bit_string.replace("None", "f")
+
+
+    fig, ax1 = plt.subplots()
+    fig.set_size_inches(8.4, 4.8)
+    plt.title(ds_name + " "+ bit_string + " Test3: " + str(np.round( max(diff_layers_acc['test3']).item(), 4)))
+    ax1.set_xlabel('Epochs')
+    ax1.set_ylabel('Accuracy')
+    t = np.arange(len(diff_layers_acc['loss']))
+    ax1.plot(t, diff_layers_acc['train1'], 'g--', label = 'Train 1')
+    ax1.plot(t, diff_layers_acc['train2'], 'b--', label = 'Train 2')
+    ax1.plot(t, diff_layers_acc['train3'], 'r--', label = 'Train 3')
+    ax1.plot(t, diff_layers_acc['test1'], 'g-', label = 'Test 1')
+    ax1.plot(t, diff_layers_acc['test2'], 'b-', label = 'Test 2')
+    ax1.plot(t, diff_layers_acc['test3'], 'r-', label = 'Test 3')
+    ax1.plot([], [], 'k-', label = 'Loss')
+    ax1.legend(bbox_to_anchor=(1.20,1), loc="upper left")
+    #ax1.text(1.20, 0.1, str(max(diff_layers_acc['test3'])))
+
+    ax2 = ax1.twinx()
+    ax2.set_ylabel('Loss')
+    ax2.plot(t, diff_layers_acc['loss'], 'k-', label = 'Loss')
+
+    fig.tight_layout()
+    plt.savefig(plot_file_name)
+    plt.close()
+
+
 
 def acc_comp(rread_hist_train, y_local, bools = False):
     rhts = torch.stack(rread_hist_train, dim = 0)
@@ -138,6 +169,7 @@ def sparse_data_generator_DVSPoker(X, y, batch_size, nb_steps, shuffle, device, 
             counter += 1
         except StopIteration:
             return
+
 def sparse_data_generator_DVSGesture(X, y, batch_size, nb_steps, shuffle, device, ds = 4, test = False, x_size = 32, y_size = 32):
     number_of_batches = int(np.ceil(len(y)/batch_size))
     sample_index = np.arange(len(y))
@@ -375,6 +407,7 @@ class QSConv2dFunctional(torch.autograd.Function):
             else:
                 grad_bias = quant_error.sum((0,2,3)).squeeze(0)
 
+        import pdb; pdb.set_trace()
         quantization.global_wupdate += grad_bias.nonzero().shape[0] + grad_weight.nonzero().shape[0] 
         return grad_input, grad_weight, grad_bias, None, None, None, None
 

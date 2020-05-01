@@ -19,7 +19,9 @@ global_sb = 1
 global_rfb = 8
 global_sig = 8
 
-global_wupdate = 0
+global_w1update = 0
+global_w2update = 0
+global_w3update = 0
 
 global_beta = 1.5
 global_lr = 1 #8

@@ -15,7 +15,7 @@ import uuid
 
 import quantization
 import localQ
-from localQ import sparse_data_generator_Static, sparse_data_generator_DVSGesture, sparse_data_generator_DVSPoker, LIFConv2dLayer, prep_input, acc_comp, create_graph, DTNLIFConv2dLayer
+from localQ import sparse_data_generator_Static, sparse_data_generator_DVSGesture, sparse_data_generator_DVSPoker, LIFConv2dLayer, prep_input, acc_comp, create_graph, DTNLIFConv2dLayer, create_graph2
 
 import line_profiler
 
@@ -124,7 +124,7 @@ epochs = 320
 lr_div = 60
 batch_size = 72
 
-PQ_cap = .75 #.1, .5, etc. # this value has to be carefully choosen
+PQ_cap = .75 #.75 #.1, .5, etc. # this value has to be carefully choosen
 weight_mult = 4e-5#np.sqrt(4e-5) # decolle -> 1/p_max 
 quantization.weight_mult = weight_mult
 
@@ -167,6 +167,8 @@ else:
     #opt = torch.optim.Adamax(all_parameters, lr=1.0e-9, betas=[0., .95])
 
 
+args_compact = [delta_t, input_mode, ds, epochs, lr_div, batch_size, PQ_cap, weight_mult, dropout_p, localQ.lc_ampl, l1, l2, tau_mem, tau_ref, tau_syn, thr, quantization.global_wb, quantization.global_qb, quantization.global_pb, quantization.global_rfb, quantization.global_sb, quantization.global_gb, quantization.global_eb, quantization.global_ub, quantization.global_ab, quantization.global_sig, quantization.global_rb, quantization.global_lr, quantization.global_lr_sgd, quantization.global_beta]
+
 
 diff_layers_acc = {'train1': [], 'test1': [],'train2': [], 'test2': [],'train3': [], 'test3': [], 'loss':[], 'act_train1':[], 'act_train2':[], 'act_train3':[], 'act_test1':[], 'act_test2':[], 'act_test3':[], 'wupdate':[]}
 print("WUPQR SASigEG Quantization: {0}{1}{2}{3}{4} {5}{6}{7}{8}{9} l1 {10:.3f} l2 {11:.3f} Inp {12} LR {13} Drop {14} Cap {15} thr {16}".format(quantization.global_wb, quantization.global_ub, quantization.global_pb, quantization.global_qb, quantization.global_rfb, quantization.global_sb, quantization.global_ab, quantization.global_sig, quantization.global_eb, quantization.global_gb, l1, l2, input_mode, quantization.global_lr if quantization.global_lr != None else quantization.global_lr_sgd, dropout_p, PQ_cap, thr.item()))
@@ -181,10 +183,14 @@ for e in range(epochs):
             opt.param_groups[-1]['lr'] /= 5
 
 
-    batch_corr = {'train1': [], 'test1': [],'train2': [], 'test2': [],'train3': [], 'test3': [], 'loss':[], 'act_train1':0, 'act_train2':0, 'act_train3':0, 'act_test1':0, 'act_test2':0, 'act_test3':0}
-    quantization.global_wupdate = 0 
+    batch_corr = {'train1': [], 'test1': [],'train2': [], 'test2': [],'train3': [], 'test3': [], 'loss':[], 'act_train1':0, 'act_train2':0, 'act_train3':0, 'act_test1':0, 'act_test2':0, 'act_test3':0, 'w1u':0, 'w2u':0, 'w3u':0}
+    quantization.global_w1update = 0 
+    quantization.global_w2update = 0 
+    quantization.global_w3update = 0 
     start_time = time.time()
 
+    #P_rec = torch.tensor([])
+    #Q_rec = torch.tensor([])
     # training
     for x_local, y_local in sparse_data_generator_DVSGesture(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = True, test = False, device = device, ds = ds, x_size = x_size, y_size = y_size):
 
@@ -209,6 +215,16 @@ for e in range(epochs):
             out_spikes2, temp_loss2, temp_corr2 = layer2.forward(out_spikes1, y_onehot, train_flag = train_flag)
             out_spikes3, temp_loss3, temp_corr3 = layer3.forward(out_spikes2, y_onehot, train_flag = train_flag)
             
+
+            #P_rec = torch.cat((P_rec, layer1.P.flatten().cpu()))
+            #P_rec = torch.cat((P_rec, layer2.P.flatten().cpu()))
+            #P_rec = torch.cat((P_rec, layer3.P.flatten().cpu()))
+
+            #Q_rec = torch.cat((Q_rec, layer1.Q.flatten().cpu()))
+            #Q_rec = torch.cat((Q_rec, layer2.Q.flatten().cpu()))
+            #Q_rec = torch.cat((Q_rec, layer3.Q.flatten().cpu()))
+
+
             if train_flag:
                 loss_gen = temp_loss1 + temp_loss2 + temp_loss3
 
@@ -240,7 +256,9 @@ for e in range(epochs):
     diff_layers_acc['act_train2'].append(batch_corr['act_train2'])
     diff_layers_acc['act_train3'].append(batch_corr['act_train3'])
     diff_layers_acc['loss'].append(np.mean(loss_hist)/4)
-    diff_layers_acc['wupdate'].append(quantization.global_wupdate)
+    diff_layers_acc['w1update'].append(quantization.global_w1update)
+    diff_layers_acc['w2update'].append(quantization.global_w2update)
+    diff_layers_acc['w3update'].append(quantization.global_w3update)
         
     
     # test accuracy
@@ -290,14 +308,18 @@ for e in range(epochs):
     diff_layers_acc['act_test3'].append(batch_corr['act_test3'])
 
     print("{0:02d}    {1:.3E} {2:.4f} {3:.4f} {4:.4f} {5:.4f} {6:.4f} {7:.4f} | {8:.4f} {9:.4f}".format(e+1, diff_layers_acc['loss'][-1], diff_layers_acc['train1'][-1], diff_layers_acc['train2'][-1], diff_layers_acc['train3'][-1], diff_layers_acc['test1'][-1], diff_layers_acc['test2'][-1], diff_layers_acc['test3'][-1], train_time - start_time, inf_time - train_time))
-    create_graph(plot_file_name, diff_layers_acc, ds_name)
+    create_graph2(plot_file_name, diff_layers_acc, ds_name)
+    create_graph1(plot_file_name, diff_layers_acc, ds_name)
 
 
-# saving results/weights
-args_compact = [delta_t, input_mode, ds, epochs, lr_div, batch_size, PQ_cap, weight_mult, dropout_p, localQ.lc_ampl, l1, l2, tau_mem, tau_ref, tau_syn, thr, quantization.global_wb, quantization.global_qb, quantization.global_pb, quantization.global_rfb, quantization.global_sb, quantization.global_gb, quantization.global_eb, quantization.global_ub, quantization.global_ab, quantization.global_sig, quantization.global_rb, quantization.global_lr, quantization.global_lr_sgd, quantization.global_beta]
+    # saving results
+    results = {'acc': diff_layers_acc, 'fname':plot_file_name, 'args': args_compact}
+    with open('results/'+plot_file_name+'.pkl', 'wb') as f:
+        pickle.dump(results, f)
+
+# saving results and weights
 results = {'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer2':[layer2.weights.detach().cpu(), layer2.bias.detach().cpu()], 'layer3':[layer3.weights.detach().cpu(), layer3.bias.detach().cpu()], 'acc': diff_layers_acc, 'fname':plot_file_name, 'args': args_compact}
-
-with open('results/'+str(uuid.uuid1())+'.pkl', 'wb') as f:
+with open('results/'+plot_file_name+'.pkl', 'wb') as f:
     pickle.dump(results, f)
 
 
