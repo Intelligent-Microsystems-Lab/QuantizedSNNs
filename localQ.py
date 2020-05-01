@@ -576,13 +576,17 @@ class LIFConv2dLayer(nn.Module):
             if train_flag:
                 if quantization.global_eb is not None:
                     part1 = quantization.SSE(rreadout, y_local)
-                    part2 = self.l1 * 200e-1 * F.relu((self.U+.01)).mean()
-                    part3 = self.l2 *1e-1* F.relu(.1-self.U_aux.mean())
+                    #part2 = self.l1 * 200e-1 * F.relu((self.U+.01)).mean()
+                    part2 = self.l1 * 200e-1 * F.relu((self.U_aux+.01)).mean()
+                    #part3 = self.l2 *1e-1* F.relu(.1-self.U_aux.mean())
+                    part3 = self.l2 *1e-1* F.relu(.1-self.U.mean())
                     loss_gen = part1 + part2 + part3
                 else:
                     part1 = self.loss_fn(rreadout, y_local)
-                    part2 = self.l1 * 200e-1 * F.relu((self.U+.01)).mean()
-                    part3 = self.l2 *1e-1* F.relu(.1-self.U_aux.mean())
+                    #part2 = self.l1 * 200e-1 * F.relu((self.U+.01)).mean()
+                    part2 = self.l1 * 200e-1 * F.relu((self.U_aux+.01)).mean()
+                    #part3 = self.l2 *1e-1* F.relu(.1-self.U_aux.mean())
+                    part3 = self.l2 *1e-1* F.relu(.1-self.U.mean())
                     loss_gen = part1 + part2 + part3
                     #loss_gen = self.loss_fn(rreadout, y_local) + self.l1 * 200e-1 * F.relu((self.U+.01)).mean() + self.l2 *1e-1* F.relu(.1-self.U_aux.mean())
                 #loss_gen = self.loss_fn(rreadout, y_local) + self.l1 * 200e-1 * F.relu((self.U+.01)).mean() + self.l2 *1e-1* F.relu(.1-self.U_aux.mean())
