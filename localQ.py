@@ -587,6 +587,9 @@ class LIFConv2dLayer(nn.Module):
                     #loss_gen = self.loss_fn(rreadout, y_local) + self.l1 * 200e-1 * F.relu((self.U+.01)).mean() + self.l2 *1e-1* F.relu(.1-self.U_aux.mean())
                 #loss_gen = self.loss_fn(rreadout, y_local) + self.l1 * 200e-1 * F.relu((self.U+.01)).mean() + self.l2 *1e-1* F.relu(.1-self.U_aux.mean())
             else:
+                part1 = None
+                part2 = None
+                part3 = None
                 loss_gen = None
         else:
             loss_gen = None
