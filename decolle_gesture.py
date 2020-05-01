@@ -130,7 +130,8 @@ quantization.weight_mult = weight_mult
 
 dropout_p = .5
 localQ.lc_ampl = .5
-l1 = .001 
+# 0.0001, 0.001, 0.01, 0.1, .2, .5
+l1 = 0.0001
 l2 = .001
 
 

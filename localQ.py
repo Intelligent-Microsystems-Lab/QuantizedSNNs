@@ -68,9 +68,9 @@ def create_graph2(plot_file_name, diff_layers_acc, ds_name):
     ax1.plot(t, diff_layers_acc['act_test1'], 'g-', label = 'Test 1')
     ax1.plot(t, diff_layers_acc['act_test2'], 'b-', label = 'Test 2')
     ax1.plot(t, diff_layers_acc['act_test3'], 'r-', label = 'Test 3')
-    ax1.plot(t, diff_layers_acc['w1update'], 'g-', label = 'W update 1')
-    ax1.plot(t, diff_layers_acc['w2update'], 'b-', label = 'W update 2')
-    ax1.plot(t, diff_layers_acc['w3update'], 'r-', label = 'W update 3')
+    ax1.plot(t, diff_layers_acc['w1update'], 'm-', label = 'W update 1')
+    ax1.plot(t, diff_layers_acc['w2update'], 'k-', label = 'W update 2')
+    ax1.plot(t, diff_layers_acc['w3update'], 'y-', label = 'W update 3')
     ax1.legend(bbox_to_anchor=(1.20,1), loc="upper left")
     #ax1.text(1.20, 0.1, str(max(diff_layers_acc['test3'])))
 
