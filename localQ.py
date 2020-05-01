@@ -46,7 +46,7 @@ def create_graph(plot_file_name, diff_layers_acc, ds_name):
     ax2.plot(t, diff_layers_acc['loss'], 'k-', label = 'Loss')
 
     fig.tight_layout()
-    plt.savefig(plot_file_name + ".png")
+    plt.savefig("figures/"+plot_file_name + ".png")
     plt.close()
 
 def create_graph2(plot_file_name, diff_layers_acc, ds_name):
@@ -79,7 +79,7 @@ def create_graph2(plot_file_name, diff_layers_acc, ds_name):
     #ax2.plot(t, diff_layers_acc['loss'], 'k-', label = 'Loss')
 
     fig.tight_layout()
-    plt.savefig(plot_file_name+ "_act.png")
+    plt.savefig("figures/"+plot_file_name+ "_act.png")
     plt.close()
 
 
