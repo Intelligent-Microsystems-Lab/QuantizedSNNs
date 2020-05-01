@@ -309,7 +309,7 @@ for e in range(epochs):
 
     print("{0:02d}    {1:.3E} {2:.4f} {3:.4f} {4:.4f} {5:.4f} {6:.4f} {7:.4f} | {8:.4f} {9:.4f}".format(e+1, diff_layers_acc['loss'][-1], diff_layers_acc['train1'][-1], diff_layers_acc['train2'][-1], diff_layers_acc['train3'][-1], diff_layers_acc['test1'][-1], diff_layers_acc['test2'][-1], diff_layers_acc['test3'][-1], train_time - start_time, inf_time - train_time))
     create_graph2(plot_file_name, diff_layers_acc, ds_name)
-    create_graph1(plot_file_name, diff_layers_acc, ds_name)
+    create_graph(plot_file_name, diff_layers_acc, ds_name)
 
 
     # saving results
