@@ -102,12 +102,12 @@ burnin = 50*ms
 x_size = 32
 y_size = 32
 
-#change_diff = 1
+change_diff = 1
 
 # set quant level
 quantization.global_wb  = 8
-quantization.global_qb  = 10 
-quantization.global_pb  = 12 
+quantization.global_qb  = 10 #+ change_diff
+quantization.global_pb  = 12 #+ change_diff
 quantization.global_rfb = 2
 
 quantization.global_sb  = 6 
@@ -130,7 +130,7 @@ input_mode = 0
 ds = 4 # downsampling
 
 epochs = 320
-lr_div = 320 #60
+lr_div = 60
 batch_size = 72
 
 PQ_cap = .75 #.75 #.1, .5, etc. # this value has to be carefully choosen
