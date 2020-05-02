@@ -105,18 +105,18 @@ y_size = 32
 #change_diff = 1
 
 # set quant level
-quantization.global_wb  = None #8
-quantization.global_qb  = None #10 
-quantization.global_pb  = None #12 
-quantization.global_rfb = None #2
+quantization.global_wb  = 8
+quantization.global_qb  = 10 
+quantization.global_pb  = 12 
+quantization.global_rfb = 2
 
-quantization.global_sb  = None #6 
-quantization.global_gb  = None #10 
-quantization.global_eb  = None #6 
+quantization.global_sb  = 6 
+quantization.global_gb  = 10 
+quantization.global_eb  = 6 
 
-quantization.global_ub  = None #6
-quantization.global_ab  = None #6
-quantization.global_sig = None #6
+quantization.global_ub  = 6
+quantization.global_ab  = 6
+quantization.global_sig = 6
 
 quantization.global_rb = 16
 quantization.global_lr = 1#max([int(quantization.global_gb/8), 1]) if quantization.global_gb is not None else None
@@ -130,7 +130,7 @@ input_mode = 0
 ds = 4 # downsampling
 
 epochs = 320
-lr_div = 60
+lr_div = 320 #60
 batch_size = 72
 
 PQ_cap = .75 #.75 #.1, .5, etc. # this value has to be carefully choosen
@@ -179,6 +179,7 @@ else:
 
 
 def eval_test():
+    batch_corr = {'train1': [], 'test1': [],'train2': [], 'test2': [],'train3': [], 'test3': [], 'loss':[], 'act_train1':0, 'act_train2':0, 'act_train3':0, 'act_test1':0, 'act_test2':0, 'act_test3':0, 'w1u':0, 'w2u':0, 'w3u':0}
     # test accuracy
     for x_local, y_local in sparse_data_generator_DVSGesture(x_test, y_test, batch_size = batch_size, nb_steps = T_test / ms, shuffle = True, device = device, test = True, ds = ds, x_size = x_size, y_size = y_size):
         rread_hist1_test = []
@@ -211,12 +212,12 @@ def eval_test():
             #batch_corr['act_test2'] += int(out_spikes2.sum())
             #batch_corr['act_test3'] += int(out_spikes3.sum())
 
-        #batch_corr['test1'].append(acc_comp(rread_hist1_test, y_local, True))
-        #batch_corr['test2'].append(acc_comp(rread_hist2_test, y_local, True))
-        #batch_corr['test3'].append(acc_comp(rread_hist3_test, y_local, True))
-        del x_local, y_local, y_onehot
+        batch_corr['test1'].append(acc_comp(rread_hist1_test, y_local, True))
+        batch_corr['test2'].append(acc_comp(rread_hist2_test, y_local, True))
+        batch_corr['test3'].append(acc_comp(rread_hist3_test, y_local, True))
+        #del x_local, y_local, y_onehot
 
-        return acc_comp(rread_hist3_test, y_local, True)
+    return torch.cat(batch_corr['test3']).mean()
 
 
 
@@ -295,9 +296,9 @@ for e in range(epochs):
                 rread_hist3_train.append(temp_corr3)
 
 
-            batch_corr['act_train1'] += int(out_spikes1.sum())
-            batch_corr['act_train2'] += int(out_spikes2.sum())
-            batch_corr['act_train3'] += int(out_spikes3.sum())
+            #batch_corr['act_train1'] += int(out_spikes1.sum())
+            #batch_corr['act_train2'] += int(out_spikes2.sum())
+            #batch_corr['act_train3'] += int(out_spikes3.sum())
 
         batch_corr['train1'].append(acc_comp(rread_hist1_train, y_local, True))
         batch_corr['train2'].append(acc_comp(rread_hist2_train, y_local, True))
@@ -309,9 +310,9 @@ for e in range(epochs):
     diff_layers_acc['train1'].append(torch.cat(batch_corr['train1']).mean())
     diff_layers_acc['train2'].append(torch.cat(batch_corr['train2']).mean())
     diff_layers_acc['train3'].append(torch.cat(batch_corr['train3']).mean())
-    diff_layers_acc['act_train1'].append(batch_corr['act_train1'])
-    diff_layers_acc['act_train2'].append(batch_corr['act_train2'])
-    diff_layers_acc['act_train3'].append(batch_corr['act_train3'])
+    #diff_layers_acc['act_train1'].append(batch_corr['act_train1'])
+    #diff_layers_acc['act_train2'].append(batch_corr['act_train2'])
+    #diff_layers_acc['act_train3'].append(batch_corr['act_train3'])
     diff_layers_acc['loss'].append(np.mean(loss_hist)/3)
     diff_layers_acc['w1update'].append(quantization.global_w1update)
     diff_layers_acc['w2update'].append(quantization.global_w2update)
@@ -346,9 +347,9 @@ for e in range(epochs):
                 rread_hist2_test.append(temp_corr2)
                 rread_hist3_test.append(temp_corr3)
 
-            batch_corr['act_test1'] += int(out_spikes1.sum())
-            batch_corr['act_test2'] += int(out_spikes2.sum())
-            batch_corr['act_test3'] += int(out_spikes3.sum())
+            #batch_corr['act_test1'] += int(out_spikes1.sum())
+            #batch_corr['act_test2'] += int(out_spikes2.sum())
+            #batch_corr['act_test3'] += int(out_spikes3.sum())
 
         batch_corr['test1'].append(acc_comp(rread_hist1_test, y_local, True))
         batch_corr['test2'].append(acc_comp(rread_hist2_test, y_local, True))
@@ -357,8 +358,8 @@ for e in range(epochs):
 
     inf_time = time.time()
 
-    if best_vali < batch_corr['test3'][-1]:
-        best_vali = batch_corr['test3'][-1]
+    if best_vali.item() < torch.cat(batch_corr['test3']).mean().item():
+        best_vali = torch.cat(batch_corr['test3']).mean()
         test_acc_best_vali = eval_test()
         w1 = layer1.weights.data
         w2 = layer2.weights.data
@@ -367,9 +368,9 @@ for e in range(epochs):
     diff_layers_acc['test1'].append(torch.cat(batch_corr['test1']).mean())
     diff_layers_acc['test2'].append(torch.cat(batch_corr['test2']).mean())
     diff_layers_acc['test3'].append(torch.cat(batch_corr['test3']).mean())
-    diff_layers_acc['act_test1'].append(batch_corr['act_test1'])
-    diff_layers_acc['act_test2'].append(batch_corr['act_test2'])
-    diff_layers_acc['act_test3'].append(batch_corr['act_test3'])
+    #diff_layers_acc['act_test1'].append(batch_corr['act_test1'])
+    #diff_layers_acc['act_test2'].append(batch_corr['act_test2'])
+    #diff_layers_acc['act_test3'].append(batch_corr['act_test3'])
 
     print("{0:02d}    {1:.3E} {2:.4f} {3:.4f} {4:.4f} {5:.4f} {6:.4f} {7:.4f} | {8:.4f} {9:.4f}".format(e+1, diff_layers_acc['loss'][-1], diff_layers_acc['train1'][-1], diff_layers_acc['train2'][-1], diff_layers_acc['train3'][-1], diff_layers_acc['test1'][-1], diff_layers_acc['test2'][-1], diff_layers_acc['test3'][-1], train_time - start_time, inf_time - train_time))
     #create_graph2(plot_file_name, diff_layers_acc, ds_name)
@@ -388,10 +389,10 @@ with open('results/'+plot_file_name+'.pkl', 'wb') as f:
 
 
 # # how to load
-with open("results/DVS_WPQUEG8121066106_Inp0_LR1_Drop0.5_20200501_010049.pkl", 'rb') as f:
-   # The protocol version used is detected automatically, so we do not
-   # have to specify it.
-   data = pickle.load(f)
+#with open("results/DVS_WPQUEG8121066106_Inp0_LR1_Drop0.5_20200501_010049.pkl", 'rb') as f:
+#   # The protocol version used is detected automatically, so we do not
+#   # have to specify it.
+#   data = pickle.load(f)
 
 #20200501_005657 - 0.0001
 #20200501_005713 - 0.001
