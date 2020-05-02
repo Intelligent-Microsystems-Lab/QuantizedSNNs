@@ -88,7 +88,6 @@ idx_val = idx_temp[int(len(y_train)*.8):]
 
 x_train, x_val = x_train[idx_train], x_train[idx_val]
 y_train, y_val = y_train[idx_train], y_train[idx_val]
-import pdb; pdb.set_trace()
 
 
 with open('data/test_dvs_gesture88.pickle', 'rb') as f:
@@ -263,7 +262,7 @@ for e in range(epochs):
         layer2.state_init(x_local.shape[0])
         layer3.state_init(x_local.shape[0])
 
-        print("-------")
+        #print("-------")
 
         for t in range(int(T/ms)):
             train_flag = (t > int(burnin/ms))
@@ -283,7 +282,7 @@ for e in range(epochs):
 
 
             if train_flag:
-                print("{0:.4f} {1:.4f} {2:.4f} {3:.4f} {4:.4f} {5:.4f} {6:.4f} {7:.4f} {8:.4f}".format(lparts1[0].item(),lparts1[1].item(),lparts1[2].item(), lparts2[0].item(),lparts2[1].item(),lparts2[2].item(), lparts3[0].item(),lparts3[1].item(),lparts3[2].item()))
+                #print("{0:.4f} {1:.4f} {2:.4f} {3:.4f} {4:.4f} {5:.4f} {6:.4f} {7:.4f} {8:.4f}".format(lparts1[0].item(),lparts1[1].item(),lparts1[2].item(), lparts2[0].item(),lparts2[1].item(),lparts2[2].item(), lparts3[0].item(),lparts3[1].item(),lparts3[2].item()))
                 loss_gen = temp_loss1 + temp_loss2 + temp_loss3
 
                 loss_gen.backward()

@@ -182,25 +182,30 @@ for epoch in range(100):
     teacc.append(acc)
     teloss.append(lossv)
 
-# graph results
-bit_string = str(quantization.global_wb) + str(quantization.global_ab) + str(quantization.global_gb) + str(quantization.global_eb)
+    # graph results
+    bit_string = str(quantization.global_wb) + str(quantization.global_ab) + str(quantization.global_gb) + str(quantization.global_eb)
 
-results = {'bit_string': bit_string, 'test_acc': teacc, 'train_acc': taacc, 'test_loss': teloss, 'train_loss': taloss}
+    results = {'bit_string': bit_string, 'test_acc': teacc, 'train_acc': taacc, 'test_loss': teloss, 'train_loss': taloss}
 
-with open('results/torch_wage_acc_mnist_' + bit_string + '.pkl', 'wb') as f:
-    pickle.dump(results, f)
+    with open('results/torch_wage_acc_mnist_' + bit_string + '.pkl', 'wb') as f:
+        pickle.dump(results, f)
 
 
-plt.clf()
-plt.ylabel('Accuracy')
-plt.xlabel('Epochs')
-plt.plot(taacc , label="Training Accuracy", color="black")
-plt.plot(teacc , label="Test Accuracy", color="blue")
-plt.legend(loc = 'best')
-plt.title("Accuarcy Pytorch WAGE Acc MNIST ("+bit_string+")")
+    plt.clf()
+    fig, ax1 = plt.subplots()
+    ax1.set_ylabel('Accuracy')
+    ax1.set_xlabel('Epochs')
+    ax1.plot(taacc , label="Training Accuracy", color="black")
+    ax1.plot(teacc , label="Test Accuracy", color="blue")
+    ax1.legend(loc = 'best')
+    plt.title("Accuarcy Pytorch WAGE Acc MNIST ("+bit_string+")")
 
-plt.tight_layout()
-plt.savefig("figures/torch_wage_acc_mnist_"+bit_string+".png")
+    ax2 = ax1.twinx()
+    ax2.set_ylabel('Loss')
+    ax2.plot(t, taloss, 'k-', label = 'Loss')
+
+    plt.tight_layout()
+    plt.savefig("figures/torch_wage_acc_mnist_"+bit_string+".png")
 
 
 plt.clf()
