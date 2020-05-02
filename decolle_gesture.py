@@ -78,8 +78,18 @@ ms = 1e-3
 ds_name = "DVS Gesture"
 with open('data/train_dvs_gesture88.pickle', 'rb') as f:
     data = pickle.load(f)
-x_train = data[0]
+x_train = np.array(data[0])
 y_train = np.array(data[1], dtype = int) - 1
+
+idx_temp = np.arange(len(x_train))
+np.random.shuffle(idx_temp)
+idx_train = idx_temp[0:int(len(y_train)*.8)]
+idx_val = idx_temp[int(len(y_train)*.8):]
+
+x_train, x_val = x_train[idx_train], x_train[idx_val]
+y_train, y_val = y_train[idx_train], y_train[idx_val]
+import pdb; pdb.set_trace()
+
 
 with open('data/test_dvs_gesture88.pickle', 'rb') as f:
     data = pickle.load(f)
@@ -96,18 +106,18 @@ y_size = 32
 #change_diff = 1
 
 # set quant level
-quantization.global_wb  = 8
-quantization.global_qb  = 10 
-quantization.global_pb  = 12 
-quantization.global_rfb = 2
+quantization.global_wb  = None #8
+quantization.global_qb  = None #10 
+quantization.global_pb  = None #12 
+quantization.global_rfb = None #2
 
-quantization.global_sb  = 6 
-quantization.global_gb  = 10 
-quantization.global_eb  = 6 
+quantization.global_sb  = None #6 
+quantization.global_gb  = None #10 
+quantization.global_eb  = None #6 
 
-quantization.global_ub  = 6
-quantization.global_ab  = 6
-quantization.global_sig = 6
+quantization.global_ub  = None #6
+quantization.global_ab  = None #6
+quantization.global_sig = None #6
 
 quantization.global_rb = 16
 quantization.global_lr = 1#max([int(quantization.global_gb/8), 1]) if quantization.global_gb is not None else None
@@ -131,7 +141,7 @@ quantization.weight_mult = weight_mult
 dropout_p = .5
 localQ.lc_ampl = .5
 # 0.0001, 0.001, 0.01, 0.1, .2, .5
-l1 = .5
+l1 = .001
 l2 = .001
 
 
@@ -168,6 +178,49 @@ else:
     #opt = torch.optim.Adamax(all_parameters, lr=1.0e-9, betas=[0., .95])
 
 
+
+def eval_test():
+    # test accuracy
+    for x_local, y_local in sparse_data_generator_DVSGesture(x_test, y_test, batch_size = batch_size, nb_steps = T_test / ms, shuffle = True, device = device, test = True, ds = ds, x_size = x_size, y_size = y_size):
+        rread_hist1_test = []
+        rread_hist2_test = []
+        rread_hist3_test = []
+        act_spikes = [0,0,0]
+
+        y_onehot = torch.Tensor(len(y_local), output_neurons).to(device).type(dtype)
+        y_onehot.zero_()
+        y_onehot.scatter_(1, y_local.reshape([y_local.shape[0],1]), 1)
+
+
+        layer1.state_init(x_local.shape[0])
+        layer2.state_init(x_local.shape[0])
+        layer3.state_init(x_local.shape[0])
+
+        for t in range(int(T_test/ms)):
+            test_flag = (t > int(burnin/ms))
+
+            out_spikes1, temp_loss1, temp_corr1, _ = layer1.forward(prep_input(x_local[:,:,:,:,t], input_mode), y_onehot, test_flag = test_flag)
+            out_spikes2, temp_loss2, temp_corr2, _ = layer2.forward(out_spikes1, y_onehot, test_flag = test_flag)
+            out_spikes3, temp_loss3, temp_corr3, _ = layer3.forward(out_spikes2, y_onehot, test_flag = test_flag)
+
+            if test_flag:
+                rread_hist1_test.append(temp_corr1)
+                rread_hist2_test.append(temp_corr2)
+                rread_hist3_test.append(temp_corr3)
+
+            #batch_corr['act_test1'] += int(out_spikes1.sum())
+            #batch_corr['act_test2'] += int(out_spikes2.sum())
+            #batch_corr['act_test3'] += int(out_spikes3.sum())
+
+        #batch_corr['test1'].append(acc_comp(rread_hist1_test, y_local, True))
+        #batch_corr['test2'].append(acc_comp(rread_hist2_test, y_local, True))
+        #batch_corr['test3'].append(acc_comp(rread_hist3_test, y_local, True))
+        del x_local, y_local, y_onehot
+
+        return acc_comp(rread_hist3_test, y_local, True)
+
+
+
 args_compact = [delta_t, input_mode, ds, epochs, lr_div, batch_size, PQ_cap, weight_mult, dropout_p, localQ.lc_ampl, l1, l2, tau_mem, tau_ref, tau_syn, thr, quantization.global_wb, quantization.global_qb, quantization.global_pb, quantization.global_rfb, quantization.global_sb, quantization.global_gb, quantization.global_eb, quantization.global_ub, quantization.global_ab, quantization.global_sig, quantization.global_rb, quantization.global_lr, quantization.global_lr_sgd, quantization.global_beta]
 
 
@@ -175,6 +228,8 @@ diff_layers_acc = {'train1': [], 'test1': [],'train2': [], 'test2': [],'train3':
 print("WUPQR SASigEG Quantization: {0}{1}{2}{3}{4} {5}{6}{7}{8}{9} l1 {10:.3f} l2 {11:.3f} Inp {12} LR {13} Drop {14} Cap {15} thr {16}".format(quantization.global_wb, quantization.global_ub, quantization.global_pb, quantization.global_qb, quantization.global_rfb, quantization.global_sb, quantization.global_ab, quantization.global_sig, quantization.global_eb, quantization.global_gb, l1, l2, input_mode, quantization.global_lr if quantization.global_lr != None else quantization.global_lr_sgd, dropout_p, PQ_cap, thr.item()))
 plot_file_name = "DVS_WPQUEG{0}{1}{2}{3}{4}{5}{6}_Inp{7}_LR{8}_Drop{9}_thr{10}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb, quantization.global_sb, input_mode, quantization.global_lr, dropout_p, thr)+datetime.datetime.now().strftime("_%Y%m%d_%H%M%S")
 print("Epoch Loss      Train1 Train2 Train3 Test1  Test2  Test3  | TrainT   TestT")
+
+best_vali = torch.tensor(0, device = device)
 
 for e in range(epochs):
     if ((e+1)%lr_div)==0:
@@ -265,7 +320,7 @@ for e in range(epochs):
         
     
     # test accuracy
-    for x_local, y_local in sparse_data_generator_DVSGesture(x_test, y_test, batch_size = batch_size, nb_steps = T_test / ms, shuffle = True, device = device, test = True, ds = ds, x_size = x_size, y_size = y_size):
+    for x_local, y_local in sparse_data_generator_DVSGesture(x_val, y_val, batch_size = batch_size, nb_steps = T_test / ms, shuffle = True, device = device, test = True, ds = ds, x_size = x_size, y_size = y_size):
         rread_hist1_test = []
         rread_hist2_test = []
         rread_hist3_test = []
@@ -303,6 +358,13 @@ for e in range(epochs):
 
     inf_time = time.time()
 
+    if best_vali < batch_corr['test3'][-1]:
+        best_vali = batch_corr['test3'][-1]
+        test_acc_best_vali = eval_test()
+        w1 = layer1.weights.data
+        w2 = layer2.weights.data
+        w3 = layer3.weights.data
+
     diff_layers_acc['test1'].append(torch.cat(batch_corr['test1']).mean())
     diff_layers_acc['test2'].append(torch.cat(batch_corr['test2']).mean())
     diff_layers_acc['test3'].append(torch.cat(batch_corr['test3']).mean())
@@ -311,8 +373,8 @@ for e in range(epochs):
     diff_layers_acc['act_test3'].append(batch_corr['act_test3'])
 
     print("{0:02d}    {1:.3E} {2:.4f} {3:.4f} {4:.4f} {5:.4f} {6:.4f} {7:.4f} | {8:.4f} {9:.4f}".format(e+1, diff_layers_acc['loss'][-1], diff_layers_acc['train1'][-1], diff_layers_acc['train2'][-1], diff_layers_acc['train3'][-1], diff_layers_acc['test1'][-1], diff_layers_acc['test2'][-1], diff_layers_acc['test3'][-1], train_time - start_time, inf_time - train_time))
-    create_graph2(plot_file_name, diff_layers_acc, ds_name)
-    create_graph(plot_file_name, diff_layers_acc, ds_name)
+    #create_graph2(plot_file_name, diff_layers_acc, ds_name)
+    create_graph(plot_file_name, diff_layers_acc, ds_name, test_acc_best_vali)
 
 
     # saving results
