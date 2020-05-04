@@ -102,17 +102,27 @@ burnin = 50*ms
 x_size = 32
 y_size = 32
 
-change_diff = -4
+# import argparse
+# ap = argparse.ArgumentParser()
+# ap.add_argument("-qp", "--qp", type = int, help = "weight bits")
+# ap.add_argument("-s", "--s", type = int, help="multiplier")
+# ap.add_argument("-eg", "--eg", type = int, help="dataset")
+# args = vars(ap.parse_args())
+
+
+change_diff1 = 0
+change_diff2 = 0
+change_diff3 = -4
 
 # set quant level
 quantization.global_wb  = 8
-quantization.global_qb  = 10 
-quantization.global_pb  = 12
+quantization.global_qb  = 10 + change_diff3
+quantization.global_pb  = 12 + change_diff3
 quantization.global_rfb = 2
 
-quantization.global_sb  = 6 
-quantization.global_gb  = 10 + change_diff
-quantization.global_eb  = 6 + change_diff
+quantization.global_sb  = 6 + change_diff2
+quantization.global_gb  = 10 + change_diff1
+quantization.global_eb  = 6 + change_diff1
 
 quantization.global_ub  = 6
 quantization.global_ab  = 6
