@@ -110,7 +110,7 @@ y_size = 32
 # args = vars(ap.parse_args())
 
 
-change_diff1 = 1
+change_diff1 = 2
 change_diff2 = 0
 change_diff3 = 0
 
