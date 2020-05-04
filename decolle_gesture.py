@@ -111,7 +111,7 @@ y_size = 32
 
 
 change_diff1 = 0
-change_diff2 = -3
+change_diff2 = -4
 change_diff3 = 0
 
 # set quant level
