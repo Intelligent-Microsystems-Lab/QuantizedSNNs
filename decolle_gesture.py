@@ -112,7 +112,7 @@ y_size = 32
 
 change_diff1 = 0
 change_diff2 = 0
-change_diff3 = -3
+change_diff3 = -2
 
 # set quant level
 quantization.global_wb  = 8
