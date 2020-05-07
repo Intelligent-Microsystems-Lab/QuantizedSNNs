@@ -102,31 +102,41 @@ burnin = 50*ms
 x_size = 32
 y_size = 32
 
-# import argparse
-# ap = argparse.ArgumentParser()
-# ap.add_argument("-qp", "--qp", type = int, help = "weight bits")
-# ap.add_argument("-s", "--s", type = int, help="multiplier")
-# ap.add_argument("-eg", "--eg", type = int, help="dataset")
-# args = vars(ap.parse_args())
+import argparse
+ap = argparse.ArgumentParser()
+ap.add_argument("-qp", "--qp", type = int, help = "weight bits")
+ap.add_argument("-s", "--s", type = int, help="multiplier")
+ap.add_argument("-eg", "--eg", type = int, help="dataset")
+args = vars(ap.parse_args())
 
 
-change_diff1 = 2
-change_diff2 = 0
-change_diff3 = 0
+
+if args['ge'] is not None:
+    change_diff1 = args['ge']
+else:
+    change_diff1 = 0
+if args['s'] is not None:
+    change_diff2 = args['s']
+else:
+    change_diff2 = 0
+if args['qp'] is not None:
+    change_diff3 = args['qp']
+else:
+    change_diff3 = 0
 
 # set quant level
-quantization.global_wb  = None #8
-quantization.global_qb  = None #10 + change_diff3
-quantization.global_pb  = None #12 + change_diff3
-quantization.global_rfb = None #2
+quantization.global_wb  = 8
+quantization.global_qb  = 10 + change_diff3
+quantization.global_pb  = 12 + change_diff3
+quantization.global_rfb = 2
 
-quantization.global_sb  = None #6 + change_diff2
-quantization.global_gb  = None #10 + change_diff1
-quantization.global_eb  = None #6 + change_diff1
+quantization.global_sb  = 6 + change_diff2
+quantization.global_gb  = 10 + change_diff1
+quantization.global_eb  = 6 + change_diff1
 
-quantization.global_ub  = None #6
-quantization.global_ab  = None #6
-quantization.global_sig = None #6
+quantization.global_ub  = 6
+quantization.global_ab  = 6
+quantization.global_sig = 6
 
 quantization.global_rb = 16
 quantization.global_lr = 1#max([int(quantization.global_gb/8), 1]) if quantization.global_gb is not None else None
@@ -139,7 +149,7 @@ delta_t = 1*ms
 input_mode = 0
 ds = 4 # downsampling
 
-epochs = 320
+epochs = 5
 lr_div = 60
 batch_size = 72
 
@@ -233,6 +243,7 @@ def eval_test():
 
 args_compact = [delta_t, input_mode, ds, epochs, lr_div, batch_size, PQ_cap, weight_mult, dropout_p, localQ.lc_ampl, l1, l2, tau_mem, tau_ref, tau_syn, thr, quantization.global_wb, quantization.global_qb, quantization.global_pb, quantization.global_rfb, quantization.global_sb, quantization.global_gb, quantization.global_eb, quantization.global_ub, quantization.global_ab, quantization.global_sig, quantization.global_rb, quantization.global_lr, quantization.global_lr_sgd, quantization.global_beta]
 
+w1, w2, w3, b1, b2, b3 = None, None, None, None, None, None
 
 diff_layers_acc = {'train1': [], 'test1': [],'train2': [], 'test2': [],'train3': [], 'test3': [], 'loss':[], 'act_train1':[], 'act_train2':[], 'act_train3':[], 'act_test1':[], 'act_test2':[], 'act_test3':[], 'w1update':[], 'w2update':[], 'w3update':[]}
 print("WUPQR SASigEG Quantization: {0}{1}{2}{3}{4} {5}{6}{7}{8}{9} l1 {10:.3f} l2 {11:.3f} Inp {12} LR {13} Drop {14} Cap {15} thr {16}".format(quantization.global_wb, quantization.global_ub, quantization.global_pb, quantization.global_qb, quantization.global_rfb, quantization.global_sb, quantization.global_ab, quantization.global_sig, quantization.global_eb, quantization.global_gb, l1, l2, input_mode, quantization.global_lr if quantization.global_lr != None else quantization.global_lr_sgd, dropout_p, PQ_cap, thr.item()))
@@ -374,6 +385,9 @@ for e in range(epochs):
         w1 = layer1.weights.data
         w2 = layer2.weights.data
         w3 = layer3.weights.data
+        b1 = layer1.bias.data
+        b2 = layer2.bias.data
+        b3 = layer3.bias.data
 
     diff_layers_acc['test1'].append(torch.cat(batch_corr['test1']).mean())
     diff_layers_acc['test2'].append(torch.cat(batch_corr['test2']).mean())
@@ -393,7 +407,10 @@ for e in range(epochs):
         pickle.dump(results, f)
 
 # saving results and weights
-results = {'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu()], 'layer2':[layer2.weights.detach().cpu(), layer2.bias.detach().cpu()], 'layer3':[layer3.weights.detach().cpu(), layer3.bias.detach().cpu()], 'acc': diff_layers_acc, 'fname':plot_file_name, 'args': args_compact}
+results = {
+'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu(), w1, b1, layer1.sign_random_readout.weights.detach().cpu(), layer1.sign_random_readout.weight_fa.detach().cpu()], 
+'layer2':[layer2.weights.detach().cpu(), layer2.bias.detach().cpu(), w2, b2, layer2.sign_random_readout.weights.detach().cpu(), layer2.sign_random_readout.weight_fa.detach().cpu()], 
+'layer3':[layer3.weights.detach().cpu(), layer3.bias.detach().cpu(), w3, b3, layer3.sign_random_readout.weights.detach().cpu(), layer3.sign_random_readout.weight_fa.detach().cpu()], 'acc': diff_layers_acc, 'fname':plot_file_name, 'args': args_compact}
 with open('results/'+plot_file_name+'.pkl', 'wb') as f:
     pickle.dump(results, f)
 
