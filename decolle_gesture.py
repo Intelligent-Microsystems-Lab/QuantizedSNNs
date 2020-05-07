@@ -386,19 +386,19 @@ for e in range(epochs):
     create_graph(plot_file_name, diff_layers_acc, ds_name, test_acc_best_vali)
 
 
-    # saving results
-    results = {'acc': diff_layers_acc, 'fname':plot_file_name, 'args': args_compact}
+    # # saving results
+    # results = {'acc': diff_layers_acc, 'fname':plot_file_name, 'args': args_compact}
+    # with open('results/'+plot_file_name+'.pkl', 'wb') as f:
+    #     pickle.dump(results, f)
+
+    # saving results and weights
+    results = {
+    'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu(), w1, b1, layer1.sign_random_readout.weights.detach().cpu(), layer1.sign_random_readout.weight_fa.detach().cpu()], 
+    'layer2':[layer2.weights.detach().cpu(), layer2.bias.detach().cpu(), w2, b2, layer2.sign_random_readout.weights.detach().cpu(), layer2.sign_random_readout.weight_fa.detach().cpu()], 
+    'layer3':[layer3.weights.detach().cpu(), layer3.bias.detach().cpu(), w3, b3, layer3.sign_random_readout.weights.detach().cpu(), layer3.sign_random_readout.weight_fa.detach().cpu()], 
+    'acc': diff_layers_acc, 'fname':plot_file_name, 'args': args_compact, 'evaled_test':test_acc_best_vali}
     with open('results/'+plot_file_name+'.pkl', 'wb') as f:
         pickle.dump(results, f)
-
-# saving results and weights
-results = {
-'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu(), w1, b1, layer1.sign_random_readout.weights.detach().cpu(), layer1.sign_random_readout.weight_fa.detach().cpu()], 
-'layer2':[layer2.weights.detach().cpu(), layer2.bias.detach().cpu(), w2, b2, layer2.sign_random_readout.weights.detach().cpu(), layer2.sign_random_readout.weight_fa.detach().cpu()], 
-'layer3':[layer3.weights.detach().cpu(), layer3.bias.detach().cpu(), w3, b3, layer3.sign_random_readout.weights.detach().cpu(), layer3.sign_random_readout.weight_fa.detach().cpu()], 
-'acc': diff_layers_acc, 'fname':plot_file_name, 'args': args_compact, 'evaled_test':test_acc_best_vali}
-with open('results/'+plot_file_name+'.pkl', 'wb') as f:
-    pickle.dump(results, f)
 
 
 # # how to load
