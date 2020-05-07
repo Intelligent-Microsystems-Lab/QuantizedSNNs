@@ -149,7 +149,7 @@ delta_t = 1*ms
 input_mode = 0
 ds = 4 # downsampling
 
-epochs = 1
+epochs = 320
 lr_div = 60
 batch_size = 72
 
@@ -191,7 +191,7 @@ all_parameters = list(layer1.parameters()) + list(layer2.parameters()) + list(la
 
 # initlialize optimizier
 if quantization.global_gb is not None:
-    opt = torch.optim.SGD(all_parameters, lr=1)
+    opt = torch.optim.SGD(all_parameters, lr = 1)
 else:
     opt = torch.optim.SGD(all_parameters, lr = quantization.global_lr_sgd) # 1.0e-9
     #opt = torch.optim.Adamax(all_parameters, lr=1.0e-9, betas=[0., .95])
@@ -205,7 +205,6 @@ def eval_test():
         rread_hist1_test = []
         rread_hist2_test = []
         rread_hist3_test = []
-        act_spikes = [0,0,0]
 
         y_onehot = torch.Tensor(len(y_local), output_neurons).to(device).type(dtype)
         y_onehot.zero_()
@@ -332,7 +331,6 @@ for e in range(epochs):
         rread_hist1_test = []
         rread_hist2_test = []
         rread_hist3_test = []
-        act_spikes = [0,0,0]
 
         y_onehot = torch.Tensor(len(y_local), output_neurons).to(device).type(dtype)
         y_onehot.zero_()
