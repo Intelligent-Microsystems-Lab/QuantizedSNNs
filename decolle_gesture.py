@@ -125,18 +125,18 @@ else:
     change_diff3 = 0
 
 # set quant level
-quantization.global_wb  = None #8
-quantization.global_qb  = None #10 + change_diff3
-quantization.global_pb  = None #12 + change_diff3
-quantization.global_rfb = None #2
+quantization.global_wb  = 8
+quantization.global_qb  = 10 + change_diff3
+quantization.global_pb  = 12 + change_diff3
+quantization.global_rfb = 2
 
-quantization.global_sb  = None #6 + change_diff2
-quantization.global_gb  = None #10 + change_diff1
-quantization.global_eb  = None #6 + change_diff1
+quantization.global_sb  = 6 + change_diff2
+quantization.global_gb  = 10 + change_diff1
+quantization.global_eb  = 6 + change_diff1
 
-quantization.global_ub  = None #6
-quantization.global_ab  = None #6
-quantization.global_sig = None #6
+quantization.global_ub  = 6
+quantization.global_ab  = 6
+quantization.global_sig = 6
 
 quantization.global_rb = 16
 quantization.global_lr = 1#max([int(quantization.global_gb/8), 1]) if quantization.global_gb is not None else None
@@ -393,9 +393,9 @@ for e in range(epochs):
 
     # saving results and weights
     results = {
-    'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu(), w1, b1, layer1.sign_random_readout.weights.detach().cpu(), layer1.sign_random_readout.weight_fa.detach().cpu()], 
-    'layer2':[layer2.weights.detach().cpu(), layer2.bias.detach().cpu(), w2, b2, layer2.sign_random_readout.weights.detach().cpu(), layer2.sign_random_readout.weight_fa.detach().cpu()], 
-    'layer3':[layer3.weights.detach().cpu(), layer3.bias.detach().cpu(), w3, b3, layer3.sign_random_readout.weights.detach().cpu(), layer3.sign_random_readout.weight_fa.detach().cpu()], 
+    'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu(), w1, b1, layer1.sign_random_readout.weights.detach().cpu(), layer1.sign_random_readout.weight_fa.detach().cpu(), layer1.tau_mem.cpu(), layer1.tau_syn.cpu(), layer1.tau_ref.cpu()], 
+    'layer2':[layer2.weights.detach().cpu(), layer2.bias.detach().cpu(), w2, b2, layer2.sign_random_readout.weights.detach().cpu(), layer2.sign_random_readout.weight_fa.detach().cpu(), layer2.tau_mem.cpu(), layer2.tau_syn.cpu(), layer2.tau_ref.cpu()], 
+    'layer3':[layer3.weights.detach().cpu(), layer3.bias.detach().cpu(), w3, b3, layer3.sign_random_readout.weights.detach().cpu(), layer3.sign_random_readout.weight_fa.detach().cpu(), layer3.tau_mem.cpu(), layer3.tau_syn.cpu(), layer3.tau_ref.cpu()], 
     'acc': diff_layers_acc, 'fname':plot_file_name, 'args': args_compact, 'evaled_test':test_acc_best_vali}
     with open('results/'+plot_file_name+'.pkl', 'wb') as f:
         pickle.dump(results, f)
