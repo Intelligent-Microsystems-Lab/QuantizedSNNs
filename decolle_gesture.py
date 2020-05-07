@@ -149,7 +149,7 @@ delta_t = 1*ms
 input_mode = 0
 ds = 4 # downsampling
 
-epochs = 5
+epochs = 1
 lr_div = 60
 batch_size = 72
 
@@ -266,8 +266,6 @@ for e in range(epochs):
     quantization.global_w3update = 0 
     start_time = time.time()
 
-    #P_rec = torch.tensor([])
-    #Q_rec = torch.tensor([])
     # training
     for x_local, y_local in sparse_data_generator_DVSGesture(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = True, test = False, device = device, ds = ds, x_size = x_size, y_size = y_size):
 
@@ -284,8 +282,6 @@ for e in range(epochs):
         layer2.state_init(x_local.shape[0])
         layer3.state_init(x_local.shape[0])
 
-        #print("-------")
-
         for t in range(int(T/ms)):
             train_flag = (t > int(burnin/ms))
 
@@ -294,17 +290,8 @@ for e in range(epochs):
             out_spikes3, temp_loss3, temp_corr3, lparts3 = layer3.forward(out_spikes2, y_onehot, train_flag = train_flag)
             
 
-            #P_rec = torch.cat((P_rec, layer1.P.flatten().cpu()))
-            #P_rec = torch.cat((P_rec, layer2.P.flatten().cpu()))
-            #P_rec = torch.cat((P_rec, layer3.P.flatten().cpu()))
-
-            #Q_rec = torch.cat((Q_rec, layer1.Q.flatten().cpu()))
-            #Q_rec = torch.cat((Q_rec, layer2.Q.flatten().cpu()))
-            #Q_rec = torch.cat((Q_rec, layer3.Q.flatten().cpu()))
-
 
             if train_flag:
-                #print("{0:.4f} {1:.4f} {2:.4f} {3:.4f} {4:.4f} {5:.4f} {6:.4f} {7:.4f} {8:.4f}".format(lparts1[0].item(),lparts1[1].item(),lparts1[2].item(), lparts2[0].item(),lparts2[1].item(),lparts2[2].item(), lparts3[0].item(),lparts3[1].item(),lparts3[2].item()))
                 loss_gen = temp_loss1 + temp_loss2 + temp_loss3
 
                 loss_gen.backward()
@@ -317,9 +304,9 @@ for e in range(epochs):
                 rread_hist3_train.append(temp_corr3)
 
 
-            #batch_corr['act_train1'] += int(out_spikes1.sum())
-            #batch_corr['act_train2'] += int(out_spikes2.sum())
-            #batch_corr['act_train3'] += int(out_spikes3.sum())
+            batch_corr['act_train1'] += int(out_spikes1.sum())
+            batch_corr['act_train2'] += int(out_spikes2.sum())
+            batch_corr['act_train3'] += int(out_spikes3.sum())
 
         batch_corr['train1'].append(acc_comp(rread_hist1_train, y_local, True))
         batch_corr['train2'].append(acc_comp(rread_hist2_train, y_local, True))
@@ -331,9 +318,9 @@ for e in range(epochs):
     diff_layers_acc['train1'].append(torch.cat(batch_corr['train1']).mean())
     diff_layers_acc['train2'].append(torch.cat(batch_corr['train2']).mean())
     diff_layers_acc['train3'].append(torch.cat(batch_corr['train3']).mean())
-    #diff_layers_acc['act_train1'].append(batch_corr['act_train1'])
-    #diff_layers_acc['act_train2'].append(batch_corr['act_train2'])
-    #diff_layers_acc['act_train3'].append(batch_corr['act_train3'])
+    diff_layers_acc['act_train1'].append(batch_corr['act_train1'])
+    diff_layers_acc['act_train2'].append(batch_corr['act_train2'])
+    diff_layers_acc['act_train3'].append(batch_corr['act_train3'])
     diff_layers_acc['loss'].append(np.mean(loss_hist)/3)
     diff_layers_acc['w1update'].append(quantization.global_w1update)
     diff_layers_acc['w2update'].append(quantization.global_w2update)
@@ -368,9 +355,9 @@ for e in range(epochs):
                 rread_hist2_test.append(temp_corr2)
                 rread_hist3_test.append(temp_corr3)
 
-            #batch_corr['act_test1'] += int(out_spikes1.sum())
-            #batch_corr['act_test2'] += int(out_spikes2.sum())
-            #batch_corr['act_test3'] += int(out_spikes3.sum())
+            batch_corr['act_test1'] += int(out_spikes1.sum())
+            batch_corr['act_test2'] += int(out_spikes2.sum())
+            batch_corr['act_test3'] += int(out_spikes3.sum())
 
         batch_corr['test1'].append(acc_comp(rread_hist1_test, y_local, True))
         batch_corr['test2'].append(acc_comp(rread_hist2_test, y_local, True))
@@ -382,19 +369,19 @@ for e in range(epochs):
     if best_vali.item() < torch.cat(batch_corr['test3']).mean().item():
         best_vali = torch.cat(batch_corr['test3']).mean()
         test_acc_best_vali = eval_test()
-        w1 = layer1.weights.data
-        w2 = layer2.weights.data
-        w3 = layer3.weights.data
-        b1 = layer1.bias.data
-        b2 = layer2.bias.data
-        b3 = layer3.bias.data
+        w1 = layer1.weights.data.detach().cpu()
+        w2 = layer2.weights.data.detach().cpu()
+        w3 = layer3.weights.data.detach().cpu()
+        b1 = layer1.bias.data.detach().cpu()
+        b2 = layer2.bias.data.detach().cpu()
+        b3 = layer3.bias.data.detach().cpu()
 
     diff_layers_acc['test1'].append(torch.cat(batch_corr['test1']).mean())
     diff_layers_acc['test2'].append(torch.cat(batch_corr['test2']).mean())
     diff_layers_acc['test3'].append(torch.cat(batch_corr['test3']).mean())
-    #diff_layers_acc['act_test1'].append(batch_corr['act_test1'])
-    #diff_layers_acc['act_test2'].append(batch_corr['act_test2'])
-    #diff_layers_acc['act_test3'].append(batch_corr['act_test3'])
+    diff_layers_acc['act_test1'].append(batch_corr['act_test1'])
+    diff_layers_acc['act_test2'].append(batch_corr['act_test2'])
+    diff_layers_acc['act_test3'].append(batch_corr['act_test3'])
 
     print("{0:02d}    {1:.3E} {2:.4f} {3:.4f} {4:.4f} {5:.4f} {6:.4f} {7:.4f} | {8:.4f} {9:.4f}".format(e+1, diff_layers_acc['loss'][-1], diff_layers_acc['train1'][-1], diff_layers_acc['train2'][-1], diff_layers_acc['train3'][-1], diff_layers_acc['test1'][-1], diff_layers_acc['test2'][-1], diff_layers_acc['test3'][-1], train_time - start_time, inf_time - train_time))
     #create_graph2(plot_file_name, diff_layers_acc, ds_name)
@@ -410,7 +397,8 @@ for e in range(epochs):
 results = {
 'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu(), w1, b1, layer1.sign_random_readout.weights.detach().cpu(), layer1.sign_random_readout.weight_fa.detach().cpu()], 
 'layer2':[layer2.weights.detach().cpu(), layer2.bias.detach().cpu(), w2, b2, layer2.sign_random_readout.weights.detach().cpu(), layer2.sign_random_readout.weight_fa.detach().cpu()], 
-'layer3':[layer3.weights.detach().cpu(), layer3.bias.detach().cpu(), w3, b3, layer3.sign_random_readout.weights.detach().cpu(), layer3.sign_random_readout.weight_fa.detach().cpu()], 'acc': diff_layers_acc, 'fname':plot_file_name, 'args': args_compact}
+'layer3':[layer3.weights.detach().cpu(), layer3.bias.detach().cpu(), w3, b3, layer3.sign_random_readout.weights.detach().cpu(), layer3.sign_random_readout.weight_fa.detach().cpu()], 
+'acc': diff_layers_acc, 'fname':plot_file_name, 'args': args_compact, 'evaled_test':test_acc_best_vali}
 with open('results/'+plot_file_name+'.pkl', 'wb') as f:
     pickle.dump(results, f)
 
