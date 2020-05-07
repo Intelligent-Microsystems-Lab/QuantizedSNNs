@@ -111,8 +111,8 @@ args = vars(ap.parse_args())
 
 
 
-if args['ge'] is not None:
-    change_diff1 = args['ge']
+if args['eg'] is not None:
+    change_diff1 = args['eg']
 else:
     change_diff1 = 0
 if args['s'] is not None:
