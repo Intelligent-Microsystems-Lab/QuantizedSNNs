@@ -22,11 +22,11 @@ from localQ import sparse_data_generator_Static, sparse_data_generator_DVSGestur
 import line_profiler
 
 # BaseLong.pkl, PQLong.pkl, EGLong.pkl, NoneLong.pkl
-# PQShort.pkl, EGShort.pkl, NoneShort.pkl,
+# PQShort.pkl, EGShort.pkl, NoneShort.pkl, BaseShort.pkl
 
-read_file = 'results/NoneShort.pkl'
-surf_file = 'NoneShort.h5'
-log_file = open('logs/NoneShort.log', 'w') 
+read_file = 'results/BaseShort.pkl'
+surf_file = 'BaseShort.h5'
+log_file = open('logs/BaseShort.log', 'w') 
 
 #torch.autograd.set_detect_anomaly(True)
 
