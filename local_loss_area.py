@@ -21,10 +21,12 @@ from localQ import sparse_data_generator_Static, sparse_data_generator_DVSGestur
 
 import line_profiler
 
+# BaseLong.pkl, PQLong.pkl, EGLong.pkl, NoneLong.pkl
+# PQShort.pkl, EGShort.pkl, NoneShort.pkl,
 
-read_file = 'results/base.pkl'
-surf_file = 'base.h5'
-log_file = 'logs/base.log'
+read_file = 'results/BaseLong.pkl'
+surf_file = 'BaseLong.h5'
+log_file = open('logs/BaseLong.log', 'w') 
 
 #torch.autograd.set_detect_anomaly(True)
 
@@ -103,7 +105,7 @@ x_test = data[0]
 y_test = np.array(data[1], dtype = int) - 1
 
 output_neurons = 11
-T = 100*ms#500*ms
+T = 250*ms#500*ms
 T_test = 1800*ms
 burnin = 50*ms
 x_size = 32
@@ -477,10 +479,13 @@ f[acc_key] = accuracies
 
 inds, coords = get_unplotted_indices(losses, xcoordinates, ycoordinates)
 
-print(read_file)
-print(surf_file)
-print("Start evaluating loss landscape:", file = 'logs/base.log')
+print(read_file, file = log_file, flush=True)
+print(surf_file, file = log_file, flush=True)
+print("Start evaluating loss landscape:", file = log_file, flush=True)
+print("We are in")
+
 for count, ind in enumerate(inds):
+    log_file.close()
     syc_start = time.time()
     coord = coords[count]
     set_weights(directions, coord)
@@ -492,8 +497,10 @@ for count, ind in enumerate(inds):
     f[loss_key][:] = losses
     f[acc_key][:] = accuracies
     f.flush()
-    print("{0} evaled in {1:.4f}s: Loss {2:.4f} Acc {3:.4f}".format(count, time.time() - syc_start, loss, acc), file = 'logs/base.log')
+    log_file = open('logs/baseT.log', 'w') 
+    print("{0} evaled in {1:.4f}s: Loss {2:.4f} Acc {3:.4f}".format(count, time.time() - syc_start, loss, acc), file = log_file, flush=True)
 
+log_file.close()
 f.close()
 
 
