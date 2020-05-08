@@ -24,9 +24,9 @@ import line_profiler
 # BaseLong.pkl, PQLong.pkl, EGLong.pkl, NoneLong.pkl
 # PQShort.pkl, EGShort.pkl, NoneShort.pkl,
 
-read_file = 'results/EGShort.pkl'
-surf_file = 'EGShort.h5'
-log_file = open('logs/EGShort.log', 'w') 
+read_file = 'results/NoneShort.pkl'
+surf_file = 'NoneShort.h5'
+log_file = open('logs/NoneShort.log', 'w') 
 
 #torch.autograd.set_detect_anomaly(True)
 
