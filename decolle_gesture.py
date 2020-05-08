@@ -11,6 +11,7 @@ import argparse
 from tqdm import tqdm
 import datetime
 import uuid
+import argparse
 
 
 import quantization
@@ -102,14 +103,12 @@ burnin = 50*ms
 x_size = 32
 y_size = 32
 
-import argparse
+
 ap = argparse.ArgumentParser()
 ap.add_argument("-qp", "--qp", type = int, help = "weight bits")
 ap.add_argument("-s", "--s", type = int, help="multiplier")
 ap.add_argument("-eg", "--eg", type = int, help="dataset")
 args = vars(ap.parse_args())
-
-
 
 if args['eg'] is not None:
     change_diff1 = args['eg']
