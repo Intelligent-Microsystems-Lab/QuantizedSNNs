@@ -21,6 +21,11 @@ from localQ import sparse_data_generator_Static, sparse_data_generator_DVSGestur
 
 import line_profiler
 
+
+read_file = 'results/base.pkl'
+surf_file = 'base.h5'
+log_file = 'logs/base.log'
+
 #torch.autograd.set_detect_anomaly(True)
 
 # Check whether a GPU is available
@@ -98,7 +103,7 @@ x_test = data[0]
 y_test = np.array(data[1], dtype = int) - 1
 
 output_neurons = 11
-T = 500*ms
+T = 100*ms#500*ms
 T_test = 1800*ms
 burnin = 50*ms
 x_size = 32
@@ -173,7 +178,7 @@ layer3 = LIFConv2dLayer(inp_shape = layer2.out_shape2, kernel_size = 7, out_chan
 
 
 # load weights
-with open('results/test.pkl', 'rb') as f:
+with open(read_file, 'rb') as f:
   # The protocol version used is detected automatically, so we do not
   # have to specify it.
   data = pickle.load(f)
@@ -235,7 +240,6 @@ layer3.Q_scale = (layer3.tau_syn/(1-layer3.beta)).max()
 layer3.P_scale = ((layer3.tau_mem * layer3.Q_scale)/(1-layer3.alpha)).max()
 layer3.Q_scale = (layer3.tau_syn/(1-layer3.beta)).max()
 
-
 def eval_test():
     batch_corr = {'train1': [], 'test1': [],'train2': [], 'test2': [],'train3': [], 'test3': [], 'loss':[], 'act_train1':0, 'act_train2':0, 'act_train3':0, 'act_test1':0, 'act_test2':0, 'act_test3':0, 'w1u':0, 'w2u':0, 'w3u':0}
     # test accuracy
@@ -276,6 +280,10 @@ def eval_test():
 
     return torch.cat(batch_corr['test3']).mean()
 
+hello = eval_test()
+print("Expect Test: {0:.4f} Computed Test: {1:.4f}".format(hello.item(), data['evaled_test'].item()))
+
+
 def eval_train_loss_acc():
     batch_corr = {'train1': [], 'test1': [],'train2': [], 'test2': [],'train3': [], 'test3': [], 'loss':[], 'act_train1':0, 'act_train2':0, 'act_train3':0, 'act_test1':0, 'act_test2':0, 'act_test3':0, 'w1u':0, 'w2u':0, 'w3u':0}
     # test accuracy
@@ -314,10 +322,12 @@ def eval_train_loss_acc():
 
     #import pdb; pdb.set_trace()
     test3 = torch.cat(batch_corr['test3']).mean()
-    over_loss = np.mean(loss_hist)/3
+    over_loss = (np.mean(loss_hist)/3)/batch_size
     test_acc_best_vali = eval_test()
 
     return over_loss, test3
+
+
 
 
 def get_random_weights(weights):
@@ -436,8 +446,6 @@ directions = [xdirection, ydirection]
 
 loss_key = 'train_loss'
 acc_key = 'train_acc'
-surf_file = 'test_surf_file.h5'
-
 
 
 try:
@@ -448,9 +456,9 @@ f = h5py.File(surf_file, 'a')
 f['dir_file'] = 'test_dir_file_loaded_in'
 
 # Create the coordinates(resolutions) at which the function is evaluated
-xcoordinates = np.linspace(-1, 1, num=5)
+xcoordinates = np.linspace(-1, 1, num=25)
 f['xcoordinates'] = xcoordinates
-ycoordinates = np.linspace(-1, 1, num=5)
+ycoordinates = np.linspace(-1, 1, num=25)
 f['ycoordinates'] = ycoordinates
 f.close()
 
@@ -469,8 +477,9 @@ f[acc_key] = accuracies
 
 inds, coords = get_unplotted_indices(losses, xcoordinates, ycoordinates)
 
-
-print("Start evaluating loss landscape:")
+print(read_file)
+print(surf_file)
+print("Start evaluating loss landscape:", file = 'logs/base.log')
 for count, ind in enumerate(inds):
     syc_start = time.time()
     coord = coords[count]
@@ -483,7 +492,7 @@ for count, ind in enumerate(inds):
     f[loss_key][:] = losses
     f[acc_key][:] = accuracies
     f.flush()
-    print("{0} evaled in {1:.4f}s: {2:.4f} {3:.4f}".format(count, time.time() - syc_start, loss, acc))
+    print("{0} evaled in {1:.4f}s: Loss {2:.4f} Acc {3:.4f}".format(count, time.time() - syc_start, loss, acc), file = 'logs/base.log')
 
 f.close()
 
