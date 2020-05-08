@@ -24,9 +24,9 @@ import line_profiler
 # BaseLong.pkl, PQLong.pkl, EGLong.pkl, NoneLong.pkl
 # PQShort.pkl, EGShort.pkl, NoneShort.pkl,
 
-read_file = 'results/NoneLong.pkl'
-surf_file = 'NoneLong.h5'
-log_file = open('logs/NoneLong.log', 'w') 
+read_file = 'results/BaseLong.pkl'
+surf_file = 'BaseLong.h5'
+log_file = open('logs/BaseLong.log', 'w') 
 
 #torch.autograd.set_detect_anomaly(True)
 
@@ -282,8 +282,8 @@ def eval_test():
 
     return torch.cat(batch_corr['test3']).mean()
 
-hello = eval_test()
-print("Expect Test: {0:.4f} Computed Test: {1:.4f}".format(hello.item(), data['evaled_test'].item()))
+#hello = eval_test()
+#print("Expect Test: {0:.4f} Computed Test: {1:.4f}".format(hello.item(), data['evaled_test'].item()))
 
 
 def eval_train_loss_acc():
