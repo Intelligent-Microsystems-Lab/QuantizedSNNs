@@ -11,4 +11,4 @@
 module load python       # Required modules
 setenv OMP_NUM_THREADS $NSLOTS
 
-python decolle_gesture_poker.py -qp 0 -s 0 -eg 0
+python decolle_gesture_mnist.py -qp 0 -s 0 -eg 0
