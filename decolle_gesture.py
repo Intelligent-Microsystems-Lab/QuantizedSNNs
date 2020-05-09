@@ -239,6 +239,9 @@ def eval_test():
 
 
 
+P_rec = torch.tensor([]).to(device)
+Q_rec = torch.tensor([]).to(device)
+
 args_compact = [delta_t, input_mode, ds, epochs, lr_div, batch_size, PQ_cap, weight_mult, dropout_p, localQ.lc_ampl, l1, l2, tau_mem, tau_ref, tau_syn, thr, quantization.global_wb, quantization.global_qb, quantization.global_pb, quantization.global_rfb, quantization.global_sb, quantization.global_gb, quantization.global_eb, quantization.global_ub, quantization.global_ab, quantization.global_sig, quantization.global_rb, quantization.global_lr, quantization.global_lr_sgd, quantization.global_beta]
 
 w1, w2, w3, b1, b2, b3 = None, None, None, None, None, None
@@ -290,6 +293,9 @@ for e in range(epochs):
 
 
             if train_flag:
+                import pdb; pdb.set_trace()
+                P_rec = torch.cat((P_rec, layer3.P.flatten()))
+                Q_rec = torch.cat((Q_rec, layer3.Q.flatten()))
                 loss_gen = temp_loss1 + temp_loss2 + temp_loss3
 
                 loss_gen.backward()
