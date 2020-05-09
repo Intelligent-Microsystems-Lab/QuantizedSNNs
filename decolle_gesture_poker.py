@@ -134,8 +134,8 @@ delta_t = 1*ms
 input_mode = 0
 ds = 4 # downsampling
 
-epochs = 5
-lr_div = 60
+epochs = 100
+lr_div = 40
 batch_size = 72
 
 PQ_cap = .75 #.75 #.1, .5, etc. # this value has to be carefully choosen
