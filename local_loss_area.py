@@ -515,7 +515,7 @@ for count, ind in enumerate(inds_job[job_number]):
     f[loss_key][:] = losses
     f[acc_key][:] = accuracies
     f.flush()
-    log_file = open(log_file, 'a+') 
+    log_file = open('logs/BaseLong'+str(job_number)+'.log', 'a+') 
     print("{0} evaled in {1:.4f}s: Loss {2:.4f} Acc {3:.4f}".format(count, time.time() - syc_start, loss, acc), file = log_file, flush=True)
 
 log_file.close()
