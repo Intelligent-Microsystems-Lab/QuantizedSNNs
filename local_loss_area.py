@@ -31,7 +31,7 @@ if args['j'] is not None:
 else:
     print("Error... check jobscript and specify job number")
 
-inds_job = {0:np.arange(0*62, (0+1)*62), 1:np.arange(1*62, (1+1)*62), 2:np.arange(2*62, (2+1)*62), 3:np.arange(3*62, (3+1)*62), 4:np.arange(4*62, (4+1)*62), 5:np.arange(5*62, (5+1)*62), 6:np.arange(6*62, (6+1)*62), 7:np.arange(7*62, (7+1)*62), 8:np.arange(8*62, (8+1)*62), 9:np.arange(9*62, 625)}
+inds_job = {0:np.arange(12, (0+1)*61), 1:np.arange(1*61, (1+1)*61), 2:np.arange(2*61, (2+1)*61), 3:np.arange(3*61, (3+1)*61), 4:np.arange(4*61, (4+1)*61), 5:np.arange(5*61, (5+1)*61), 6:np.arange(6*61, (6+1)*61), 7:np.arange(7*61, (7+1)*61), 8:np.arange(8*61, (8+1)*61), 9:np.arange(9*62, 625)}
 
 # BaseLong.pkl, PQLong.pkl, EGLong.pkl, NoneLong.pkl
 # PQShort.pkl, EGShort.pkl, NoneShort.pkl, BaseShort.pkl
@@ -503,6 +503,7 @@ print("We are in")
 
 
 for count, ind in enumerate(inds_job[job_number]):
+    count = np.where(inds == ind)[0].item() 
     log_file.close()
     syc_start = time.time()
     coord = coords[count]
