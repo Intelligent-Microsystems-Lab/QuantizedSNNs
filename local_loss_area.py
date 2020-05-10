@@ -21,12 +21,24 @@ from localQ import sparse_data_generator_Static, sparse_data_generator_DVSGestur
 
 import line_profiler
 
+
+ap = argparse.ArgumentParser()
+ap.add_argument("-j", "--j", type = int, help = "job number ")
+args = vars(ap.parse_args())
+
+if args['j'] is not None:
+    job_number = args['j']
+else:
+    print("Error... check jobscript and specify job number")
+
+inds_job = {0:np.arange(0*62, (0+1)*62), 1:np.arange(1*62, (1+1)*62), 2:np.arange(2*62, (2+1)*62), 3:np.arange(3*62, (3+1)*62), 4:np.arange(4*62, (4+1)*62), 5:np.arange(5*62, (5+1)*62), 6:np.arange(6*62, (6+1)*62), 7:np.arange(7*62, (7+1)*62), 8:np.arange(8*62, (8+1)*62), 9:np.arange(9*62, 625)}
+
 # BaseLong.pkl, PQLong.pkl, EGLong.pkl, NoneLong.pkl
 # PQShort.pkl, EGShort.pkl, NoneShort.pkl, BaseShort.pkl
 
-read_file = 'results/BaseShort.pkl'
-surf_file = 'BaseShort.h5'
-log_file = open('logs/BaseShort.log', 'w') 
+read_file = 'results/BaseLong.pkl'
+surf_file = 'BaseLong'+str(job_number)+'.h5'
+log_file = open('logs/BaseLong'+str(job_number)+'.log', 'a+') 
 
 #torch.autograd.set_detect_anomaly(True)
 
@@ -484,7 +496,13 @@ print(surf_file, file = log_file, flush=True)
 print("Start evaluating loss landscape:", file = log_file, flush=True)
 print("We are in")
 
-for count, ind in enumerate(inds):
+#625
+# [0, 62, 124, 186, 248, 310, 372, 434, 496, 558]
+
+
+
+
+for count, ind in enumerate(inds_job[job_number]):
     log_file.close()
     syc_start = time.time()
     coord = coords[count]
@@ -497,7 +515,7 @@ for count, ind in enumerate(inds):
     f[loss_key][:] = losses
     f[acc_key][:] = accuracies
     f.flush()
-    log_file = open(log_file, 'w') 
+    log_file = open(log_file, 'a+') 
     print("{0} evaled in {1:.4f}s: Loss {2:.4f} Acc {3:.4f}".format(count, time.time() - syc_start, loss, acc), file = log_file, flush=True)
 
 log_file.close()
