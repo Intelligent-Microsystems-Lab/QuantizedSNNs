@@ -19,6 +19,7 @@ from quantization import quant_act, init_layer_weights, SSE, to_cat, clip, quant
 from spytorch_util import current2firing_time, sparse_data_generator, plot_voltage_traces, SuperSpike, sparse_data_generator_DVS
 
 
+import argparse
 ap = argparse.ArgumentParser()
 ap.add_argument("-wb", "--wb", type = int, help = "weight bits")
 ap.add_argument("-m", "--m", type = int, help="multiplier")

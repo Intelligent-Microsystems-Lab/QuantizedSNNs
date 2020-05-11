@@ -108,6 +108,7 @@ ap = argparse.ArgumentParser()
 ap.add_argument("-qp", "--qp", type = int, help = "weight bits")
 ap.add_argument("-s", "--s", type = int, help="multiplier")
 ap.add_argument("-eg", "--eg", type = int, help="dataset")
+ap.add_argument("-cap", "--cap", type = float, help="PQ_cap")
 args = vars(ap.parse_args())
 
 if args['eg'] is not None:
@@ -123,19 +124,25 @@ if args['qp'] is not None:
 else:
     change_diff3 = 0
 
+
+if args['cap'] is not None:
+    PQ_cap = args['cap']
+else:
+    PQ_cap = 1
+
 # set quant level
-quantization.global_wb  = None #8
-quantization.global_qb  = None #10 + change_diff3
-quantization.global_pb  = None #12 + change_diff3
-quantization.global_rfb = None #2
+quantization.global_wb  = 8
+quantization.global_qb  = 10 + change_diff3
+quantization.global_pb  = 12 + change_diff3
+quantization.global_rfb = 2
 
-quantization.global_sb  = None #6 + change_diff2
-quantization.global_gb  = None #10 + change_diff1
-quantization.global_eb  = None #6 + change_diff1
+quantization.global_sb  = 6 + change_diff2
+quantization.global_gb  = 10 + change_diff1
+quantization.global_eb  = 6 + change_diff1
 
-quantization.global_ub  = None #6
-quantization.global_ab  = None #6
-quantization.global_sig = None #6
+quantization.global_ub  = 6
+quantization.global_ab  = 6
+quantization.global_sig = 6
 
 quantization.global_rb = 16
 quantization.global_lr = 1#max([int(quantization.global_gb/8), 1]) if quantization.global_gb is not None else None
@@ -148,11 +155,11 @@ delta_t = 1*ms
 input_mode = 0
 ds = 4 # downsampling
 
-epochs = 5
-lr_div = 60
+epochs = 320
+lr_div = 80
 batch_size = 72
 
-PQ_cap = .75 #.75 #.1, .5, etc. # this value has to be carefully choosen
+#PQ_cap = .8 #.75 #.1, .5, etc. # this value has to be carefully choosen
 weight_mult = 4e-5#np.sqrt(4e-5) # decolle -> 1/p_max 
 quantization.weight_mult = weight_mult
 
@@ -293,9 +300,6 @@ for e in range(epochs):
 
 
             if train_flag:
-                print("here")
-                P_rec = torch.cat((P_rec, layer3.P.flatten().cpu()))
-                Q_rec = torch.cat((Q_rec, layer3.Q.flatten().cpu()))
                 loss_gen = temp_loss1 + temp_loss2 + temp_loss3
 
                 loss_gen.backward()
@@ -312,9 +316,6 @@ for e in range(epochs):
             batch_corr['act_train2'] += int(out_spikes2.sum())
             batch_corr['act_train3'] += int(out_spikes3.sum())
 
-        with open('results/PQ.pkl', 'wb') as f:
-            pickle.dump({'P':P_rec, 'Q':Q_rec}, f)
-        import pdb; pdb.set_trace()
 
         batch_corr['train1'].append(acc_comp(rread_hist1_train, y_local, True))
         batch_corr['train2'].append(acc_comp(rread_hist2_train, y_local, True))

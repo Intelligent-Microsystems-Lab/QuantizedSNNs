@@ -30,6 +30,7 @@ if args['j'] is not None:
     job_number = args['j']
 else:
     print("Error... check jobscript and specify job number")
+job_number = 99
 
 inds_job = {0:np.arange(12, (0+1)*61), 1:np.arange(1*61, (1+1)*61), 2:np.arange(2*61, (2+1)*61), 3:np.arange(3*61, (3+1)*61), 4:np.arange(4*61, (4+1)*61), 5:np.arange(5*61, (5+1)*61), 6:np.arange(6*61, (6+1)*61), 7:np.arange(7*61, (7+1)*61), 8:np.arange(8*61, (8+1)*61), 9:np.arange(9*62, 625)}
 
@@ -524,3 +525,63 @@ f.close()
 
 
 
+f = h5py.File('BaseLong1.h5', 'r+')
+losses, accuracies = [], []
+xcoordinates = f['xcoordinates'][:]
+ycoordinates = f['ycoordinates'][:]
+
+
+
+
+
+
+# final file
+list_losses = []
+list_acc = []
+for i in range(10):
+    f = h5py.File("BaseLong"+str(i)+".h5", 'a')
+    list_losses.append(f['train_loss'][:])
+    list_acc.append(f['train_acc'][:])
+    f.close()
+
+losses_area = np.array(list_losses)
+test_lo = losses_area.sum(axis=0) + 9
+
+test_lo[test_lo == -1] = np.nan
+
+losses_area = np.array(list_acc)
+test_acc = losses_area.sum(axis=0) + 9
+
+
+surf_file = 'baseFinal.h5'
+
+f = h5py.File(surf_file, 'a')
+f['dir_file'] = 'test_dir_file_loaded_in'
+
+# Create the coordinates(resolutions) at which the function is evaluated
+xcoordinates = np.linspace(-1, 1, num=25)
+f['xcoordinates'] = xcoordinates
+ycoordinates = np.linspace(-1, 1, num=25)
+f['ycoordinates'] = ycoordinates
+f.close()
+
+
+f = h5py.File(surf_file, 'r+')
+losses, accuracies = [], []
+xcoordinates = f['xcoordinates'][:]
+ycoordinates = f['ycoordinates'][:]  
+
+
+shape = (len(xcoordinates),len(ycoordinates))
+losses = -np.ones(shape=shape)
+accuracies = -np.ones(shape=shape)
+f[loss_key] = losses
+f[acc_key] = accuracies
+
+inds, coords = get_unplotted_indices(losses, xcoordinates, ycoordinates)
+
+f[loss_key][:] = test_lo
+f[acc_key][:] = test_acc
+f.flush()
+
+f.close()
