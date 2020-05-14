@@ -283,7 +283,7 @@ if file_to_continue is not None:
     # 'layer3':[layer3.weights.detach().cpu(), layer3.bias.detach().cpu(), w3, b3, layer3.sign_random_readout.weights.detach().cpu(), layer3.sign_random_readout.weight_fa.detach().cpu(), layer3.tau_mem.cpu(), layer3.tau_syn.cpu(), layer3.tau_ref.cpu()], 
     # 'acc': diff_layers_acc, 'fname':plot_file_name, 'args': args_compact, 'evaled_test':test_acc_best_vali}
 
-    diff_layers_acc = restore_data['']
+    diff_layers_acc = restore_data['acc']
     plot_file_name = restore_data['fname'] +"_continue" # change maybe
     test_acc_best_vali = restore_data[eval_test]
     best_vali = max(restore_data['acc']['test3'])
