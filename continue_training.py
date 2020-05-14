@@ -288,9 +288,9 @@ if file_to_continue is not None:
     test_acc_best_vali = restore_data['evaled_test']
     best_vali = max(restore_data['acc']['test3'])
 
-    epochs = epochs - len(restore_data['acc']['test3'])
+    epoch_start = len(restore_data['acc']['test3'])
 
-    import pdb; pdb.set_trace()
+    #import pdb; pdb.set_trace()
     delta_t = restore_data['args'][0]
     input_mode = restore_data['args'][1]
     ds = restore_data['args'][2]
@@ -378,7 +378,7 @@ if file_to_continue is not None:
     layer3.Q_scale = (layer3.tau_syn/(1-layer3.beta)).max().to(device)
 
 
-for e in range(epochs):
+for e in range(epoch_start, epochs):
     if ((e+1)%lr_div)==0:
         if quantization.global_gb is not None:
             quantization.global_lr /= 2
