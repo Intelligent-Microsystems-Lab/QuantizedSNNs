@@ -117,6 +117,9 @@ args = vars(ap.parse_args())
 
 if args['f'] is not None:
     file_to_continue = args['f']
+    change_diff1 = 0
+    change_diff2 = 0
+    change_diff3 = 0
 else:
     file_to_continue = None
     if args['eg'] is not None:
