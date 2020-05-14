@@ -111,7 +111,7 @@ ap.add_argument("-qp", "--qp", type = int, help = "weight bits")
 ap.add_argument("-s", "--s", type = int, help="multiplier")
 ap.add_argument("-eg", "--eg", type = int, help="dataset")
 ap.add_argument("-cap", "--cap", type = float, help="PQ_cap")
-ap.add_argument("-f", "--f", type = float, help="file")
+ap.add_argument("-f", "--f", type = str, help="file")
 args = vars(ap.parse_args())
 
 
