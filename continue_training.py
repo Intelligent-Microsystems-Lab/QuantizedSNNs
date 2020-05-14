@@ -322,8 +322,8 @@ if file_to_continue is not None:
     quantization.global_lr_sgd = restore_data['args'][28]
     quantization.global_beta = restore_data['args'][29]
 
-    layer1.weights = restore_data['layer1'][0].to(device)
-    layer1.bias = restore_data['layer1'][1].to(device)
+    layer1.weights.data = restore_data['layer1'][0].to(device)
+    layer1.bias.data = restore_data['layer1'][1].to(device)
     w1 = restore_data['layer1'][2].to(device)
     b1 = restore_data['layer1'][3].to(device)
     layer1.sign_random_readout.weights = restore_data['layer1'][4].to(device)
@@ -341,8 +341,8 @@ if file_to_continue is not None:
     layer1.Q_scale = (layer1.tau_syn/(1-layer1.beta)).max().to(device)
 
 
-    layer2.weights = restore_data['layer2'][0].to(device)
-    layer2.bias = restore_data['layer2'][1].to(device)
+    layer2.weights.data = restore_data['layer2'][0].to(device)
+    layer2.bias.data = restore_data['layer2'][1].to(device)
     w2 = restore_data['layer2'][2].to(device)
     b2 = restore_data['layer2'][3].to(device)
     layer2.sign_random_readout.weights = restore_data['layer2'][4].to(device)
@@ -359,8 +359,8 @@ if file_to_continue is not None:
     layer2.P_scale = ((layer2.tau_mem * layer2.Q_scale)/(1-layer2.alpha)).max().to(device)
     layer2.Q_scale = (layer2.tau_syn/(1-layer2.beta)).max().to(device)
 
-    layer3.weights = restore_data['layer3'][0].to(device)
-    layer3.bias = restore_data['layer3'][1].to(device)
+    layer3.weights.data = restore_data['layer3'][0].to(device)
+    layer3.bias.data = restore_data['layer3'][1].to(device)
     w3 = restore_data['layer3'][2].to(device)
     b3 = restore_data['layer3'][3].to(device)
     layer3.sign_random_readout.weights = restore_data['layer3'][4].to(device)
