@@ -285,7 +285,7 @@ if file_to_continue is not None:
 
     diff_layers_acc = restore_data['acc']
     plot_file_name = restore_data['fname'] +"_continue" # change maybe
-    test_acc_best_vali = restore_data['eval_test']
+    test_acc_best_vali = restore_data['evaled_test']
     best_vali = max(restore_data['acc']['test3'])
 
     epochs = epochs - len(restore_data['acc']['test3'])
