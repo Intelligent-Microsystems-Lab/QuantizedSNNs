@@ -120,6 +120,7 @@ if args['f'] is not None:
     change_diff1 = 0
     change_diff2 = 0
     change_diff3 = 0
+    PQ_cap = 1
 else:
     file_to_continue = None
     if args['eg'] is not None:
