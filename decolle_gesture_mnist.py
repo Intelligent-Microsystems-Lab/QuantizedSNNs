@@ -151,18 +151,18 @@ else:
     change_diff3 = 0
 
 # set quant level
-quantization.global_wb  = 8
-quantization.global_qb  = 10 + change_diff3
-quantization.global_pb  = 12 + change_diff3
-quantization.global_rfb = 2
+quantization.global_wb  = None#8
+quantization.global_qb  = None#10 + change_diff3
+quantization.global_pb  = None#12 + change_diff3
+quantization.global_rfb = None#2
 
-quantization.global_sb  = 6 + change_diff2
-quantization.global_gb  = 10 + change_diff1
-quantization.global_eb  = 6 + change_diff1
+quantization.global_sb  = None#6 + change_diff2
+quantization.global_gb  = None#10 + change_diff1
+quantization.global_eb  = None#6 + change_diff1
 
-quantization.global_ub  = 6
-quantization.global_ab  = 6
-quantization.global_sig = 6
+quantization.global_ub  = None#6
+quantization.global_ab  = None#6
+quantization.global_sig = None#6
 
 quantization.global_rb = 16
 quantization.global_lr = 1#max([int(quantization.global_gb/8), 1]) if quantization.global_gb is not None else None
