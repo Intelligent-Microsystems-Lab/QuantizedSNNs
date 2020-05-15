@@ -140,7 +140,7 @@ epochs = 100
 lr_div = 40
 batch_size = 72
 
-PQ_cap = .75 #.75 #.1, .5, etc. # this value has to be carefully choosen
+PQ_cap = 1 #.75 #.1, .5, etc. # this value has to be carefully choosen
 weight_mult = 4e-5#np.sqrt(4e-5) # decolle -> 1/p_max 
 quantization.weight_mult = weight_mult
 
