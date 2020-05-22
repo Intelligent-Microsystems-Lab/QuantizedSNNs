@@ -226,6 +226,8 @@ def sparse_data_generator_DVSGesture(X, y, batch_size, nb_steps, shuffle, device
 
         
         #change
+        import pdb; pdb.set_trace()
+
         change_mask = torch.bernoulli((shift_prob) * torch.ones(all_events.shape[0])).bool()
         forward_mask = change_mask * torch.bernoulli((.5) * torch.ones(all_events.shape[0])).bool()
         backward_mask = (change_mask != forward_mask)
