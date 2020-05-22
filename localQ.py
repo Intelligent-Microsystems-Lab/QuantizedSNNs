@@ -30,7 +30,7 @@ def create_graph(plot_file_name, diff_layers_acc, ds_name, best_test):
 
     fig, ax1 = plt.subplots()
     fig.set_size_inches(8.4, 4.8)
-    plt.title(ds_name + " "+ bit_string + " Test3: " + str(np.round( best_test.item(), 4)) + str(localQ.shift_prob))
+    plt.title(ds_name + " "+ bit_string + " Test3: " + str(np.round( best_test.item(), 4)) + str(shift_prob))
     ax1.set_xlabel('Epochs')
     ax1.set_ylabel('Accuracy')
     t = np.arange(len(diff_layers_acc['loss']))
