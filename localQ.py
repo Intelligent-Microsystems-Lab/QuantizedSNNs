@@ -17,6 +17,9 @@ import line_profiler
 global lc_ampl
 lc_ampl = .5
 
+global shift_prob 
+shift_prob = .5
+
 
 
 def create_graph(plot_file_name, diff_layers_acc, ds_name, best_test):
@@ -27,7 +30,7 @@ def create_graph(plot_file_name, diff_layers_acc, ds_name, best_test):
 
     fig, ax1 = plt.subplots()
     fig.set_size_inches(8.4, 4.8)
-    plt.title(ds_name + " "+ bit_string + " Test3: " + str(np.round( best_test.item(), 4)))
+    plt.title(ds_name + " "+ bit_string + " Test3: " + str(np.round( best_test.item(), 4)) + str(localQ.shift_prob))
     ax1.set_xlabel('Epochs')
     ax1.set_ylabel('Accuracy')
     t = np.arange(len(diff_layers_acc['loss']))
@@ -222,8 +225,8 @@ def sparse_data_generator_DVSGesture(X, y, batch_size, nb_steps, shuffle, device
         # x_local[torch.sparse.FloatTensor(backward_spike.t(), torch.ones(backward_spike.shape[0]).to(device)).to_dense().bool()] = 1
 
         
-
-        change_mask = torch.bernoulli((.5) * torch.ones(all_events.shape[0])).bool()
+        #change
+        change_mask = torch.bernoulli((shift_prob) * torch.ones(all_events.shape[0])).bool()
         forward_mask = change_mask * torch.bernoulli((.5) * torch.ones(all_events.shape[0])).bool()
         backward_mask = (change_mask != forward_mask)
         all_events[forward_mask, 1] = all_events[forward_mask, 1] + 1
@@ -231,7 +234,6 @@ def sparse_data_generator_DVSGesture(X, y, batch_size, nb_steps, shuffle, device
         all_events[all_events[:,1] == -1] = 0
         all_events[all_events[:,1] == 500] = 499
 
-        import pdb; pdb.set_trace()
 
         all_events = all_events[:,[0,4,2,3,1]]
         all_events[:, 2] = all_events[:, 2]//ds

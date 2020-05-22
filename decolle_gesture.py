@@ -109,8 +109,14 @@ ap.add_argument("-qp", "--qp", type = int, help = "weight bits")
 ap.add_argument("-s", "--s", type = int, help="multiplier")
 ap.add_argument("-eg", "--eg", type = int, help="dataset")
 ap.add_argument("-cap", "--cap", type = float, help="PQ_cap")
+ap.add_argument("-sp", "--sp", type = float, help="shift prob")
 args = vars(ap.parse_args())
 
+
+if args['sp'] is not None:
+    localQ.shift_prob = args['sp']
+else:
+    localQ.shift_prob = 0
 if args['eg'] is not None:
     change_diff1 = args['eg']
 else:
@@ -249,7 +255,7 @@ def eval_test():
 # P_rec = torch.tensor([])
 # Q_rec = torch.tensor([])
 
-args_compact = [delta_t, input_mode, ds, epochs, lr_div, batch_size, PQ_cap, weight_mult, dropout_p, localQ.lc_ampl, l1, l2, tau_mem, tau_ref, tau_syn, thr, quantization.global_wb, quantization.global_qb, quantization.global_pb, quantization.global_rfb, quantization.global_sb, quantization.global_gb, quantization.global_eb, quantization.global_ub, quantization.global_ab, quantization.global_sig, quantization.global_rb, quantization.global_lr, quantization.global_lr_sgd, quantization.global_beta]
+args_compact = [delta_t, input_mode, ds, epochs, lr_div, batch_size, PQ_cap, weight_mult, dropout_p, localQ.lc_ampl, l1, l2, tau_mem, tau_ref, tau_syn, thr, quantization.global_wb, quantization.global_qb, quantization.global_pb, quantization.global_rfb, quantization.global_sb, quantization.global_gb, quantization.global_eb, quantization.global_ub, quantization.global_ab, quantization.global_sig, quantization.global_rb, quantization.global_lr, quantization.global_lr_sgd, quantization.global_beta, localQ.shift_prob]
 
 w1, w2, w3, b1, b2, b3 = None, None, None, None, None, None
 
