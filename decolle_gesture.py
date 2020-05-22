@@ -131,18 +131,18 @@ else:
     PQ_cap = 1
 
 # set quant level
-quantization.global_wb  = 8
-quantization.global_qb  = 10 + change_diff3
-quantization.global_pb  = 12 + change_diff3
-quantization.global_rfb = 2
+quantization.global_wb  = None #8
+quantization.global_qb  = None #10 + change_diff3
+quantization.global_pb  = None #12 + change_diff3
+quantization.global_rfb = None #2
 
-quantization.global_sb  = 6 + change_diff2
-quantization.global_gb  = 10 + change_diff1
-quantization.global_eb  = 6 + change_diff1
+quantization.global_sb  = None #6 + change_diff2
+quantization.global_gb  = None #10 + change_diff1
+quantization.global_eb  = None #6 + change_diff1
 
-quantization.global_ub  = 6
-quantization.global_ab  = 6
-quantization.global_sig = 6
+quantization.global_ub  = None #6
+quantization.global_ab  = None #6
+quantization.global_sig = None #6
 
 quantization.global_rb = 16
 quantization.global_lr = 1#max([int(quantization.global_gb/8), 1]) if quantization.global_gb is not None else None
@@ -159,7 +159,7 @@ epochs = 320
 lr_div = 80
 batch_size = 72
 
-#PQ_cap = .8 #.75 #.1, .5, etc. # this value has to be carefully choosen
+PQ_cap = 1#.8 #.75 #.1, .5, etc. # this value has to be carefully choosen
 weight_mult = 4e-5#np.sqrt(4e-5) # decolle -> 1/p_max 
 quantization.weight_mult = weight_mult
 
@@ -246,8 +246,8 @@ def eval_test():
 
 
 
-P_rec = torch.tensor([])
-Q_rec = torch.tensor([])
+# P_rec = torch.tensor([])
+# Q_rec = torch.tensor([])
 
 args_compact = [delta_t, input_mode, ds, epochs, lr_div, batch_size, PQ_cap, weight_mult, dropout_p, localQ.lc_ampl, l1, l2, tau_mem, tau_ref, tau_syn, thr, quantization.global_wb, quantization.global_qb, quantization.global_pb, quantization.global_rfb, quantization.global_sb, quantization.global_gb, quantization.global_eb, quantization.global_ub, quantization.global_ab, quantization.global_sig, quantization.global_rb, quantization.global_lr, quantization.global_lr_sgd, quantization.global_beta]
 
@@ -281,10 +281,11 @@ for e in range(epochs):
         y_onehot.zero_()
         y_onehot.scatter_(1, y_local.reshape([y_local.shape[0],1]), 1)
 
-        rread_hist1_train = [] 
+        rread_hist1_train = []
         rread_hist2_train = []
         rread_hist3_train = []
         loss_hist = []
+
 
         layer1.state_init(x_local.shape[0])
         layer2.state_init(x_local.shape[0])

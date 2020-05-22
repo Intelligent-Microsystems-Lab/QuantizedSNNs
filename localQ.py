@@ -204,6 +204,25 @@ def sparse_data_generator_DVSGesture(X, y, batch_size, nb_steps, shuffle, device
 
         # to matrix
         #all_events[:,4][all_events[:,4] == 0] = -1
+        # spike_ind = (x_local == 1).nonzero()
+        # spike_ind = spike_ind[torch.bernoulli((.5) * torch.ones(spike_ind.shape[0])).bool()]
+        # spike_ind = spike_ind[torch.randperm(spike_ind.shape[0])]
+        # split_point = int(spike_ind.shape[0]/2)
+        # forward_spike = spike_ind[0:split_point]
+        # backward_spike = spike_ind[split_point:]
+
+        # x_local[torch.sparse.FloatTensor(forward_spike.t(), torch.ones(forward_spike.shape[0]).to(device)).to_dense().bool()] = 0
+        # forward_spike[:,4] =  forward_spike[:,4] + 1
+        # forward_spike[forward_spike[:,4] == 500] = 499
+        # x_local[torch.sparse.FloatTensor(forward_spike.t(), torch.ones(forward_spike.shape[0]).to(device)).to_dense().bool()] = 1
+
+        # x_local[torch.sparse.FloatTensor(backward_spike.t(), torch.ones(backward_spike.shape[0]).to(device)).to_dense().bool()] = 0
+        # backward_spike[:,4] =  backward_spike[:,4] - 1
+        # backward_spike[backward_spike[:,4] == -1] = 0
+        # x_local[torch.sparse.FloatTensor(backward_spike.t(), torch.ones(backward_spike.shape[0]).to(device)).to_dense().bool()] = 1
+
+        import pdb; pdb.set_trace()
+
         all_events = all_events[:,[0,4,2,3,1]]
         all_events[:, 2] = all_events[:, 2]//ds
         all_events[:, 3] = all_events[:, 3]//ds
