@@ -221,6 +221,16 @@ def sparse_data_generator_DVSGesture(X, y, batch_size, nb_steps, shuffle, device
         # backward_spike[backward_spike[:,4] == -1] = 0
         # x_local[torch.sparse.FloatTensor(backward_spike.t(), torch.ones(backward_spike.shape[0]).to(device)).to_dense().bool()] = 1
 
+        
+
+        change_mask = torch.bernoulli((.5) * torch.ones(all_events.shape[0])).bool()
+        forward_mask = change_mask * torch.bernoulli((.5) * torch.ones(all_events.shape[0])).bool()
+        backward_mask = (change_mask != forward_mask)
+        all_events[forward_mask, 1] = all_events[forward_mask, 1] + 1
+        all_events[backward_mask, 1] = all_events[backward_mask, 1] + 1
+        all_events[all_events[:,1] == -1] = 0
+        all_events[all_events[:,1] == 500] = 499
+
         import pdb; pdb.set_trace()
 
         all_events = all_events[:,[0,4,2,3,1]]
