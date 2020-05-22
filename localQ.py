@@ -234,6 +234,7 @@ def sparse_data_generator_DVSGesture(X, y, batch_size, nb_steps, shuffle, device
         all_events[backward_mask, 1] = all_events[backward_mask, 1] - 1
         neg_ind = (all_events[:,1] == -1)
         pos_ind = (all_events[:,1] == 500)
+        pos_ind = (all_events[:,1] == 1800)
         all_events[neg_ind,1] = all_events[neg_ind,1] +1 
         all_events[pos_ind,1] = all_events[pos_ind,1] -1
 
