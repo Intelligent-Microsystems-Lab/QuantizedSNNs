@@ -30,7 +30,7 @@ def create_graph(plot_file_name, diff_layers_acc, ds_name, best_test):
 
     fig, ax1 = plt.subplots()
     fig.set_size_inches(8.4, 4.8)
-    plt.title(ds_name + " "+ bit_string + " Test3: " + str(np.round( best_test.item(), 4)) + str(shift_prob))
+    plt.title(ds_name + " "+ bit_string + " Test3: " + str(np.round( best_test.item(), 4)) + " " +str(shift_prob))
     ax1.set_xlabel('Epochs')
     ax1.set_ylabel('Accuracy')
     t = np.arange(len(diff_layers_acc['loss']))
@@ -230,12 +230,13 @@ def sparse_data_generator_DVSGesture(X, y, batch_size, nb_steps, shuffle, device
         change_mask = torch.bernoulli((shift_prob) * torch.ones(all_events.shape[0])).bool()
         forward_mask = change_mask * torch.bernoulli((.5) * torch.ones(all_events.shape[0])).bool()
         backward_mask = (change_mask != forward_mask)
+        import pdb; pdb.set_trace()
         all_events[forward_mask, 1] = all_events[forward_mask, 1] + 1
         all_events[backward_mask, 1] = all_events[backward_mask, 1] - 1
-        neg_ind = (all_events[:,1] == -1)
-        pos_ind = (all_events[:,1] == nb_steps+1)
-        all_events[neg_ind,1] = all_events[neg_ind,1] +1 
-        all_events[pos_ind,1] = all_events[pos_ind,1] -1
+        neg_ind = (all_events[:,1] < 0)
+        pos_ind = (all_events[:,1] > nb_steps)
+        all_events[neg_ind,1] = 0  
+        all_events[pos_ind,1] = nb_steps
 
 
         all_events = all_events[:,[0,4,2,3,1]]
