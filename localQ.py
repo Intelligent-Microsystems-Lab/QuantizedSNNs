@@ -226,17 +226,19 @@ def sparse_data_generator_DVSGesture(X, y, batch_size, nb_steps, shuffle, device
 
         
         #change
+        # by plus minus one process...
+        # change_mask = torch.bernoulli((shift_prob) * torch.ones(all_events.shape[0])).bool()
+        # forward_mask = change_mask * torch.bernoulli((.5) * torch.ones(all_events.shape[0])).bool()
+        # backward_mask = (change_mask != forward_mask)
+        # all_events[forward_mask, 1] = all_events[forward_mask, 1] + 1 #torch.randn(all_events[forward_mask, 1].shape[0])
+        # all_events[backward_mask, 1] = all_events[backward_mask, 1] - 1
 
-        change_mask = torch.bernoulli((shift_prob) * torch.ones(all_events.shape[0])).bool()
-        forward_mask = change_mask * torch.bernoulli((.5) * torch.ones(all_events.shape[0])).bool()
-        backward_mask = (change_mask != forward_mask)
-        import pdb; pdb.set_trace()
-        all_events[forward_mask, 1] = all_events[forward_mask, 1] + 1
-        all_events[backward_mask, 1] = all_events[backward_mask, 1] - 1
+        all_events[:, 1] = all_events[:, 1] + (shift_prob*np.random.randn(all_events[:, 1].shape[0])).astype(int)
+
         neg_ind = (all_events[:,1] < 0)
         pos_ind = (all_events[:,1] > nb_steps)
         all_events[neg_ind,1] = 0  
-        all_events[pos_ind,1] = nb_steps
+        all_events[pos_ind,1] = int(nb_steps)
 
 
         all_events = all_events[:,[0,4,2,3,1]]

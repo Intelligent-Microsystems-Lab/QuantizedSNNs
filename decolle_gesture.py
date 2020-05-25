@@ -116,7 +116,7 @@ args = vars(ap.parse_args())
 if args['sp'] is not None:
     localQ.shift_prob = args['sp']
 else:
-    localQ.shift_prob = 0.5
+    localQ.shift_prob = 1
 if args['eg'] is not None:
     change_diff1 = args['eg']
 else:
