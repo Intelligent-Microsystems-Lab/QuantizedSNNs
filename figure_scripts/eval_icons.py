@@ -761,43 +761,43 @@ axes.yaxis.set_tick_params(width=2)
 
 axes.set_xlabel('Epochs')
 axes.set_ylabel('Error')
-axes.plot(noneDD, label='none')
-axes.plot(baseDD, label='base')
+axes.plot(noneDD, label='None')
+axes.plot(baseDD, label='Base')
 axes.plot(pqDD, label='PQ')
-axes.plot(egDD, label='EG')
+axes.plot(egDD, label='EG', color='#EE82EE')
 
-axes.scatter(len(noneDD)-1, noneDD[-1], marker='d', color= '#1f77b4', s = 140, edgecolor='black', linewidth='2')
-axes.text(len(noneDD)+1, noneDD[-1]+.001, r'(b)', fontsize=15,fontweight='bold')
+axes.scatter(len(noneDD)-1, noneDD[-1], marker='d', color= '#1f77b4', s = 140, edgecolor='black', linewidth='3', zorder = 10)
+axes.text(len(noneDD)+2, noneDD[-1], r'(b)', fontsize=19,fontweight='bold', zorder = 10)
 
-axes.scatter(5, noneDD[5], marker='d', color= '#1f77b4', s = 140, edgecolor='black', linewidth='2')
-axes.text(5, noneDD[5]+.015, r'(c)', fontsize=15,fontweight='bold')
-
-
-
-
-axes.scatter(len(noneDD)-1, baseDD[-1], marker='d', color= '#ff7f0e', s = 140, edgecolor='black', linewidth='2')
-axes.text(len(noneDD)-1, baseDD[-1]-0.04, r'(e)', fontsize=15,fontweight='bold')
-
-axes.scatter(5, baseDD[5], marker='d', color= '#ff7f0e', s = 140, edgecolor='black', linewidth='2')
-axes.text(5, baseDD[5]+.015, r'(f)', fontsize=15,fontweight='bold')
+axes.scatter(5, noneDD[5], marker='d', color= '#1f77b4', s = 140, edgecolor='black', linewidth='3', zorder = 10)
+axes.text(5+3, noneDD[5], r'(c)', fontsize=19,fontweight='bold', zorder = 10)
 
 
 
 
-axes.scatter(len(noneDD)-1, egDD[-1], marker='d', color= '#d62728', s = 140, edgecolor='black', linewidth='2')
-axes.text(len(noneDD)+1, egDD[-1]+.001, r'(i)', fontsize=15,fontweight='bold')
+axes.scatter(len(noneDD)-1, baseDD[-1], marker='d', color= '#ff7f0e', s = 140, edgecolor='black', linewidth='3', zorder = 10)
+axes.text(len(noneDD)+2, baseDD[-1]-0.02, r'(e)', fontsize=19,fontweight='bold', zorder = 10)
 
-axes.scatter(5, egDD[5], marker='d', color= '#d62728', s = 140, edgecolor='black', linewidth='2')
-axes.text(5, egDD[5]+.015, r'(h)', fontsize=15,fontweight='bold')
-
-
+axes.scatter(5, baseDD[5], marker='d', color= '#ff7f0e', s = 140, edgecolor='black', linewidth='3', zorder = 10)
+axes.text(5+3, baseDD[5]-0.02, r'(f)', fontsize=19,fontweight='bold', zorder = 10)
 
 
-axes.scatter(len(noneDD)-1, pqDD[-1], marker='d', color= '#2ca02c', s = 140, edgecolor='black', linewidth='2',)
-axes.text(len(noneDD)+1, pqDD[-1]+.001, r'(g)', fontsize=15,fontweight='bold')
 
-axes.scatter(5, pqDD[5], marker='d', color= '#2ca02c', s = 140, edgecolor='black', linewidth='2',)
-axes.text(5, pqDD[5]+.015, r'(d)', fontsize=15,fontweight='bold')
+#'#734F96', '#DDA0DD', '#EE82EE'
+axes.scatter(len(noneDD)-1, egDD[-1], marker='d', color= '#EE82EE', s = 140, edgecolor='black', linewidth='3', zorder = 10)
+axes.text(len(noneDD)+2, egDD[-1], r'(i)', fontsize=19,fontweight='bold', zorder = 10)
+
+axes.scatter(5, egDD[5], marker='d', color= '#EE82EE', s = 140, edgecolor='black', linewidth='3', zorder = 10)
+axes.text(5+3, egDD[5]-0.03, r'(h)', fontsize=19, fontweight='bold', zorder = 10)
+
+
+
+
+axes.scatter(len(noneDD)-1, pqDD[-1], marker='d', color= '#2ca02c', s = 140, edgecolor='black', linewidth='3', zorder = 10)
+axes.text(len(noneDD)+2, pqDD[-1], r'(g)', fontsize=19, fontweight='bold', zorder = 10)
+
+axes.scatter(5, pqDD[5], marker='d', color= '#2ca02c', s = 140, edgecolor='black', linewidth='3', zorder = 10)
+axes.text(5+3, pqDD[5], r'(d)', fontsize=19,fontweight='bold', zorder = 10)
 
 
 axes.legend(loc='lower center', bbox_to_anchor=(0.5,1.0), ncol=4, frameon=False)
@@ -878,6 +878,19 @@ with open("results3/Base.pkl", 'rb') as f:
   # have to specify it.
   dvspokerFF = pickle.load(f)
 
+
+
+with open("results3/Base.pkl", 'rb') as f:
+  # The protocol version used is detected automatically, so we do not
+  # have to specify it.
+  dvspoker = pickle.load(f)
+
+with open("results3/BaseFF.pkl", 'rb') as f:
+  # The protocol version used is detected automatically, so we do not
+  # have to specify it.
+  dvspokerFF = pickle.load(f)
+
+
 N = 5
 pokerFF = 1-np.convolve([x.item() for x in dvspokerFF['acc']['test3']], np.ones((N,))/N, mode='valid')
 N = 5
@@ -910,18 +923,18 @@ axes.yaxis.set_tick_params(width=2)
 axes.set_xlabel('Epochs')
 axes.set_ylabel('Error')
 #axes.plot(noneDD, label='MNIST')
-axes.plot(poker, label='DVS Poker', c='blue')
-axes.plot(pokerFF, '--' ,c='orange')
-axes.scatter(len(poker) + 5, testBase, c='blue', marker= "d", s = 100)
-axes.scatter(len(poker) + 5, testFF, c='orange', marker= "d", s = 100)
+axes.plot(poker, label='Base Validation', c='blue')
+axes.plot(pokerFF, '--', label = 'None Validation' ,c='orange')
+axes.scatter(len(poker) + 5, testBase, label = 'Base Test', c='blue', marker= "d", s = 100)
+axes.scatter(len(poker) + 5, testFF, label = 'None Test', c='orange', marker= "d", s = 100)
 #axes.plot(gest, label='DVS Gesture')
-#axes.legend(loc='lower center', bbox_to_anchor=(0.5,1.0), ncol=4, frameon=False)
+axes.legend(loc='lower center', bbox_to_anchor=(0.5,1.0), ncol=2, frameon=False)
 
 
 #plt.title("Surrogate Gradient PDF")
 #plt.legend()
 plt.tight_layout()
-plt.savefig("data_set_poker.pdf")
+plt.savefig("data_set_gest.pdf")
 
 
 
@@ -1365,13 +1378,39 @@ axes.xaxis.set_tick_params(width=2)
 axes.yaxis.set_tick_params(width=2)
  
 
+eg_txt = ['14', '13', '11', '10', '9', '8']
+pq_txt = ['12', '11', '9', '8', '7', '6']
+
 color_bla1 = np.array([[255*1, 0, 0], [255*.85, 0, 0], [255*.7, 0, 0],[255*.55, 0, 0], [255*.4, 0, 0], [255*.25, 0, 0]])
 color_bla2 = np.array([[0, 255*1, 0], [0, 255*.85, 0], [0, 255*.7, 0],[0, 255*.55, 0], [0, 255*.4, 0], [0, 255*.25, 0 ]])
 
 axes.scatter(acc_list[1:7],val_spikes[1:7], label = "PQ", marker = 's', c=color_bla1/255.0, s=100)
 axes.scatter(acc_list[7:],val_spikes[7:], label = "EG", marker = 'o', c=color_bla2/255.0, s=100)
+
+eg_x = acc_list[7:]
+eg_y = val_spikes[7:]
+for i, txt in enumerate(eg_txt):
+    axes.annotate(txt + ' bits', (eg_x[i]+.015, eg_y[i]), fontsize = 11)
+
+
+pq_x = acc_list[1:7]
+pq_y = val_spikes[1:7]
+for i, txt in enumerate(pq_txt):
+
+    if txt == '7':
+        import pdb; pdb.set_trace()
+        axes.annotate(txt + ' bits', (pq_x[i]+.015, pq_y[i]-.1), fontsize = 11)
+    elif txt == '8':
+        axes.annotate(txt + ' bits', (pq_x[i]+.015, pq_y[i]), fontsize = 11)
+    elif txt == '9':
+        axes.annotate(txt + ' bits', (pq_x[i]+.015, pq_y[i]), fontsize = 11)
+    elif txt == '11':
+        axes.annotate(txt + ' bits', (pq_x[i]+.015, pq_y[i]), fontsize = 11)
+    else:
+        axes.annotate(txt + ' bits', (pq_x[i]+.015, pq_y[i]), fontsize = 11)
+
 axes.scatter(acc_list[0],val_spikes[0], label = "base", marker = '*', s=100)
-axes.scatter(FFB1,FFB2, label = "none", marker = 'd', s=100)
+#axes.scatter(FFB1,FFB2, label = "none", marker = 'd', s=100)
 # Add xticks on the middle of the group bars
 axes.set_xlabel('Accuracy', fontweight='bold')
 axes.set_ylabel('# Spikes', fontweight='bold')
