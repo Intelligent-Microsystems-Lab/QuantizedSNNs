@@ -12,7 +12,6 @@ import uuid
 
 import quantization
 
-import line_profiler
 
 global lc_ampl
 lc_ampl = .5

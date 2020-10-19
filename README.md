@@ -2,7 +2,7 @@
 
 This repository contains the models and training scripts used in the papers: ["Quantizing Spiking Neural Networks with Integers"](https://dl.acm.org/doi/abs/10.1145/3407197.3407203) (ICONS 2020) and ["Memory Organization for Energy-Efficient Learning and Inference in Digital Neuromorphic Accelerators"](https://ieeexplore.ieee.org/document/9180443) (ISCAS 2020).
 
-## Requiremtns
+## Requiremnts
 
 - Python
 - PyTorch
@@ -14,13 +14,13 @@ This repository contains the models and training scripts used in the papers: ["Q
 
 ## Quantized SNNs for Spatio-Temporal Patterns
 
-All relevant code for the experiements from the ISCAS paper is contained in spytorch_precise.py, quantization.py and spytorch_util.py. To run the experiments execute:
+All relevant code for the experiments from the ISCAS paper is contained in spytorch_precise.py, quantization.py and spytorch_util.py. To run the experiments execute:
 
 ```
 python spytorch_precise.py
 ```
 
-You can specify desired setting either as command line arguments or within spytorch_precise.py.
+You can specify desired setting either as command-line arguments or within spytorch_precise.py.
 
 Optional arguments:
 
@@ -44,3 +44,9 @@ Optional arguments:
 | --nb_inputs NB_INPUTS  | Spatial input dimensions (default: 700)                  |
 | --nb_hidden NB_HIDDEN  | Spatial hidden dimensions (default: 400)                 |
 | --nb_outputs NB_OUTPUTS| Spatial output dimensions (default: 250)                 |
+
+
+## Quantized SNNs for Gesture Detection with Local Learning
+
+
+

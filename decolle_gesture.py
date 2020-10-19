@@ -1,33 +1,58 @@
+import pickle, argparse, time,  math, datetime, uuid
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
-import pickle
-import time
-import math
 import numpy as np
-import pandas as pd
-import argparse
-from tqdm import tqdm
-import datetime
-import uuid
-import argparse
-
 
 import quantization
 import localQ
 from localQ import sparse_data_generator_Static, sparse_data_generator_DVSGesture, sparse_data_generator_DVSPoker, LIFConv2dLayer, prep_input, acc_comp, create_graph, DTNLIFConv2dLayer, create_graph2
 
-import line_profiler
 
-#torch.autograd.set_detect_anomaly(True)
+
+parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+ap.add_argument("-qp", "--qp", type = int, help = "weight bits")
+ap.add_argument("-s", "--s", type = int, help="multiplier")
+ap.add_argument("-eg", "--eg", type = int, help="dataset")
+ap.add_argument("-cap", "--cap", type = float, help="PQ_cap")
+ap.add_argument("-sp", "--sp", type = float, help="shift prob")
+
+
+parser.add_argument("--input", type=str, default="./data/input_700_250_25.pkl", help='Input pickle')
+parser.add_argument("--target", type=str, default="./data/smile95.pkl", help='Target pattern pickle')
+
+parser.add_argument("--global_wb", type=int, default=2, help='Weight bitwidth')
+parser.add_argument("--global_ab", type=int, default=8, help='Membrane potential, synapse state bitwidth')
+parser.add_argument("--global_gb", type=int, default=8, help='Gradient bitwidth')
+parser.add_argument("--global_eb", type=int, default=8, help='Error bitwidth')
+parser.add_argument("--global_rb", type=int, default=16, help='Gradient RNG bitwidth')
+
+parser.add_argument("--time_step", type=float, default=1e-3, help='Simulation time step size')
+parser.add_argument("--nb_steps", type=float, default=250, help='Simulation steps')
+parser.add_argument("--nb_epochs", type=float, default=10000, help='Simulation steps')
+
+parser.add_argument("--tau_mem", type=float, default=10e-3, help='Time constant for membrane potential')
+parser.add_argument("--tau_syn", type=float, default=5e-3, help='Time constant for synapse')
+parser.add_argument("--tau_vr", type=float, default=5e-3, help='Time constant for Van Rossum distance')
+parser.add_argument("--alpha", type=float, default=.75, help='Time constant for synapse')
+parser.add_argument("--beta", type=float, default=.875, help='Time constant for Van Rossum distance')
+
+parser.add_argument("--nb_inputs", type=int, default=700, help='Spatial input dimensions')
+parser.add_argument("--nb_hidden", type=int, default=400, help='Spatial hidden dimensions')
+parser.add_argument("--nb_outputs", type=int, default=250, help='Spatial output dimensions')
+
+args = parser.parse_args()
+
 
 # Check whether a GPU is available
 if torch.cuda.is_available():
     device = torch.device("cuda")     
 else:
     device = torch.device("cpu")
-dtype = torch.float32 # originally that was 64, but 32 is way faster
+dtype = torch.float32 
 ms = 1e-3
 
 # # DVS ASL
@@ -104,13 +129,6 @@ x_size = 32
 y_size = 32
 
 
-ap = argparse.ArgumentParser()
-ap.add_argument("-qp", "--qp", type = int, help = "weight bits")
-ap.add_argument("-s", "--s", type = int, help="multiplier")
-ap.add_argument("-eg", "--eg", type = int, help="dataset")
-ap.add_argument("-cap", "--cap", type = float, help="PQ_cap")
-ap.add_argument("-sp", "--sp", type = float, help="shift prob")
-args = vars(ap.parse_args())
 
 
 if args['sp'] is not None:
@@ -151,10 +169,9 @@ quantization.global_ab  = 6
 quantization.global_sig = 6
 
 quantization.global_rb = 16
-quantization.global_lr = 1#max([int(quantization.global_gb/8), 1]) if quantization.global_gb is not None else None
-quantization.global_lr_sgd = 1.0e-9#np.geomspace(1.0e-2, 1.0e-9, 32)[quantization.global_wb-1]  if quantization.global_wb is not None else 1.0e-9
-# quantization.global_lr_old = max([int(quantization.global_gb/8), 1]) if quantization.global_wb is not None else None # under development
-quantization.global_beta = 1.5#quantization.step_d(quantization.global_wb)-.5 #1.5 #
+quantization.global_lr = 1
+quantization.global_lr_sgd = 1.0e-9
+quantization.global_beta = 1.5
 
 # set parameters
 delta_t = 1*ms

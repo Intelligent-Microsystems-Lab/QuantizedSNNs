@@ -4,3 +4,5 @@ results/*
 .README.md.icloud
 data/train_dvs_gesture.pickle
 data/test_dvs_gesture.pickle
+data/slow_poker_500_train.pickle
+data/slow_poker_500_test.pickle
