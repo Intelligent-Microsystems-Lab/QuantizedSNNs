@@ -6,9 +6,15 @@ This repository contains the models and training scripts used in the papers: ["Q
 
 - Python
 - PyTorch
+- torchvision
 - NumPy
+- pickle
+- argparse
+
 
 ## Quantized SNNs for Spatio-Temporal Patterns
+
+All relevant code for the experiements from the ISCAS paper is contained in spytorch_precise.py, quantization.py and spytorch_util.py. To run the experiments execute:
 
 ```
 python spytorch_precise.py
