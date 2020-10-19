@@ -19,7 +19,7 @@ You can specify desired setting either as command line arguments or within spyto
 Optional arguments:
 
 | Argument               |  Description                                             | 
-|:----------------------:|:--------------------------------------------------------:|
+|:-----------------------|:---------------------------------------------------------|
 | --input INPUT          | Input pickle file (default: ./data/input_700_250_25.pkl) |
 | --target TARGET        | Target pattern pickle (default: ./data/smile95.pkl)      |
 | --global_wb GLOBAL_WB  | Weight bitwidth (default: 2)                             |
