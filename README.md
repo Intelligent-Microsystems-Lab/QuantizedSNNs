@@ -51,6 +51,7 @@ Optional arguments:
 
 
 ## Quantized SNNs for Gesture Detection with Local Learning
+![Quantization Scheme](figures/ICONS_QuantSNN.png)
 
 Download and extract the [DVS Slow Poker](http://www2.imse-cnm.csic.es/caviar/SLOWPOKERDVS.html#:~:text=The%20SLOW%2DPOKER%2DDVS%20database,diamond%2C%20heart%20or%20spade) and [DVS Gesture](https://www.research.ibm.com/dvsgesture/) data set.
 
@@ -70,6 +71,8 @@ All relevant code for the experiments from the ICONS paper is contained in qsnn_
 ```
 python qsnn_decolle.py
 ```
+
+![Training Curve](figures/ICONS_data_set_poker.png) ![Training Curve](figures/ICONS_data_set_gest.png)
 
 You can specify desired setting either as command-line arguments or within qsnn_decolle.py.
 
