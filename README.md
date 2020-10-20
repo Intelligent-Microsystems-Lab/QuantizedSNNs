@@ -50,13 +50,24 @@ Optional arguments:
 
 Download and extract the [DVS Slow Poker](http://www2.imse-cnm.csic.es/caviar/SLOWPOKERDVS.html#:~:text=The%20SLOW%2DPOKER%2DDVS%20database,diamond%2C%20heart%20or%20spade) and [DVS Gesture](https://www.research.ibm.com/dvsgesture/) data set.
 
+To prepare the data run the following commands in the respective directories (e.g. in the directory of the DVS Poker data or the DVS Gesture data).
+
+```
+python prepPoker.py
+```
+
+```
+python preGesture.py
+```
+
+
 All relevant code for the experiments from the ICONS paper is contained in qsnn_decolle.py, quantization.py and localQ.py. To run the experiments execute:
 
 ```
 python qsnn_decolle.py
 ```
 
-You can specify desired setting either as command-line arguments or within spytorch_precise.py.
+You can specify desired setting either as command-line arguments or within qsnn_decolle.py.
 
 Optional arguments:
 
