@@ -21,7 +21,7 @@ All relevant code for the experiments from the ISCAS paper is contained in qsnn_
 ```
 python qsnn_precise.py
 ```
-
+<img src="figures/ISCAS_smile_black.png" width="60%">
 ![Training Curve](figures/ISCAS_smile_black.png)
 
 You can specify desired setting either as command-line arguments or within qsnn_precise.py.
@@ -62,7 +62,7 @@ python prepPoker.py
 ```
 
 ```
-python preGesture.py
+python prepGesture.py
 ```
 
 
