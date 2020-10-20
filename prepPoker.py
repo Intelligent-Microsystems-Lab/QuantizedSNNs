@@ -79,10 +79,7 @@ def read_aedat31(filename, labels_f, test_set = False):
     return gestures_full, labels_full
 
 
-# user02_lab_labels
-# user12_fluorescent_led_labels
 
-# full set
 gestures_full = []
 labels_full = []
 with open('trials_to_train.txt') as fp:
@@ -100,62 +97,18 @@ with open('train_dvs_gesture.pickle', 'wb') as handle:
 
 
 
-# gestures_full = []
-# labels_full = []
-# with open('trials_to_test.txt') as fp:
-#     for cnt, line in enumerate(fp):
-#         try:
-#             gestures_temp, labels_temp = read_aedat31(line.split(".")[0] + ".aedat", line.split(".")[0] + "_labels.csv", test_set = True)
-#             gestures_full += gestures_temp
-#             labels_full += labels_temp
-#         except:
-#             continue
+gestures_full = []
+labels_full = []
+with open('trials_to_test.txt') as fp:
+    for cnt, line in enumerate(fp):
+        try:
+            gestures_temp, labels_temp = read_aedat31(line.split(".")[0] + ".aedat", line.split(".")[0] + "_labels.csv", test_set = True)
+            gestures_full += gestures_temp
+            labels_full += labels_temp
+        except:
+            continue
 
-# with open('test_dvs_gesture.pickle', 'wb') as handle:
-#     pickle.dump((gestures_full, labels_full), handle)
+with open('test_dvs_gesture.pickle', 'wb') as handle:
+    pickle.dump((gestures_full, labels_full), handle)
 
-
-
-
-
-# gestures_full = []
-# labels_full = []
-# gestures_temp, labels_temp = read_aedat31("user01_led.aedat", "user01_led_labels.csv", test_set = True)
-# gestures_full += gestures_temp
-# labels_full += labels_temp
-
-# with open('small_train_dvs_gesture.pickle', 'wb') as handle:
-#     pickle.dump((gestures_full, labels_full), handle)
-
-
-
-
-# gestures_full = []
-# labels_full = []
-# gestures_temp, labels_temp = read_aedat31("user29_fluorescent_led.aedat", "user29_fluorescent_led_labels.csv", test_set = True)
-# gestures_full += gestures_temp
-# labels_full += labels_temp
-
-# with open('small_test_dvs_gesture.pickle', 'wb') as handle:
-#     pickle.dump((gestures_full, labels_full), handle)
-
-
-
-# # visualize
-# import matplotlib.pyplot as plt
-# import matplotlib.animation as animation
-
-
-# plt.clf()
-# fig1 = plt.figure()
-
-# ims = []
-# for i in np.arange(sparse_matrix.shape[0]):
-#     ims.append((plt.imshow( sparse_matrix[i,:,:]), ))
-
-# im_ani = animation.ArtistAnimation(fig1, ims, interval=1, repeat_delay=2000,
-#                                    blit=True)
-# plt.show()
-
-#im_ani.save('gesture.mp4', metadata={'artist':'Clemens'})
 
