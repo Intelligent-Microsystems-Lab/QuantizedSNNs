@@ -14,7 +14,9 @@ This repository contains the models and training scripts used in the papers: ["Q
 
 ## Quantized SNNs for Spatio-Temporal Patterns
 
-![Quantization Scheme](figures/ISCAS_schem1.png)
+<p align="center">
+<img src="figures/ISCAS_schem1.png" width="80%">
+</p>
 
 All relevant code for the experiments from the ISCAS paper is contained in qsnn_precise.py, quantization.py and qsnn_util.py. To run the experiments execute:
 
