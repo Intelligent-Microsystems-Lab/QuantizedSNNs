@@ -20,7 +20,6 @@ global shift_prob
 shift_prob = .5
 
 
-
 def create_graph(plot_file_name, diff_layers_acc, ds_name, best_test):
 
     bit_string = str(quantization.global_wb) + str(quantization.global_ub) + str(quantization.global_pb) + str(quantization.global_qb) + str(quantization.global_rfb) + " " + str(quantization.global_sb) + str(quantization.global_ab) + str(quantization.global_sig) + str(quantization.global_eb) + str(quantization.global_gb)
@@ -339,7 +338,6 @@ class QLinearFunctional(torch.autograd.Function):
 
 class QLinearLayerSign(nn.Module):
     '''from https://github.com/L0SG/feedback-alignment-pytorch/'''
-    # we dont have a bias 
     def __init__(self, input_features, output_features, pass_through = False, bias = True, dtype = None, device = None):
         super(QLinearLayerSign, self).__init__()
         self.input_features  = input_features

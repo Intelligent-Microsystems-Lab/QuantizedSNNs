@@ -11,42 +11,6 @@ import localQ
 from localQ import sparse_data_generator_Static, sparse_data_generator_DVSGesture, sparse_data_generator_DVSPoker, LIFConv2dLayer, prep_input, acc_comp, create_graph, DTNLIFConv2dLayer, create_graph2
 
 
-
-parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-
-ap.add_argument("-qp", "--qp", type = int, help = "weight bits")
-ap.add_argument("-s", "--s", type = int, help="multiplier")
-ap.add_argument("-eg", "--eg", type = int, help="dataset")
-ap.add_argument("-cap", "--cap", type = float, help="PQ_cap")
-ap.add_argument("-sp", "--sp", type = float, help="shift prob")
-
-
-parser.add_argument("--input", type=str, default="./data/input_700_250_25.pkl", help='Input pickle')
-parser.add_argument("--target", type=str, default="./data/smile95.pkl", help='Target pattern pickle')
-
-parser.add_argument("--global_wb", type=int, default=2, help='Weight bitwidth')
-parser.add_argument("--global_ab", type=int, default=8, help='Membrane potential, synapse state bitwidth')
-parser.add_argument("--global_gb", type=int, default=8, help='Gradient bitwidth')
-parser.add_argument("--global_eb", type=int, default=8, help='Error bitwidth')
-parser.add_argument("--global_rb", type=int, default=16, help='Gradient RNG bitwidth')
-
-parser.add_argument("--time_step", type=float, default=1e-3, help='Simulation time step size')
-parser.add_argument("--nb_steps", type=float, default=250, help='Simulation steps')
-parser.add_argument("--nb_epochs", type=float, default=10000, help='Simulation steps')
-
-parser.add_argument("--tau_mem", type=float, default=10e-3, help='Time constant for membrane potential')
-parser.add_argument("--tau_syn", type=float, default=5e-3, help='Time constant for synapse')
-parser.add_argument("--tau_vr", type=float, default=5e-3, help='Time constant for Van Rossum distance')
-parser.add_argument("--alpha", type=float, default=.75, help='Time constant for synapse')
-parser.add_argument("--beta", type=float, default=.875, help='Time constant for Van Rossum distance')
-
-parser.add_argument("--nb_inputs", type=int, default=700, help='Spatial input dimensions')
-parser.add_argument("--nb_hidden", type=int, default=400, help='Spatial hidden dimensions')
-parser.add_argument("--nb_outputs", type=int, default=250, help='Spatial output dimensions')
-
-args = parser.parse_args()
-
-
 # Check whether a GPU is available
 if torch.cuda.is_available():
     device = torch.device("cuda")     
@@ -55,166 +19,157 @@ else:
 dtype = torch.float32 
 ms = 1e-3
 
-# # DVS ASL
-# ds_name = "DVS ASL"
-# with open('data/dvs_asl.pickle', 'rb') as f:
-#     data = pickle.load(f)
+parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument("--data-set", type=str, default="Gesture", help='Input date set: Poker/Gesture')
 
-# data = np.array(data).T
-# np.random.shuffle(data)
-# split_point = int(data.shape[0]*.8)
+parser.add_argument("--global_wb", type=int, default=8, help='Weight bitwidth')
+parser.add_argument("--global_qb", type=int, default=10, help='Synapse bitwidth')
+parser.add_argument("--global_pb", type=int, default=12, help='Membrane trace bitwidth')
+parser.add_argument("--global_rfb", type=int, default=2, help='Refractory bitwidth')
 
-# x_train = data[:split_point,0].tolist()
-# y_train = data[:split_point,1].astype(np.int8)   - 1
-# x_test = data[split_point:,0].tolist()
-# y_test = data[split_point:,1].astype(np.int8)   - 1
-# del data
+parser.add_argument("--global_sb", type=int, default=6, help='Learning signal bitwidth')
+parser.add_argument("--global_gb", type=int, default=10, help='Gradient bitwidth')
+parser.add_argument("--global_eb", type=int, default=6, help='Error bitwidth')
 
-# output_neurons = 24
-# T = 100*ms
-# T_test = 100*ms
-# burnin = 10*ms
-# x_size = 60
-# y_size = 45
+parser.add_argument("--global_ub", type=int, default=6, help='Membrane Potential bitwidth')
+parser.add_argument("--global_ab", type=int, default=6, help='Activation bitwidth')
+parser.add_argument("--global_sig", type=int, default=6, help='Sigmoid bitwidth')
 
+parser.add_argument("--global_rb", type=int, default=16, help='Gradient RNG bitwidth')
+parser.add_argument("--global_lr", type=int, default=1, help='Learning rate for quantized gradients')
+parser.add_argument("--global_lr_sgd", type=float, default=1.0e-9, help='Learning rate for SGD')
+parser.add_argument("--global_beta", type=float, default=1.5, help='Beta for weight init')
 
-# # DVS Poker
-# # load data
-# ds_name = "DVS Poker"
-# with open('../slow_poker_500_train.pickle', 'rb') as f:
-#     data = pickle.load(f)
-# x_train = data[0]
-# y_train = data[1]
+parser.add_argument("--delta_t", type=float, default=1*ms, help='Time step in ms')
+parser.add_argument("--input_mode", type=int, default=0, help='Spike processing method')
+parser.add_argument("--ds", type=int, default=4, help='Downsampling')
+parser.add_argument("--epochs", type=int, default=320, help='Epochs for training')
+parser.add_argument("--lr_div", type=int, default=80, help='Learning rate divide interval')
+parser.add_argument("--batch_size", type=int, default=72, help='Batch size')
 
-# with open('../slow_poker_500_test.pickle', 'rb') as f:
-#     data = pickle.load(f)
-# x_test = data[0]
-# y_test = data[1]
+parser.add_argument("--PQ_cap", type=float, default=1, help='Value cap for membrane and synpase trace')
+parser.add_argument("--weight_mult", type=float, default=4e-5, help='Weight multiplier')
+parser.add_argument("--dropout_p", type=float, default=.5, help='Dropout probability')
+parser.add_argument("--lc_ampl", type=float, default=.5, help='Magnitude amplifier for weight init')
+parser.add_argument("--l1", type=float, default=.001, help='Regularizer 1')
+parser.add_argument("--l2", type=float, default=.001, help='Regularizer 2')
 
-# output_neurons = 4
-# T = 500*ms
-# T_test = 500*ms
-# burnin = 50*ms
-# x_size =
-# y_size = 
+parser.add_argument("--tau_mem_lower", type=float, default=5, help='Tau mem lower bound')
+parser.add_argument("--tau_mem_upper", type=float, default=35, help='Tau mem upper bound')
+parser.add_argument("--tau_syn_lower", type=float, default=5, help='Tau syn lower bound')
+parser.add_argument("--tau_syn_upper", type=float, default=10, help='Tau syn upper bound')
+parser.add_argument("--tau_ref", type=float, default=1/.35, help='Tau ref')
 
 
-# DVS Gesture
-# load data
-ds_name = "DVS Gesture"
-with open('data/train_dvs_gesture88.pickle', 'rb') as f:
-    data = pickle.load(f)
-x_train = np.array(data[0])
-y_train = np.array(data[1], dtype = int) - 1
-
-idx_temp = np.arange(len(x_train))
-np.random.shuffle(idx_temp)
-idx_train = idx_temp[0:int(len(y_train)*.8)]
-idx_val = idx_temp[int(len(y_train)*.8):]
-
-x_train, x_val = x_train[idx_train], x_train[idx_val]
-y_train, y_val = y_train[idx_train], y_train[idx_val]
+args = parser.parse_args()
 
 
-with open('data/test_dvs_gesture88.pickle', 'rb') as f:
-    data = pickle.load(f)
-x_test = data[0]
-y_test = np.array(data[1], dtype = int) - 1
-
-output_neurons = 11
-T = 500*ms
-T_test = 1800*ms
-burnin = 50*ms
-x_size = 32
-y_size = 32
-
-
-
-
-if args['sp'] is not None:
-    localQ.shift_prob = args['sp']
-else:
-    localQ.shift_prob = 1
-if args['eg'] is not None:
-    change_diff1 = args['eg']
-else:
-    change_diff1 = 0
-if args['s'] is not None:
-    change_diff2 = args['s']
-else:
-    change_diff2 = 0
-if args['qp'] is not None:
-    change_diff3 = args['qp']
-else:
-    change_diff3 = 0
-
-
-if args['cap'] is not None:
-    PQ_cap = args['cap']
-else:
-    PQ_cap = 1
 
 # set quant level
-quantization.global_wb  = 8
-quantization.global_qb  = 10 + change_diff3
-quantization.global_pb  = 12 + change_diff3
-quantization.global_rfb = 2
+quantization.global_wb  = args.global_wb
+quantization.global_qb  = args.global_qb
+quantization.global_pb  = args.global_pb
+quantization.global_rfb = args.global_rfb
 
-quantization.global_sb  = 6 + change_diff2
-quantization.global_gb  = 10 + change_diff1
-quantization.global_eb  = 6 + change_diff1
+quantization.global_sb  = args.global_sb
+quantization.global_gb  = args.global_gb
+quantization.global_eb  = args.global_eb
 
-quantization.global_ub  = 6
-quantization.global_ab  = 6
-quantization.global_sig = 6
+quantization.global_ub  = args.global_ub
+quantization.global_ab  = args.global_ab
+quantization.global_sig = args.global_sig
 
-quantization.global_rb = 16
-quantization.global_lr = 1
-quantization.global_lr_sgd = 1.0e-9
-quantization.global_beta = 1.5
+quantization.global_rb = args.global_rb
+quantization.global_lr = args.global_lr
+quantization.global_lr_sgd = args.global_lr_sgd
+quantization.global_beta = args.global_beta
+quantization.weight_mult = args.weight_mult
 
-# set parameters
-delta_t = 1*ms
-input_mode = 0
-ds = 4 # downsampling
-
-epochs = 320
-lr_div = 80
-batch_size = 72
-
-PQ_cap = 1#.8 #.75 #.1, .5, etc. # this value has to be carefully choosen
-weight_mult = 4e-5#np.sqrt(4e-5) # decolle -> 1/p_max 
-quantization.weight_mult = weight_mult
-
-dropout_p = .5
-localQ.lc_ampl = .5
-# 0.0001, 0.001, 0.01, 0.1, .2, .5
-l1 = .001
-l2 = .001
+localQ.lc_ampl = args.lc_ampl
 
 
-tau_mem = torch.tensor([5*ms, 35*ms], dtype = dtype).to(device)#tau_mem = torch.tensor([5*ms, 35*ms], dtype = dtype).to(device)
-tau_ref = torch.tensor([1/.35*ms], dtype = dtype).to(device)
-tau_syn = torch.tensor([5*ms, 10*ms], dtype = dtype).to(device) #tau_syn = torch.tensor([5*ms, 10*ms], dtype = dtype).to(device)
+tau_mem = torch.tensor([args.tau_mem_lower*ms, args.tau_mem_upper*ms], dtype = dtype).to(device)
+tau_ref = torch.tensor([args.tau_ref*ms], dtype = dtype).to(device)
+tau_syn = torch.tensor([args.tau_syn_lower*ms, args.tau_syn_upper*ms], dtype = dtype).to(device) 
 
 
-sl1_loss = torch.nn.MSELoss()#torch.nn.SmoothL1Loss()
+if args.data_set == "Poker":
+    ds_name = "DVS Poker"
+    with open('data/slow_poker_500_train.pickle', 'rb') as f:
+        data = pickle.load(f)
+    x_train = data[0].tolist()
+    for i in range(len(x_train)):
+        x_train[i] = x_train[i][:,[0,3,4,5]] 
+        x_train[i][:,3][x_train[i][:,3] == -1] = 0 
+        x_train[i] = x_train[i].astype('uint32')
+    y_train = data[1]
 
-# # # construct layers
+    x_train = np.array(x_train)
+    y_train = np.array(y_train)
+
+    idx_temp = np.arange(len(x_train))
+    np.random.shuffle(idx_temp)
+    idx_train = idx_temp[0:int(len(y_train)*.8)]
+    idx_val = idx_temp[int(len(y_train)*.8):]
+
+    x_train, x_val = x_train[idx_train], x_train[idx_val]
+    y_train, y_val = y_train[idx_train], y_train[idx_val]
+
+    with open('data/slow_poker_500_test.pickle', 'rb') as f:
+        data = pickle.load(f)
+    x_test = data[0].tolist()
+    for i in range(len(x_test)):
+        x_test[i] = x_test[i][:,[0,3,4,5]] 
+        x_test[i][:,3][x_test[i][:,3] == -1] = 0 
+        x_test[i] = x_test[i].astype('uint32')
+    y_test = data[1]
+
+    output_neurons = 4
+    T = 500*ms
+    T_test = 500*ms
+    burnin = 50*ms
+    x_size = 32
+    y_size = 32
+
+elif args.data_set == "Gesture":
+    ds_name = "DVS Gesture"
+    with open('data/train_dvs_gesture88.pickle', 'rb') as f:
+        data = pickle.load(f)
+    x_train = np.array(data[0])
+    y_train = np.array(data[1], dtype = int) - 1
+
+    idx_temp = np.arange(len(x_train))
+    np.random.shuffle(idx_temp)
+    idx_train = idx_temp[0:int(len(y_train)*.8)]
+    idx_val = idx_temp[int(len(y_train)*.8):]
+
+    x_train, x_val = x_train[idx_train], x_train[idx_val]
+    y_train, y_val = y_train[idx_train], y_train[idx_val]
+
+
+    with open('data/test_dvs_gesture88.pickle', 'rb') as f:
+        data = pickle.load(f)
+    x_test = data[0]
+    y_test = np.array(data[1], dtype = int) - 1
+
+    output_neurons = 11
+    T = 500*ms
+    T_test = 1800*ms
+    burnin = 50*ms
+    x_size = 32
+    y_size = 32
+else:
+    raise Exception("Data set unknown.")
+
+sl1_loss = torch.nn.MSELoss()
+
 thr = torch.tensor([.0], dtype = dtype).to(device)
-layer1 = LIFConv2dLayer(inp_shape = (2, x_size, y_size), kernel_size = 7, out_channels = 64, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, PQ_cap = PQ_cap, weight_mult = weight_mult, dtype = dtype).to(device)
+layer1 = LIFConv2dLayer(inp_shape = (2, x_size, y_size), kernel_size = 7, out_channels = 64, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = args.delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = args.dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = args.l1, l2 = args.l2, PQ_cap = args.PQ_cap, weight_mult = args.weight_mult, dtype = dtype).to(device)
 
-layer2 = LIFConv2dLayer(inp_shape = layer1.out_shape2, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 1, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, PQ_cap = PQ_cap, weight_mult = weight_mult, dtype = dtype).to(device)
+layer2 = LIFConv2dLayer(inp_shape = layer1.out_shape2, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = args.delta_t, pooling = 1, padding = 2, thr = thr, device = device, dropout_p = args.dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = args.l1, l2 = args.l2, PQ_cap = args.PQ_cap, weight_mult = args.weight_mult, dtype = dtype).to(device)
 
-layer3 = LIFConv2dLayer(inp_shape = layer2.out_shape2, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, PQ_cap = PQ_cap, weight_mult = weight_mult, dtype = dtype).to(device)
+layer3 = LIFConv2dLayer(inp_shape = layer2.out_shape2, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = args.delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = args.dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = args.l1, l2 = args.l2, PQ_cap = args.PQ_cap, weight_mult = args.weight_mult, dtype = dtype).to(device)
 
-
-# thr = torch.tensor([.4], dtype = dtype).to(device) 
-# layer1 = DTNLIFConv2dLayer(inp_shape = (2, 32, 32), kernel_size = 7, out_channels = 64, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, PQ_cap = PQ_cap, weight_mult = weight_mult, dtype = dtype).to(device)
-
-# layer2 = DTNLIFConv2dLayer(inp_shape = layer1.out_shape2, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 1, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, PQ_cap = PQ_cap, weight_mult = weight_mult, dtype = dtype).to(device)
-
-# layer3 = DTNLIFConv2dLayer(inp_shape = layer2.out_shape2, kernel_size = 7, out_channels = 128, tau_mem = tau_mem, tau_syn = tau_syn, tau_ref = tau_ref, delta_t = delta_t, pooling = 2, padding = 2, thr = thr, device = device, dropout_p = dropout_p, output_neurons = output_neurons, loss_fn = sl1_loss, l1 = l1, l2 = l2, PQ_cap = PQ_cap, weight_mult = weight_mult, dtype = dtype).to(device)
 
 all_parameters = list(layer1.parameters()) + list(layer2.parameters()) + list(layer3.parameters())
 
@@ -222,15 +177,12 @@ all_parameters = list(layer1.parameters()) + list(layer2.parameters()) + list(la
 if quantization.global_gb is not None:
     opt = torch.optim.SGD(all_parameters, lr = 1)
 else:
-    opt = torch.optim.SGD(all_parameters, lr = quantization.global_lr_sgd) # 1.0e-9
-    #opt = torch.optim.Adamax(all_parameters, lr=1.0e-9, betas=[0., .95])
-
-
+    opt = torch.optim.SGD(all_parameters, lr = quantization.global_lr_sgd)
 
 def eval_test():
     batch_corr = {'train1': [], 'test1': [],'train2': [], 'test2': [],'train3': [], 'test3': [], 'loss':[], 'act_train1':0, 'act_train2':0, 'act_train3':0, 'act_test1':0, 'act_test2':0, 'act_test3':0, 'w1u':0, 'w2u':0, 'w3u':0}
     # test accuracy
-    for x_local, y_local in sparse_data_generator_DVSGesture(x_test, y_test, batch_size = batch_size, nb_steps = T_test / ms, shuffle = True, device = device, test = True, ds = ds, x_size = x_size, y_size = y_size):
+    for x_local, y_local in sparse_data_generator_DVSGesture(x_test, y_test, batch_size = args.batch_size, nb_steps = T_test / ms, shuffle = True, device = device, test = True, ds = args.ds, x_size = x_size, y_size = y_size):
         rread_hist1_test = []
         rread_hist2_test = []
         rread_hist3_test = []
@@ -247,7 +199,7 @@ def eval_test():
         for t in range(int(T_test/ms)):
             test_flag = (t > int(burnin/ms))
 
-            out_spikes1, temp_loss1, temp_corr1, _ = layer1.forward(prep_input(x_local[:,:,:,:,t], input_mode), y_onehot, test_flag = test_flag)
+            out_spikes1, temp_loss1, temp_corr1, _ = layer1.forward(prep_input(x_local[:,:,:,:,t], args.input_mode), y_onehot, test_flag = test_flag)
             out_spikes2, temp_loss2, temp_corr2, _ = layer2.forward(out_spikes1, y_onehot, test_flag = test_flag)
             out_spikes3, temp_loss3, temp_corr3, _ = layer3.forward(out_spikes2, y_onehot, test_flag = test_flag)
 
@@ -256,35 +208,27 @@ def eval_test():
                 rread_hist2_test.append(temp_corr2)
                 rread_hist3_test.append(temp_corr3)
 
-            #batch_corr['act_test1'] += int(out_spikes1.sum())
-            #batch_corr['act_test2'] += int(out_spikes2.sum())
-            #batch_corr['act_test3'] += int(out_spikes3.sum())
 
         batch_corr['test1'].append(acc_comp(rread_hist1_test, y_local, True))
         batch_corr['test2'].append(acc_comp(rread_hist2_test, y_local, True))
         batch_corr['test3'].append(acc_comp(rread_hist3_test, y_local, True))
-        #del x_local, y_local, y_onehot
 
     return torch.cat(batch_corr['test3']).mean()
 
-
-
-# P_rec = torch.tensor([])
-# Q_rec = torch.tensor([])
 
 args_compact = [delta_t, input_mode, ds, epochs, lr_div, batch_size, PQ_cap, weight_mult, dropout_p, localQ.lc_ampl, l1, l2, tau_mem, tau_ref, tau_syn, thr, quantization.global_wb, quantization.global_qb, quantization.global_pb, quantization.global_rfb, quantization.global_sb, quantization.global_gb, quantization.global_eb, quantization.global_ub, quantization.global_ab, quantization.global_sig, quantization.global_rb, quantization.global_lr, quantization.global_lr_sgd, quantization.global_beta, localQ.shift_prob]
 
 w1, w2, w3, b1, b2, b3 = None, None, None, None, None, None
 
 diff_layers_acc = {'train1': [], 'test1': [],'train2': [], 'test2': [],'train3': [], 'test3': [], 'loss':[], 'act_train1':[], 'act_train2':[], 'act_train3':[], 'act_test1':[], 'act_test2':[], 'act_test3':[], 'w1update':[], 'w2update':[], 'w3update':[]}
-print("WUPQR SASigEG Quantization: {0}{1}{2}{3}{4} {5}{6}{7}{8}{9} l1 {10:.3f} l2 {11:.3f} Inp {12} LR {13} Drop {14} Cap {15} thr {16}".format(quantization.global_wb, quantization.global_ub, quantization.global_pb, quantization.global_qb, quantization.global_rfb, quantization.global_sb, quantization.global_ab, quantization.global_sig, quantization.global_eb, quantization.global_gb, l1, l2, input_mode, quantization.global_lr if quantization.global_lr != None else quantization.global_lr_sgd, dropout_p, PQ_cap, thr.item()))
-plot_file_name = "DVS_WPQUEG{0}{1}{2}{3}{4}{5}{6}_Inp{7}_LR{8}_Drop{9}_thr{10}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb, quantization.global_sb, input_mode, quantization.global_lr, dropout_p, thr.item())+datetime.datetime.now().strftime("_%Y%m%d_%H%M%S")
+print("WUPQR SASigEG Quantization: {0}{1}{2}{3}{4} {5}{6}{7}{8}{9} l1 {10:.3f} l2 {11:.3f} Inp {12} LR {13} Drop {14} Cap {15} thr {16}".format(quantization.global_wb, quantization.global_ub, quantization.global_pb, quantization.global_qb, quantization.global_rfb, quantization.global_sb, quantization.global_ab, quantization.global_sig, quantization.global_eb, quantization.global_gb, args.l1, args.l2, args.input_mode, quantization.global_lr if quantization.global_lr != None else quantization.global_lr_sgd, args.dropout_p, args.PQ_cap, thr.item()))
+plot_file_name = "DVS_WPQUEG{0}{1}{2}{3}{4}{5}{6}_Inp{7}_LR{8}_Drop{9}_thr{10}".format(quantization.global_wb, quantization.global_pb, quantization.global_qb, quantization.global_ub, quantization.global_eb, quantization.global_gb, quantization.global_sb, args.input_mode, quantization.global_lr, args.dropout_p, thr.item())+datetime.datetime.now().strftime("_%Y%m%d_%H%M%S")
 print("Epoch Loss      Train1 Train2 Train3 Test1  Test2  Test3  | TrainT   TestT")
 
 best_vali = torch.tensor(0, device = device)
 
-for e in range(epochs):
-    if ((e+1)%lr_div)==0:
+for e in range(args.epochs):
+    if ((e+1)%args.lr_div)==0:
         if quantization.global_gb is not None:
             quantization.global_lr /= 2
         else:
@@ -298,7 +242,7 @@ for e in range(epochs):
     start_time = time.time()
 
     # training
-    for x_local, y_local in sparse_data_generator_DVSGesture(x_train, y_train, batch_size = batch_size, nb_steps = T / ms, shuffle = True, test = False, device = device, ds = ds, x_size = x_size, y_size = y_size):
+    for x_local, y_local in sparse_data_generator_DVSGesture(x_train, y_train, batch_size = args.batch_size, nb_steps = T / ms, shuffle = True, test = False, device = device, ds = args.ds, x_size = x_size, y_size = y_size):
 
         y_onehot = torch.Tensor(len(y_local), output_neurons).to(device).type(dtype)
         y_onehot.zero_()
@@ -317,7 +261,7 @@ for e in range(epochs):
         for t in range(int(T/ms)):
             train_flag = (t > int(burnin/ms))
 
-            out_spikes1, temp_loss1, temp_corr1, lparts1 = layer1.forward(prep_input(x_local[:,:,:,:,t], input_mode), y_onehot, train_flag = train_flag)
+            out_spikes1, temp_loss1, temp_corr1, lparts1 = layer1.forward(prep_input(x_local[:,:,:,:,t], args.input_mode), y_onehot, train_flag = train_flag)
             out_spikes2, temp_loss2, temp_corr2, lparts2 = layer2.forward(out_spikes1, y_onehot, train_flag = train_flag)
             out_spikes3, temp_loss3, temp_corr3, lparts3 = layer3.forward(out_spikes2, y_onehot, train_flag = train_flag)
             
@@ -362,7 +306,7 @@ for e in range(epochs):
         
     
     # test accuracy
-    for x_local, y_local in sparse_data_generator_DVSGesture(x_val, y_val, batch_size = batch_size, nb_steps = T_test / ms, shuffle = True, device = device, test = True, ds = ds, x_size = x_size, y_size = y_size):
+    for x_local, y_local in sparse_data_generator_DVSGesture(x_val, y_val, batch_size = args.batch_size, nb_steps = T_test / ms, shuffle = True, device = device, test = True, ds = args.ds, x_size = x_size, y_size = y_size):
         rread_hist1_test = []
         rread_hist2_test = []
         rread_hist3_test = []
@@ -379,7 +323,7 @@ for e in range(epochs):
         for t in range(int(T_test/ms)):
             test_flag = (t > int(burnin/ms))
 
-            out_spikes1, temp_loss1, temp_corr1, _ = layer1.forward(prep_input(x_local[:,:,:,:,t], input_mode), y_onehot, test_flag = test_flag)
+            out_spikes1, temp_loss1, temp_corr1, _ = layer1.forward(prep_input(x_local[:,:,:,:,t], args.input_mode), y_onehot, test_flag = test_flag)
             out_spikes2, temp_loss2, temp_corr2, _ = layer2.forward(out_spikes1, y_onehot, test_flag = test_flag)
             out_spikes3, temp_loss3, temp_corr3, _ = layer3.forward(out_spikes2, y_onehot, test_flag = test_flag)
 
@@ -417,14 +361,9 @@ for e in range(epochs):
     diff_layers_acc['act_test3'].append(batch_corr['act_test3'])
 
     print("{0:02d}    {1:.3E} {2:.4f} {3:.4f} {4:.4f} {5:.4f} {6:.4f} {7:.4f} | {8:.4f} {9:.4f}".format(e+1, diff_layers_acc['loss'][-1], diff_layers_acc['train1'][-1], diff_layers_acc['train2'][-1], diff_layers_acc['train3'][-1], diff_layers_acc['test1'][-1], diff_layers_acc['test2'][-1], diff_layers_acc['test3'][-1], train_time - start_time, inf_time - train_time))
-    #create_graph2(plot_file_name, diff_layers_acc, ds_name)
     create_graph(plot_file_name, diff_layers_acc, ds_name, test_acc_best_vali)
 
 
-    # # saving results
-    # results = {'acc': diff_layers_acc, 'fname':plot_file_name, 'args': args_compact}
-    # with open('results/'+plot_file_name+'.pkl', 'wb') as f:
-    #     pickle.dump(results, f)
 
     # saving results and weights
     results = {
@@ -434,16 +373,4 @@ for e in range(epochs):
     'acc': diff_layers_acc, 'fname':plot_file_name, 'args': args_compact, 'evaled_test':test_acc_best_vali}
     with open('results/'+plot_file_name+'.pkl', 'wb') as f:
         pickle.dump(results, f)
-
-
-# # how to load
-#with open("results/DVS_WPQUEG8121066106_Inp0_LR1_Drop0.5_20200501_010049.pkl", 'rb') as f:
-#   # The protocol version used is detected automatically, so we do not
-#   # have to specify it.
-#   data = pickle.load(f)
-
-#20200501_005657 - 0.0001
-#20200501_005713 - 0.001
-#20200501_005823 - 0.2
-#20200501_010049 - 0.5
 
