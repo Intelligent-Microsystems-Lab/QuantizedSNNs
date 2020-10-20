@@ -79,8 +79,8 @@ python qsnn_decolle.py
 ```
 
 <p align="center">
-<img src="figures/ICONS_data_set_poker.png" width="250" />
-<img src="figures/ICONS_data_set_gest.png" width="250" />
+<img src="figures/ICONS_data_set_poker.png" width="400" />
+<img src="figures/ICONS_data_set_gest.png" width="400" />
 </p>
 
 
