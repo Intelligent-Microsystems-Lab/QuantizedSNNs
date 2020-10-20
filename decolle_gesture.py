@@ -19,6 +19,7 @@ else:
 dtype = torch.float32 
 ms = 1e-3
 
+
 parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("--data-set", type=str, default="Gesture", help='Input date set: Poker/Gesture')
 
@@ -64,7 +65,6 @@ parser.add_argument("--tau_ref", type=float, default=1/.35, help='Tau ref')
 args = parser.parse_args()
 
 
-
 # set quant level
 quantization.global_wb  = args.global_wb
 quantization.global_qb  = args.global_qb
@@ -86,7 +86,6 @@ quantization.global_beta = args.global_beta
 quantization.weight_mult = args.weight_mult
 
 localQ.lc_ampl = args.lc_ampl
-
 
 tau_mem = torch.tensor([args.tau_mem_lower*ms, args.tau_mem_upper*ms], dtype = dtype).to(device)
 tau_ref = torch.tensor([args.tau_ref*ms], dtype = dtype).to(device)
@@ -215,8 +214,6 @@ def eval_test():
 
     return torch.cat(batch_corr['test3']).mean()
 
-
-args_compact = [delta_t, input_mode, ds, epochs, lr_div, batch_size, PQ_cap, weight_mult, dropout_p, localQ.lc_ampl, l1, l2, tau_mem, tau_ref, tau_syn, thr, quantization.global_wb, quantization.global_qb, quantization.global_pb, quantization.global_rfb, quantization.global_sb, quantization.global_gb, quantization.global_eb, quantization.global_ub, quantization.global_ab, quantization.global_sig, quantization.global_rb, quantization.global_lr, quantization.global_lr_sgd, quantization.global_beta, localQ.shift_prob]
 
 w1, w2, w3, b1, b2, b3 = None, None, None, None, None, None
 
@@ -370,7 +367,7 @@ for e in range(args.epochs):
     'layer1':[layer1.weights.detach().cpu(), layer1.bias.detach().cpu(), w1, b1, layer1.sign_random_readout.weights.detach().cpu(), layer1.sign_random_readout.weight_fa.detach().cpu(), layer1.tau_mem.cpu(), layer1.tau_syn.cpu(), layer1.tau_ref.cpu()], 
     'layer2':[layer2.weights.detach().cpu(), layer2.bias.detach().cpu(), w2, b2, layer2.sign_random_readout.weights.detach().cpu(), layer2.sign_random_readout.weight_fa.detach().cpu(), layer2.tau_mem.cpu(), layer2.tau_syn.cpu(), layer2.tau_ref.cpu()], 
     'layer3':[layer3.weights.detach().cpu(), layer3.bias.detach().cpu(), w3, b3, layer3.sign_random_readout.weights.detach().cpu(), layer3.sign_random_readout.weight_fa.detach().cpu(), layer3.tau_mem.cpu(), layer3.tau_syn.cpu(), layer3.tau_ref.cpu()], 
-    'acc': diff_layers_acc, 'fname':plot_file_name, 'args': args_compact, 'evaled_test':test_acc_best_vali}
+    'acc': diff_layers_acc, 'fname':plot_file_name, 'args': args, 'evaled_test':test_acc_best_vali}
     with open('results/'+plot_file_name+'.pkl', 'wb') as f:
         pickle.dump(results, f)
 

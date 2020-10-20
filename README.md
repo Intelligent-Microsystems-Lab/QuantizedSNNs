@@ -48,5 +48,6 @@ Optional arguments:
 
 ## Quantized SNNs for Gesture Detection with Local Learning
 
+Download and extract the [DVS Slow Poker](http://www2.imse-cnm.csic.es/caviar/SLOWPOKERDVS.html#:~:text=The%20SLOW%2DPOKER%2DDVS%20database,diamond%2C%20heart%20or%20spade) and [DVS Gesture](https://www.research.ibm.com/dvsgesture/) data set.
 
 
