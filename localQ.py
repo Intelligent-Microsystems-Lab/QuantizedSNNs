@@ -136,6 +136,7 @@ def prep_input(x_local, input_mode, channels = 2):
     else:
         return x_local
 
+
 def sparse_data_generator_DVSPoker(X, y, batch_size, nb_steps, shuffle, device, test = False):
     number_of_batches = int(np.ceil(len(y)/batch_size))
     sample_index = np.arange(len(y))

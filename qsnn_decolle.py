@@ -20,6 +20,7 @@ dtype = torch.float32
 ms = 1e-3
 
 
+
 parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("--data-set", type=str, default="Gesture", help='Input date set: Poker/Gesture')
 
@@ -129,7 +130,7 @@ if args.data_set == "Poker":
     burnin = 50*ms
     x_size = 32
     y_size = 32
-    train_flag = True
+    train_tflag = True
 
 
 
@@ -160,7 +161,7 @@ elif args.data_set == "Gesture":
     burnin = 50*ms
     x_size = 32
     y_size = 32
-    train_flag = False
+    train_tflag = False
 else:
     raise Exception("Data set unknown.")
 
@@ -243,7 +244,7 @@ for e in range(args.epochs):
     start_time = time.time()
 
     # training
-    for x_local, y_local in sparse_data_generator_DVSGesture(x_train, y_train, batch_size = args.batch_size, nb_steps = T / ms, shuffle = True, test = train_flag, device = device, ds = args.ds, x_size = x_size, y_size = y_size):
+    for x_local, y_local in sparse_data_generator_DVSGesture(x_train, y_train, batch_size = args.batch_size, nb_steps = T / ms, shuffle = True, test = train_tflag, device = device, ds = args.ds, x_size = x_size, y_size = y_size):
 
         y_onehot = torch.Tensor(len(y_local), output_neurons).to(device).type(dtype)
         y_onehot.zero_()

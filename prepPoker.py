@@ -1,114 +1,115 @@
 import numpy as np
+import math
 import pickle
 import os
-import torch
-import pickle
 
 
-def read_aedat31(filename, labels_f, test_set = False):
-    # https://inivation.com/support/software/fileformat/#aedat-31
-    # http://research.ibm.com/dvsgesture/
-    gestures_full = []
-    labels_full = []
+def dat2mat(filename, retinaSizeX, only_pos=False):
+    """dat2mat.py: This script converts a aedat file into a list of events.
+        It only works for 32 unsinged values in the aedat file.
 
-    # Addresses will be interpreted as 32 bits
-    print(filename)
-    f = open(filename, 'r', encoding='latin_1')
-    labels = np.genfromtxt(labels_f, delimiter=',')[1:]
-    #Skip header lines
+    filename: name of the dat file
+    retinaSizeX: one dimension of the retina size
+    only_pos: True to delete all the negative spikes from the dat file
+    """
+    print('Addresses will be interpreted as 32 bits')
+    maxEvents = 30e6
+    numBytesPerEvent = 8
+
+    f = open(filename, 'r', encoding='latin-1')
     bof = f.tell()
+    #Skip header lines
     line = f.readline()
     while (line[0]=='#'):
-        print(line, end='')
+        print(line)
         bof = f.tell()
         line = f.readline()
 
-    # read data
+    #Calculate number of events
+    f.seek(0,2) #EOF
+    numEvents = (f.tell()-bof)/numBytesPerEvent
+    if (numEvents>maxEvents):
+        print("More events than the maximum events!!!")
+        numEvents = maxEvents
+    #Read data
     f.seek(bof,0)
-    dataArray = np.fromfile(f, '<u4') #little endian
+    dataArray = np.fromfile(f, '>u4')
+    allAddr = dataArray[::2]
+    allTs = dataArray[1::2]
     f.close()
+    #print allTs
 
-    # extract events
-    allAddr = np.array([], dtype=np.uint32)
-    allTs = np.array([], dtype=np.uint32)
-    pos = 0
-    while pos < len(dataArray):
-        num_events = dataArray[pos + 5]
-        num_valid = dataArray[pos + 6]
-        allAddr = np.append(allAddr, dataArray[pos+7:pos+7+(num_events*2):2])
-        allTs = np.append(allTs, dataArray[pos+8:pos+8+(num_events*2):2])
-        pos = pos+7+(num_events*2)
+    #Define event format
+    xmask = 0xFE
+    ymask = 0x7F00
+    xshift = 1
+    yshift = 8
+    if (retinaSizeX == 32):
+        xshift=3 #Subsampling of 4
+        yshift=10 #Subsampling of 4
+    polmask = 0x1
+    addr = abs(allAddr)
+    x = (addr & xmask)>>xshift
+    y = (addr & ymask)>>yshift
+    pol = 1 - (2*(addr & polmask)) #1 for ON, -1 for OFF
+    pol = pol.astype(np.int32)
+    '''    
+    #invert x
+    x = retinaSizeX - x
+    '''
+    #Do relative time
+    tpo = allTs;
+    tpo[:] = tpo[:]-tpo[0]
 
-    # interpret events as x,y,polarity
-    addr = allAddr
-    x = ( addr >> 17 ) & 0x00001FFF
-    y = ( addr >> 2 ) & 0x00001FFF
-    polarity = ( addr >> 1 ) & 0x00000001
+    stim = np.array([tpo, np.zeros(x.size, dtype=np.int), \
+        -1*np.ones(x.size, dtype=np.int), x, y, pol])
+    stim = np.transpose(stim)
+    
+    if (only_pos == True):
+        res_stim = stim[stim[:,5]==1, :]
+    else:
+        res_stim = stim
 
-    # how to access header info
-    # dataArray[0] >> 16          # event type -> polarity event
-    # dataArray[0] & 0xFFFF0000   # event source ID
-    # dataArray[1]                # eventSize
-    # dataArray[2]                # eventTSOffset
-    # dataArray[3]                # eventTSOverflow
-    # dataArray[4]                # eventCapacity (always equals eventNumber)
-    # dataArray[5]                # eventNumber (valid + invalid)
-    # dataArray[6]                # eventValid
+    # bin them 1ms
+    res_stim[:,0] = np.floor(res_stim[:,0]/1000)
+    #res_stim[:,0] = res_stim[:,0] - np.min(res_stim[:,0])
 
-    stim = np.array([allTs, x, y, polarity]).T#.astype(int)
-
-    for i in labels:
-
-        # chop things right
-        single_gesture = stim[stim[:, 0] >= i[1]]
-        single_gesture = single_gesture[single_gesture[:, 0] <= i[2]]
-
-        # bin them 1ms
-        single_gesture[:,0] = np.floor(single_gesture[:,0]/1000)
-        single_gesture[:,0] = single_gesture[:,0] - np.min(single_gesture[:,0])
-
-        if test_set:
-            single_gesture = single_gesture[single_gesture[:,0] <= 1800]
-
-        if i[0] in labels_full:
-            gestures_full[labels_full.index(i[0])] = np.vstack((gestures_full[labels_full.index(i[0])], single_gesture))
-        else:
-            gestures_full.append(single_gesture)
-            # record label
-            labels_full.append(i[0])
-    return gestures_full, labels_full
+    return res_stim
+  
 
 
-
-gestures_full = []
+chunk_size = 500
+chunk_size = 1300
+chunk_size = 2400
+file_list = ["RetinaTeresa2-club_long.aedat", "RetinaTeresa2-diamond_long.aedat", "RetinaTeresa2-heart_long.aedat", "RetinaTeresa2-spade_long.aedat"]
+start_ts = np.arange(0,121000/chunk_size)*chunk_size
+end_ts = np.arange(0,121000/chunk_size)*chunk_size + chunk_size #its not 3min... one recording is just 2min!
+cards_full = []
 labels_full = []
-with open('trials_to_train.txt') as fp:
-    for cnt, line in enumerate(fp):
-        try:
-            gestures_temp, labels_temp = read_aedat31(line.split(".")[0] + ".aedat", line.split(".")[0] + "_labels.csv")
-            gestures_full += gestures_temp
-            labels_full += labels_temp
-        except:
-            continue
 
-with open('train_dvs_gesture.pickle', 'wb') as handle:
-    pickle.dump((gestures_full, labels_full), handle)
+for idx,cur_file in enumerate(file_list):
+    stim_cur = dat2mat(cur_file, 128, False)
+    for i in np.arange(len(start_ts)):
+        temp_cur = stim_cur[stim_cur[:,0] >= start_ts[i]]
+        temp_cur = temp_cur[temp_cur[:,0] < end_ts[i]]
+        if(len(temp_cur) == 0):
+            import pdb; pdb.set_trace()
+        temp_cur[:,0] = temp_cur[:,0]-start_ts[i]
+        cards_full.append(temp_cur)
+    labels_full += [idx]*len(start_ts)
+
+#80/20 split train/test
+cards_full = np.array(cards_full)
+labels_full = np.array(labels_full)
+shuffle_idx = np.arange(len(labels_full))
+np.random.shuffle(shuffle_idx)
+cards_full = cards_full[shuffle_idx]
+labels_full = labels_full[shuffle_idx]
 
 
-
-
-gestures_full = []
-labels_full = []
-with open('trials_to_test.txt') as fp:
-    for cnt, line in enumerate(fp):
-        try:
-            gestures_temp, labels_temp = read_aedat31(line.split(".")[0] + ".aedat", line.split(".")[0] + "_labels.csv", test_set = True)
-            gestures_full += gestures_temp
-            labels_full += labels_temp
-        except:
-            continue
-
-with open('test_dvs_gesture.pickle', 'wb') as handle:
-    pickle.dump((gestures_full, labels_full), handle)
+with open('slow_poker_'+str(chunk_size)+'_train.pickle', 'wb') as handle:
+    pickle.dump((cards_full[:int(len(labels_full)*.8)  ], labels_full[:int(len(labels_full)*.8)  ]), handle)
+with open('slow_poker_'+str(chunk_size)+'_test.pickle', 'wb') as handle:
+    pickle.dump((cards_full[int(len(labels_full)*.8):], labels_full[int(len(labels_full)*.8):]), handle)
 
 

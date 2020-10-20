@@ -20,6 +20,8 @@ All relevant code for the experiments from the ISCAS paper is contained in qsnn_
 python qsnn_precise.py
 ```
 
+![Quantization Scheme](ISCAS_schem1.png) ![Training Curve](ISCAS_smile_black.png)
+
 You can specify desired setting either as command-line arguments or within qsnn_precise.py.
 
 Optional arguments:

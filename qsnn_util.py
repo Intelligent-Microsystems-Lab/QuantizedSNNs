@@ -8,6 +8,7 @@ import torch
 import torch.nn as nn
 import torchvision
 
+
 time_step = 1e-3
 
 # Check whether a GPU is available

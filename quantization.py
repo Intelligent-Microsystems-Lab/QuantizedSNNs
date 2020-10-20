@@ -6,6 +6,7 @@ import torch.optim as optim
 import numpy as np
 
 
+
 # global quantization variables
 global_wb = 2
 global_ab = 8

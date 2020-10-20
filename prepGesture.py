@@ -5,6 +5,7 @@ import torch
 import pickle
 
 
+
 def read_aedat31(filename, labels_f, test_set = False):
     # https://inivation.com/support/software/fileformat/#aedat-31
     # http://research.ibm.com/dvsgesture/
@@ -77,9 +78,6 @@ def read_aedat31(filename, labels_f, test_set = False):
         labels_full.append(i[0])
     return gestures_full, labels_full
 
-
-# user02_lab_labels
-# user12_fluorescent_led_labels
 
 # full set
 gestures_full = []

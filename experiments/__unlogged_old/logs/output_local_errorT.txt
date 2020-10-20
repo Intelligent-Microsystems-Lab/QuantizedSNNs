@@ -1,6 +1,0 @@
-Loading python/3.7.3
-  Loading requirement: tcl/8.6.8 gcc/8.3.0
-Traceback (most recent call last):
-  File "local_error_mnist.py", line 384, in <module>
-    index_list_train.append((y_train == i).nonzero()[:train_samples/num_classes])
-TypeError: slice indices must be integers or None or have an __index__ method
